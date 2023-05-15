@@ -1,0 +1,7 @@
+{
+  "name": "SpotBie",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
