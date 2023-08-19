@@ -1,0 +1,50 @@
+<div class='spotbie-overlay-window'
+        style="background-color: #0e0e0e; padding-top:0px !important;">
+    <div class='sb-v-wrapper'>
+
+        <div>
+            <img class="sb-qrTitleImage" src="../../../../assets/images/qr/spotbie-qr.svg" />
+
+            <h5 class="spotbie-text-gradient sb-scanQrTitle text-center text-uppercase mt-5 pt-5">SCAN AND EARN</h5>
+        </div>
+
+        <div *ngIf="!awarded && !rewarded">
+            <div class="spotbie-full-qrCode scanner mt-4 mb-4">
+<!--                <zxing-scanner (scanSuccess)="scanSuccessHandler($event)"
+                               [formats]="['QR_CODE']"></zxing-scanner>-->
+            </div>
+
+            <p class="sb-helpInfo spotbie-text-gradient text-center text-uppercase">
+                Ask for<br/>the<br/><span class='sb-text-light-green-gradient'>SpotBie QR CODE</span>
+            </p>
+        </div>
+
+        <div *ngIf="awarded">
+            <h2 class='sb-text-light-green-gradient mt-4'>SUCCESS</h2>
+
+            <i class='fas fa-check mb-4'></i>
+
+            <h2 class="spotbie-text-gradient text-center text-uppercase pt-4 mb-4">{{ userLoyaltyPoints | number:'1.0':'en-US' }}</h2>
+        </div>
+
+        <div *ngIf="rewarded">
+            <p class="spotbie-text-gradient mt-4 mb-4">Reward redeemed successfully. Please show your host.</p>
+
+            <div class='sb-menuItem'
+                [ngStyle]="{ 'background' : 'url('+ reward.images +')'}">
+                <h6>
+                    <span class="spotbie-text-gradient">
+                        {{ reward.name }}
+                    </span>
+                </h6>
+            </div>
+        </div>
+
+        <div class="sb-earnedPoints animated fadeOutUp" #sbEarnedPoints>
+            <span class='sb-text-red-gradient' *ngIf="rewarded">-{{ pointsCharged | number:'1.0':'en-US' }}</span>
+            <span class='sb-text-light-green-gradient' *ngIf="awarded">+{{ userLoyaltyPoints | number:'1.0':'en-US' }}</span>
+        </div>
+
+        <button class='spotbie-button text-uppercase mt-3' (click)="closeQrUser()">close</button>
+    </div>
+</div>

@@ -1,29 +1,32 @@
-<ion-app>
-  <ion-split-pane contentId="main-content">
-    <ion-menu contentId="main-content" type="overlay">
-      <ion-content>
-        <ion-list id="inbox-list">
-          <ion-list-header>Inbox</ion-list-header>
-          <ion-note>hi@ionicframework.com</ion-note>
+<router-outlet></router-outlet>
 
-          <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages; let i = index">
-            <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
-              <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
-              <ion-label>{{ p.title }}</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
-        </ion-list>
+<div class="sb-testMode" *ngIf="testMode" (click)="openTestModeSpecs()">
+  <i class="fas fa-exclamation-triangle"></i> <span>TEST MODE</span>
+</div>
 
-        <ion-list id="labels-list">
-          <ion-list-header>Labels</ion-list-header>
+<div class='spotbie-overlay-window d-flex flex-column align-items-center align-content-center justify-content-center'
+     *ngIf="displayTestModeOptions"
+>
+  <div class='d-flex flex-column align-items-center align-content-center justify-content-center'>
+    <i class="fa-exclamation-triangle" id="sb-testModeTitleTriangle"></i>
+    <br/>
+    <h4 class='spotbie-text-gradient'>TEST MODE</h4>
 
-          <ion-item *ngFor="let label of labels" lines="none">
-            <ion-icon aria-hidden="true" slot="start" ios="bookmark-outline" md="bookmark-sharp"></ion-icon>
-            <ion-label>{{ label }}</ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-content>
-    </ion-menu>
-    <ion-router-outlet id="main-content"></ion-router-outlet>
-  </ion-split-pane>
-</ion-app>
+    <p class='spotbie-text-gradient mt-4'>
+      These are mock locations, models, titles, paragraphs, reward rates, loyalty points, etc.
+    </p>
+
+    <p class='mt-4'>
+          <span class='spotbie-text-gradient'>
+              Miami, Perez Art Museum.
+          </span>
+      <br/>
+      <i class='fa fa-map-marker-alt' style="color: white;"></i>
+      <br/>
+      <span class='spotbie-text-gradient' style="font-size: .8rem;">({{ lat }}, {{ lng }})</span>
+    </p>
+
+    <div class='spotbie-button sb-getStarted' (click)="closeTestModeSpecs()">GOT IT</div>
+  </div>
+</div>
+

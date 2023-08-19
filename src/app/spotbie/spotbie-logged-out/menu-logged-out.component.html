@@ -1,0 +1,44 @@
+<table class="spotbie-el-100
+              spotbie-menu
+              spotbie-menu-fixed"
+       #spotbieMainMenu>
+  <tr>
+    <td class="sb-menu-nav" (click)="slideMenu()" *ngIf="!isDesktop">
+      <i class="fa fa-bars" *ngIf="!menuActive"></i>
+      <i class="fa fa-times" *ngIf="menuActive"></i>
+    </td>
+
+    <td style="width: 35%;">
+      <img class="spotbie-header-mini-logo" (click)="home()" src="assets/images/spotbie_logo_header.svg" />
+    </td>
+  </tr>
+</table>
+
+<div class="spotbie-slider-menu-background" *ngIf="menuActive">
+  <table class="spotbie-slider-menu
+                animated slideInLeft">
+    <tr>
+      <td>
+        <div (click)="home()">
+          HOME <i class="fa fa-angle-right"></i>
+        </div>
+
+        <div (click)="spawnCategories(1)">
+          PLACES TO EAT <i class="fa fa-angle-right"></i>
+        </div>
+
+        <div (click)="spawnCategories(1)">
+          SHOPPING <i class="fa fa-angle-right"></i>
+        </div>
+
+        <div (click)="spawnCategories(3)">
+          EVENTS <i class="fa fa-angle-right"></i>
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<app-log-in *ngIf="logInWindow.open"></app-log-in>
+
+<app-sign-up *ngIf="signUpWindow.open" [windowObj]="signUpWindow" (closeWindow)="closeWindow($event)" (logInEvent)="logIn()"></app-sign-up>

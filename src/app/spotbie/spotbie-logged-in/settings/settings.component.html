@@ -1,0 +1,288 @@
+<app-loading-screen *ngIf="loading"></app-loading-screen>
+
+<div class='spotbie-overlay-window pt-2 pb-5' #spotbieSettingsWindow>
+    <div class='sb-closeButton' (click)="closeWindow()">
+        <i class="fa fa-times"></i>
+    </div>
+
+    <div class='spotbie-block sb-topSettingsPadding'>
+        <div #spotbieSettingsInfoText class="spotbie-text-gradient mt-4 mb-4"></div>
+        <form [formGroup]="settingsForm" *ngIf="settingsFormInitiated">
+            <table class='spotbie-settings-table'>
+                <tr>
+                    <td>
+                        <div *ngIf="submitted && f.spotbieUsername.errors else username_normal" class="spotbie-input-info spotbie-text-gradient spotbie-error">
+                            <div *ngIf="f.spotbieUsername.errors.required">
+                                You must enter a username!
+                            </div>
+
+                            <div *ngIf="f.spotbieUsername.errors.maxlength || f.spotbieUsername.errors.wrongLength">
+                                Your username cannot be longer than 15 characters.
+                            </div>
+
+                            <div *ngIf="f.spotbieUsername.errors.illegalChars">
+                                Must only contain letters, numbers, dots, and underscores.
+                            </div>
+                        </div>
+
+                        <ng-template #username_normal>
+                            <label #spotbieSettingsIssues class="spotbie-input-info spotbie-text-gradient mb-2">
+                                Change your username.
+                            </label>
+                        </ng-template>
+                        <input class="sb-input" formControlName="spotbieUsername" type="text" value="username" maxlength="35" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div *ngIf="submitted && f.spotbieFirstName.errors else user_first_name_normal"
+                                class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2">
+                            <div *ngIf="f.spotbieFirstName.errors.required">
+                                Please enter your first name.
+                            </div>
+
+                            <div *ngIf="f.spotbieFirstName.errors.maxlength">
+                                Your first name cannot be longer than 72 characters.
+                            </div>
+                        </div>
+                        <ng-template #user_first_name_normal>
+                            <label class="spotbie-input-info spotbie-text-gradient mb-2">
+                                What is your first name?
+                            </label>
+                        </ng-template>
+                        <input class="sb-input" formControlName="spotbieFirstName" type="text" value="name" maxlength="72" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div *ngIf="submitted && f.spotbieLastName.errors else user_last_name_normal"
+                                class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2">
+                            <div *ngIf="f.spotbieLastName.errors.required">
+                                Please enter your last name.
+                            </div>
+
+                            <div *ngIf="f.spotbieLastName.errors.maxlength">
+                                Your last name cannot be longer than 72 characters.
+                            </div>
+                        </div>
+
+                        <ng-template #user_last_name_normal>
+                            <label class="spotbie-input-info spotbie-text-gradient mb-2">
+                                What is your last name?
+                            </label>
+                        </ng-template>
+
+                        <input class="sb-input" formControlName="spotbieLastName" type="text" value="name" maxlength="72" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div *ngIf="submitted && f.spotbieEmail.errors else user_email_normal"
+                                class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2">
+                            <div *ngIf="f.spotbieEmail.errors.required">
+                                Please enter your email.
+                            </div>
+
+                            <div *ngIf="f.spotbieEmail.errors.notUnique">
+                                This email is already taken.
+                            </div>
+                        </div>
+
+                        <ng-template #user_email_normal>
+                            <label class="spotbie-input-info spotbie-text-gradient mb-2">
+                                What is your email?
+                            </label>
+                        </ng-template>
+
+                        <input class="sb-input"
+                                formControlName="spotbieEmail"
+                                type="text" value="email"
+                                maxlength="135" *ngIf="!isSocialAccount" />
+
+                        <input class="sb-input"
+                                formControlName="spotbieEmail" type="text" readonly
+                                value="email" maxlength="135" *ngIf="isSocialAccount" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="spotbie-input-info spotbie-text-gradient mb-2">
+                            Phone number.
+                        </label>
+                        <input class='sb-input'
+                                type='tel'
+                                mask="(000) 000-0000"
+                                autocomplete="tel"
+                                placeholder='(555) 555-5555'
+                                formControlName="spotbiePhoneNumber" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class='spotbie-button spotbie-save-settings-button text-uppercase mb-5' (click)="saveSettings()">
+                            Save Settings
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <div class='spotbie-block mb-0' *ngIf="settingsFormInitiated">
+        <form [formGroup]="passwordForm">
+            <table class='spotbie-settings-table' id="spotbie-password-table">
+                    <!-- Change Password Block -->
+                    <tr>
+                        <td>
+                            <div class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2" style="display: none;" #spotbiePasswordInfoText></div>
+
+                            <div *ngIf="passwordSubmitted && g.spotbiePassword.errors else spotbie_password_normal"
+                                    class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2">
+                                <div *ngIf="g.spotbiePassword.errors.required">
+                                    Please provide a password.
+                                </div>
+
+                                <div *ngIf="g.spotbiePassword.errors.wrongLength">
+                                    Password must be 1 to 15 characters long.
+                                </div>
+
+                                <div *ngIf="g.spotbiePassword.errors.oneNumber">
+                                    Password must contain at least one number (0-9)!
+                                </div>
+
+                                <div *ngIf="g.spotbiePassword.errors.oneLowerCase">
+                                    Password must contain at least one lowercase letter (a-z)!
+                                </div>
+
+                                <div *ngIf="g.spotbie_password.errors.oneUpperCase">
+                                    Password must contain at least one uppercase letter (A-Z)!
+                                </div>
+                            </div>
+                            <ng-template #spotbie_password_normal>
+                                <label class="spotbie-input-info spotbie-text-gradient mb-2" #spotbie_password_change_info_text>
+                                    Change your password.
+                                </label>
+                            </ng-template>
+                            <input class="sb-input" formControlName="spotbiePassword" type="password" value="password" autocomplete="false"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div *ngIf="passwordSubmitted && g.spotbieConfirmPassword.errors else spotbie_confirm_password_normal"
+                                  class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2">
+                                <div *ngIf="g.spotbieConfirmPassword.errors.required">
+                                    Please confirm your password.
+                                </div>
+                            </div>
+
+                            <ng-template #spotbie_confirm_password_normal>
+                                <label class="spotbie-input-info spotbie-text-gradient mb-2">
+                                    Confirm your new password.
+                                </label>
+                            </ng-template>
+
+                            <input class="sb-input"
+                                    formControlName="spotbieConfirmPassword" type="password" value="newpassword" autocomplete="false" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class='spotbie-button spotbie-save-settings-button text-uppercase mb-5' (click)="savePassword()">
+                                CHANGE PASSWORD
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- End Of Change Password Block -->
+            </table>
+
+            <div class="spotbie-overlay-window" *ngIf="savePasswordBool">
+                <div class="sb-closeButton" (click)="cancelPasswordSet()">
+                    <i class="fa fa-times"></i>
+                </div>
+
+                <div class="spotbie-toast-input-box">
+                    <table class='spotbie-settings-table'>
+                        <div *ngIf="passwordSubmitted && g.spotbieCurrentPassword.errors else spotbie_current_password_normal" class="spotbie-input-info  spotbie-text-gradient spotbie-error">
+                            <div *ngIf="g.spotbieCurrentPassword.errors.required">
+                                Please enter your current password.
+                            </div>
+                        </div>
+
+                        <ng-template #spotbie_current_password_normal>
+                            <div class="spotbie-input-info spotbie-text-gradient" #currentPasswordInfo>
+                                To complete the change, enter your CURRENT password.
+                            </div>
+                        </ng-template>
+                        <tr>
+                            <td>
+                                <input class="sb-input" type="password" formControlName="spotbieCurrentPassword" value="123456789" autocomplete="false">
+
+                                <div class="spotbie-button spotbie-button-mini" (click)="completeSavePassword()">
+                                    Complete Change
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class='spotbie-block'>
+        <table class="spotbie-settings-table" id="spotbie-deactivate-table" *ngIf="settingsFormInitiated">
+            <tr>
+                <td class='spotbie-text-gradient text-uppercase deactivate-account pt-4 pb-4' (click)="startDeactivateAccount()">
+                    Deactivate Account
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class='mt-5 mb-5 cursor-pointer' (click)="closeWindow()">
+        <span class="spotbie-text-gradient">CLOSE</span>
+    </div>
+</div>
+
+<div class='spotbie-overlay-window d-flex flex-column
+            align-content-center justify-content-center align-items-center' *ngIf="accountDeactivation && !isSocialAccount">
+    <h5 class="spotbie-text-gradient">DEACTIVATE ACCOUNT</h5>
+
+    <form [formGroup]="deactivationForm">
+        <div class="spotbie-toast-input-box">
+            <div *ngIf="deactivationSubmitted && h.spotbieDeactivationPassword.errors else spotbie_deactivate_normal" class="spotbie-input-info  spotbie-text-gradient spotbie-error">
+                <div *ngIf="h.spotbieDeactivationPassword.errors.required">
+                    Please enter your current password.
+                </div>
+            </div>
+
+            <ng-template #spotbie_deactivate_normal>
+                <div class="spotbie-toast-info spotbie-text-gradient spotbie-deactivation-info" #spotbieDeactivationInfo>
+                    Enter your password to deactivate your account.
+                </div>
+            </ng-template>
+
+            <input class="sb-input" type="password" formControlName="spotbieDeactivationPassword" autocomplete="false">
+
+            <div class="spotbie-button spotbie-button-mini text-uppercase" (click)="deactivateAccount()">
+                Deactivate
+            </div>
+
+            <div class="spotbie-text-gradient text-center text-uppercase mt-4" (click)="cancelDeactivateAccount()">
+                CANCEL
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class='spotbie-overlay-window d-flex flex-column
+            align-content-center justify-content-center align-items-center' *ngIf="accountDeactivation && isSocialAccount">
+    <h5 class="spotbie-text-gradient">DEACTIVATE ACCOUNT</h5>
+
+    <div class="spotbie-button spotbie-button-mini text-uppercase" (click)="deactivateAccount()">
+        Deactivate
+    </div>
+
+    <div class="spotbie-text-gradient text-center text-uppercase mt-4" (click)="cancelDeactivateAccount()">
+        CANCEL
+    </div>
+</div>

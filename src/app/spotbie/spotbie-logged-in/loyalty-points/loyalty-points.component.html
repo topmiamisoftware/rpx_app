@@ -1,0 +1,23 @@
+<app-loading-screen *ngIf="loading"></app-loading-screen>
+
+<div [ngClass]="getWindowClass()">
+    <div>
+        <h5 id="sp-lpTitle" class="spotbie-text-gradient text-center text-uppercase mt-4 mb-5">SPOTBIE LOYALTY POINTS</h5>
+
+        <p class="mt-4 mb-4" (click)="initBusinessLoyaltyPoints()">
+            <span [ngClass]="loyaltyPointsClass()" *ngIf="(loyaltyPointBalance$ | async)">
+                {{ (loyaltyPointBalance$ | async) | number:'1.0':'en-US' }}
+            </span>
+
+            <span class="sb-added-loyalty-points sb-text-light-green-gradient animated fadeOutUp"
+                    *ngIf="newUserLoyaltyPoints !== null"
+            >
+                    #newBalanceLoyaltyPoints>+{{ newUserLoyaltyPoints | number:'1.1-2':'en-US' }}
+            </span>
+        </p>
+
+        <div class='spotbie-text-gradient text-uppercase cursor-pointer' (click)="closeThis()" *ngIf="fullScreenWindow">
+            CLOSE
+        </div>
+    </div>
+</div>
