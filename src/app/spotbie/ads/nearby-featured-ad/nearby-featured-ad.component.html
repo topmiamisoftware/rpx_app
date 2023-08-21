@@ -2,7 +2,7 @@
     *ngIf="ad"
     (click)="openAd()">
 
-    <img class="spotbie-ad-image" [src]=" ad.images | safe" *ngIf="ad.id !== 2" />
+    <img class="spotbie-ad-image" [src]="ad.images | safe" *ngIf="ad.id !== 2" />
 
     <div class='sb-ad-bottom' *ngIf="businessReady && business">
         <span class='spotbie-text-gradient sb-sponsoredName text-uppercase'>{{ business.name }}</span>

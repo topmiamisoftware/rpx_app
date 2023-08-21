@@ -13,6 +13,7 @@ import {AllowedAccountTypes} from '../../../helpers/enum/account-type.enum';
 import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
 import {LoyaltyPointBalance} from '../../../models/loyalty-point-balance';
 import {externalBrowserOpen} from '../../../helpers/cordova/web-intent';
+import { BehaviorSubject } from "rxjs";
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/header_banner_in_house.jpg';
@@ -37,7 +38,7 @@ export class HeaderAdBannerComponent implements OnInit {
   @Input() lng: number;
   @Input() business: Business = new Business();
   @Input() ad: Ad = null;
-  @Input() accountType: string = null;
+  @Input() accountType: number = null;
   @Input() categories: number;
   @Input() editMode = false;
   @Input() eventsClassification: number = null;
@@ -45,7 +46,7 @@ export class HeaderAdBannerComponent implements OnInit {
 
   isDesktop = false;
   link: string;
-  displayAd = false;
+  displayAd$ = new BehaviorSubject(false);
   whiteIconSvg = 'assets/images/home_imgs/spotbie-white-icon.svg';
   distance = 0;
   totalRewards = 0;
@@ -104,7 +105,7 @@ export class HeaderAdBannerComponent implements OnInit {
           break;
       }
     } else {
-      switch (parseInt(this.accountType, 10)) {
+      switch (this.accountType) {
         case 1:
           accountType = 1;
           this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
@@ -132,7 +133,7 @@ export class HeaderAdBannerComponent implements OnInit {
       account_type: accountType,
     };
 
-    //Retrieve the SpotBie Ads
+    // Retrieve the SpotBie Ads
     this.adsService.getHeaderBanner(headerBannerReqObj).subscribe(resp => {
       this.getHeaderBannerAdCallback(resp);
     });
@@ -143,7 +144,7 @@ export class HeaderAdBannerComponent implements OnInit {
       this.ad = resp.ad;
       this.business = resp.business;
 
-      if (!this.editMode && resp.business !== null) {
+      if (!this.editMode && resp.business) {
         switch (this.business.user_type) {
           case AllowedAccountTypes.PlaceToEat:
             this.currentCategoryList = FOOD_CATEGORIES;
@@ -192,12 +193,8 @@ export class HeaderAdBannerComponent implements OnInit {
         }
       }
 
-      this.displayAd = true;
-
+      this.displayAd$.next(true);
       this.totalRewards = resp.totalRewards;
-
-      if (!resp.business) {
-      }
     } else {
       console.log('getHeaderBannerAdCallback', resp);
     }
@@ -236,7 +233,7 @@ export class HeaderAdBannerComponent implements OnInit {
   }
 
   openAd(): void {
-    if (this.business !== null) {
+    if (this.business) {
       this.communityMemberOpen = true;
     } else {
       externalBrowserOpen('/business', '_blank');
@@ -244,14 +241,14 @@ export class HeaderAdBannerComponent implements OnInit {
   }
 
   updateAdImage(image = '') {
-    if (image !== '') {
+    if (image) {
       this.ad.images = image;
       this.genericAdImage = image;
     }
   }
 
   updateAdImageMobile(image_mobile: string) {
-    if (image_mobile !== '') {
+    if (image_mobile) {
       this.ad.images_mobile = image_mobile;
       this.genericAdImageMobile = image_mobile;
     }
@@ -272,7 +269,7 @@ export class HeaderAdBannerComponent implements OnInit {
     //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
     //Add 'implements AfterViewInit' to the class.
     this.isDesktop = this.deviceDetectorService.isDesktop();
-    if (this.isMobile === false) {
+    if (!this.isMobile) {
       this.isMobile =
         this.deviceDetectorService.isMobile() ||
         this.deviceDetectorService.isTablet();

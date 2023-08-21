@@ -12,6 +12,9 @@ import {
   FOOD_CATEGORIES,
   SHOPPING_CATEGORIES,
 } from '../../map_extras/map_extras';
+import {getRandomInt} from '../../../../helpers/numbers.helper';
+import {BehaviorSubject} from 'rxjs';
+import {BusinessMenuServiceService} from '../../../../services/spotbie-logged-in/business-menu/business-menu-service.service';
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
@@ -28,13 +31,23 @@ const FEATURED_BANNER_TIMER_INTERVAL = 16000;
 export class NearbyFeaturedAdComponent implements OnInit {
   @Input() lat: number;
   @Input() lng: number;
-  @Input() business: Business = new Business();
-  @Input() ad: Ad = null;
-  @Input() accountType: string | number = null;
+  @Input() set business(business: Business) {
+    this.business$.next(business);
+  }
+  @Input() set ad(ad: Ad | null) {
+    this.ad$.next(ad);
+  }
+  @Input() set accountType(accType: string | number) {
+    this.accountType$.next(accType);
+  }
   @Input() editMode: boolean = false;
   @Input() categories: number;
   @Input() eventsClassification: number = null;
 
+  accountType$: BehaviorSubject<number | string | null> = new BehaviorSubject(
+    null
+  );
+  ad$: BehaviorSubject<Ad | null> = new BehaviorSubject<Ad>(null);
   link: string;
   displayAd: boolean = false;
   whiteIconSvg = 'assets/images/home_imgs/spotbie-white-icon.svg';
@@ -50,13 +63,15 @@ export class NearbyFeaturedAdComponent implements OnInit {
   adTypeWithId: boolean = false;
   adList: Array<Ad> = [];
   genericAdImage: string = PLACE_TO_EAT_AD_IMAGE;
-  businessReady: boolean = false;
+  business$ = new BehaviorSubject(null);
+  businessReady$ = new BehaviorSubject(false);
   switchAdInterval: any = false;
 
   constructor(
     private adsService: AdsService,
     private deviceDetectorService: DeviceDetectorService,
-    private router: Router
+    private router: Router,
+    private businessService: BusinessMenuServiceService
   ) {}
 
   getNearByFeatured() {
@@ -70,12 +85,13 @@ export class NearbyFeaturedAdComponent implements OnInit {
     }
 
     if (this.editMode) {
-      if (!this.ad) {
-        this.ad = new Ad();
-        this.ad.id = 2;
-        adId = this.ad.id;
+      if (!this.ad$.getValue()) {
+        const ad = new Ad();
+        ad.id = 2;
+        this.ad$.next(ad);
+        adId = ad.id;
       } else {
-        adId = this.ad.id;
+        adId = this.ad$.getValue().id;
       }
 
       accountType = localStorage.getItem('spotbie_userType');
@@ -93,17 +109,15 @@ export class NearbyFeaturedAdComponent implements OnInit {
           break;
       }
     } else {
-      switch (this.accountType) {
-        case 'food':
-          accountType = 1;
+      accountType = getRandomInt(1, 3).toString();
+      switch (this.accountType$.getValue()) {
+        case 1:
           this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
           break;
-        case 'shopping':
-          accountType = 2;
+        case 2:
           this.genericAdImage = SHOPPING_AD_IMAGE;
           break;
-        case 'events':
-          accountType = 3;
+        case 3:
           this.genericAdImage = EVENTS_AD_IMAGE;
           this.categories = this.eventsClassification;
           break;
@@ -125,12 +139,11 @@ export class NearbyFeaturedAdComponent implements OnInit {
 
   async getNearByFeaturedCallback(resp: any) {
     if (resp.success) {
-      this.ad = resp.ad;
-      this.business = resp.business;
-      this.businessReady = true;
+      this.ad$.next(resp.ad);
+      const business = resp.business;
 
-      if (!this.editMode && this.business !== null) {
-        switch (this.business.user_type) {
+      if (!this.editMode && business) {
+        switch (business.user_type) {
           case AllowedAccountTypes.PlaceToEat:
             this.currentCategoryList = FOOD_CATEGORIES;
             break;
@@ -160,12 +173,12 @@ export class NearbyFeaturedAdComponent implements OnInit {
           }
         );
 
-        this.business.is_community_member = true;
-        this.business.type_of_info_object = InfoObjectType.SpotBieCommunity;
+        business.is_community_member = true;
+        business.type_of_info_object = InfoObjectType.SpotBieCommunity;
 
         this.distance = getDistanceFromLatLngInMiles(
-          this.business.loc_x,
-          this.business.loc_y,
+          business.loc_x,
+          business.loc_y,
           this.lat,
           this.lng
         );
@@ -175,46 +188,26 @@ export class NearbyFeaturedAdComponent implements OnInit {
 
       this.displayAd = true;
       this.totalRewards = resp.totalRewards;
+      this.businessReady$.next(true);
+      this.business$.next(business);
 
       if (!this.switchAdInterval) {
         this.switchAdInterval = setInterval(() => {
-          if (!this.editMode) this.getNearByFeatured();
+          if (!this.editMode) {
+            this.getNearByFeatured();
+          }
         }, FEATURED_BANNER_TIMER_INTERVAL);
       }
-    } else console.log('getNearByFeaturedCallback', resp);
-  }
-
-  getAdStyle() {
-    if (this.adTypeWithId) {
-      return {
-        position: 'relative',
-        margin: '0 auto',
-        right: '0',
-      };
+    } else {
+      console.log('getNearByFeaturedCallback', resp);
     }
-  }
-
-  closeRewardMenu() {
-    this.rewardMenuOpen = false;
-  }
-
-  clickGoToSponsored() {
-    window.open('/business', '_blank');
-  }
-
-  switchAd() {
-    this.getNearByFeatured();
   }
 
   openAd(): void {
-    window.open(`/business-menu/${this.business.qr_code_link}`, '_blank');
-  }
-
-  updateAdImage(image = '') {
-    if (image !== '') {
-      this.ad.images = image;
-      this.genericAdImage = image;
-    }
+    window.open(
+      `/business-menu/${this.business$.getValue().qr_code_link}`,
+      '_blank'
+    );
   }
 
   ngOnInit(): void {

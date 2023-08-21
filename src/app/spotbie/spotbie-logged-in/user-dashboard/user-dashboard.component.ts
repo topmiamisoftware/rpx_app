@@ -79,11 +79,7 @@ export class UserDashboardComponent {
   }
 
   spawnCategories(category: number) {
-    const obj = {
-      category,
-    };
-
-    this.spawnCategoriesEvt.emit(obj);
+    this.spawnCategoriesEvt.emit(category);
   }
 
   closeAll() {

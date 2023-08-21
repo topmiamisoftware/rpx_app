@@ -15,14 +15,14 @@
 
     <div class='spotbie-info-object-image-list' *ngIf="reward.images !== ''">
         <div class='spotbie-info-object-image-thumb'
-            *ngIf="reward.type === '0'"
+            *ngIf="reward.type === 0"
             [ngStyle]="{ 'background' : 'url(' + reward.images + ')'}"></div>
 
         <div class='spotbie-info-object-image-thumb discount' 
-            *ngIf="reward.type === '1'"
+            *ngIf="reward.type === 1"
             [ngStyle]="{ 'background': 'linear-gradient(90deg,#35a99f,#64e56f)' }">
 
-            <h6 *ngIf="reward.type === '1'">
+            <h6 *ngIf="reward.type === 1">
                 <span class='sb-text-light-green-gradient'>
                     {{  reward.point_cost * (userPointToDollarRatio / 100) | currency : 'USD' }} DISCOUNT
                 </span>

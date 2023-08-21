@@ -1,7 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {Ad} from '../../../../models/ad';
-
-const EDIT_MODE = false;
+import {BehaviorSubject} from 'rxjs';
 
 @Component({
   selector: 'app-nearby-ads-three',
@@ -11,12 +9,16 @@ const EDIT_MODE = false;
 export class NearbyAdsThreeComponent implements OnInit {
   @Input() lat: number = null;
   @Input() lng: number = null;
-  @Input() accountType: number | string = null;
+  @Input() set accountType(accountType: number | string) {
+    console.log('accoutnTYpeeee', accountType);
+    this.accountType$.next(accountType);
+  }
   @Input() eventsClassification: number = null;
   @Input() categories: any;
 
-  peditMode = EDIT_MODE;
-  padList = [new Ad(), new Ad(), new Ad()];
+  accountType$: BehaviorSubject<number | string | null> = new BehaviorSubject(
+    null
+  );
 
   constructor() {}
 

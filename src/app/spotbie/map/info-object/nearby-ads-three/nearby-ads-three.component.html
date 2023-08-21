@@ -1,7 +1,7 @@
 <div class='spotbie-threeAdWrapper'>
     <app-nearby-featured-ad [lat]="lat"
                             [lng]="lng"
-                            [accountType]="accountType"
+                            [accountType]="accountType$ | async"
                             [eventsClassification]="eventsClassification"
                             [categories]="categories">
     </app-nearby-featured-ad>

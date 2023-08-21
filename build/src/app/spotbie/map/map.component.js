@@ -381,10 +381,6 @@ let MapComponent = class MapComponent {
         }
         let apiUrl;
         switch (this.searchCategory) {
-            case '3': // events
-                apiUrl = `size=2&latlong=${this.lat},${this.lng}&classificationName=${keyword}&radius=45&${this.eventDateParam}`;
-                this.numberCategories = this.eventCategories.indexOf(this.searchKeyword);
-                break;
             case '1': // food
                 apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
                 this.numberCategories = this.foodCategories.indexOf(this.searchKeyword);
@@ -392,6 +388,11 @@ let MapComponent = class MapComponent {
             case '2': // shopping
                 apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
                 this.numberCategories = this.shoppingCategories.indexOf(this.searchKeyword);
+                break;
+            case '3': // events
+                apiUrl = `size=2&latlong=${this.lat},${this.lng}&classificationName=${keyword}&radius=45&${this.eventDateParam}`;
+                this.numberCategories = this.eventCategories.indexOf(this.searchKeyword);
+                break;
         }
         const searchObj = {
             config_url: apiUrl,
@@ -402,10 +403,11 @@ let MapComponent = class MapComponent {
             categories: JSON.stringify(this.numberCategories),
         };
         switch (this.searchCategory) {
-            case '3':
-                //Retrieve the SpotBie Community Member Results
-                this.locationService.getEvents(searchObj).subscribe(resp => {
-                    this.getEventsSearchCallback(resp);
+            case '1':
+            case '2':
+                //Retrieve the thirst party API Yelp Results
+                this.locationService.getBusinesses(searchObj).subscribe(resp => {
+                    this.getBusinessesSearchCallback(resp);
                 });
                 //Retrieve the SpotBie Community Member Results
                 this.locationService
@@ -414,11 +416,10 @@ let MapComponent = class MapComponent {
                     this.getSpotBieCommunityMemberListCb(resp);
                 });
                 break;
-            case '1':
-            case '2':
-                //Retrieve the thirst party API Yelp Results
-                this.locationService.getBusinesses(searchObj).subscribe(resp => {
-                    this.getBusinessesSearchCallback(resp);
+            case '3':
+                //Retrieve the SpotBie Community Member Results
+                this.locationService.getEvents(searchObj).subscribe(resp => {
+                    this.getEventsSearchCallback(resp);
                 });
                 //Retrieve the SpotBie Community Member Results
                 this.locationService
@@ -469,7 +470,6 @@ let MapComponent = class MapComponent {
         }
         else if (!this.locationFound && this.isDesktop) {
             window.navigator.geolocation.getCurrentPosition(position => {
-                this.map = true;
                 console.log('your position isDesktop', position);
                 this.showPosition(position);
             }, err => {
@@ -499,7 +499,7 @@ let MapComponent = class MapComponent {
             this.previousSearchCategory = this.searchCategory;
         }
         this.searchCategory = category.toString();
-        switch (category) {
+        switch (this.searchCategory) {
             case '1':
                 // food
                 this.searchApiUrl = YELP_BUSINESS_SEARCH_API;
@@ -875,9 +875,15 @@ let MapComponent = class MapComponent {
             this.ogLat = position.coords.latitude;
             this.ogLng = position.coords.longitude;
         }
+        this.center = {
+            lat: this.lat,
+            lng: this.lng,
+        };
+        this.width = '100%';
+        this.map = true;
         if (this.firstTimeShowingMap) {
             this.firstTimeShowingMap = false;
-            this.drawPosition();
+            this.saveUserLocation();
         }
         this.showMobilePrompt2 = false;
         this.loading$.next(false);
@@ -890,7 +896,6 @@ let MapComponent = class MapComponent {
         //   url: this.userDefaultImage,
         //   scaledSize: new google.maps.Size(50, 50),
         // };
-        this.saveUserLocation();
     }
     pullMarker(mapObject) {
         this.currentMarker = mapObject;

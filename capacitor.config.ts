@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'SpotBie',
   webDir: 'www',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
   }
 };
 

@@ -1,4 +1,4 @@
-export function setYelpRatingImage(rating: number) {
+export function setYelpRatingImage(rating: number): string {
   let rating_image;
 
   if (rating === 0) {

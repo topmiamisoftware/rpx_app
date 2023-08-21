@@ -86,12 +86,7 @@ export class MenuLoggedInComponent implements AfterViewInit {
 
   spawnCategories(category: number): void {
     this.slideMenu();
-
-    const obj = {
-      category,
-    };
-
-    this.spotbieMap.spawnCategories(obj);
+    this.spotbieMap.spawnCategories(category);
   }
 
   home() {

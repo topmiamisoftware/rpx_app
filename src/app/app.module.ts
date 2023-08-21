@@ -5,23 +5,20 @@ import {AppRoutingModule} from './app-routing.module';
 import {HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
 import {AppComponent} from './app.component';
 import {HomeModule} from './home/home.module';
-import { UserHomeModule } from './user-home/user-home.module';
-import { UrlSanitizerPipe } from './pipes/url-sanitizer.pipe';
-import { VersionCheckService } from './services/version-check.service';
-import { HelperModule } from './helpers/helper.module';
+import {UserHomeModule} from './user-home/user-home.module';
+import {UrlSanitizerPipe} from './pipes/url-sanitizer.pipe';
+import {VersionCheckService} from './services/version-check.service';
+import {HelperModule} from './helpers/helper.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {TokenInterceptor} from './helpers/token-interceptor/token-interceptor.service';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import { UserauthService } from './services/userauth.service';
-import { StoreModule } from '@ngrx/store';
-import { loyaltyPointsReducer } from './spotbie/spotbie-logged-in/loyalty-points/loyalty-points.reducer';
+import {UserauthService} from './services/userauth.service';
+import {StoreModule} from '@ngrx/store';
+import {loyaltyPointsReducer} from './spotbie/spotbie-logged-in/loyalty-points/loyalty-points.reducer';
 import {StripeModule} from 'stripe-angular';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    UrlSanitizerPipe,
-  ],
+  declarations: [AppComponent, UrlSanitizerPipe],
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -33,7 +30,7 @@ import {StripeModule} from 'stripe-angular';
     BrowserAnimationsModule,
     StripeModule.forRoot(''),
     StoreModule.forRoot({
-      loyaltyPoints: loyaltyPointsReducer
+      loyaltyPoints: loyaltyPointsReducer,
     }),
     BrowserModule,
     IonicModule.forRoot(),

@@ -22,7 +22,7 @@ export class BusinessMenuServiceService {
       .pipe(catchError(handleError('fetchRewards')));
   }
 
-  public getCommunityMember(fetchRewardsReq: any) {
+  public getCommunityMember(fetchRewardsReq: any): Observable<any> {
     const communityMemberApi = `${BUSINESS_API}/show`;
 
     return this.http

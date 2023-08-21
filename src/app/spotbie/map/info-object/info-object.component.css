@@ -8,7 +8,9 @@
     background-position: center !important;
     background-repeat: no-repeat !important;
     background-attachment: fixed;
-    z-index: 90 !important;    
+    z-index: 90 !important;
+    min-width: 103%;
+    width: 103%;
 }
 .communityMemberWindow{
     background-color: #1b1822;

@@ -454,9 +454,6 @@ img.sb-qr:hover{
     max-width: 300px;
     min-width: 300px;
   }
-  .sb-inputWithIconWrapper{
-    min-width: 100%;
-  }
   span.sb-loyalty-points{
     padding-right: 5px !important;
     margin-left: 10px;
@@ -543,10 +540,6 @@ img.sb-qr:hover{
     max-width: 300px;
     min-width: 300px;
   }
-  .sb-inputWithIconWrapper{
-    min-width: 100% !important;
-    max-width: 100%;
-  }
 }
 @media (max-width: 420px) {
   .spotbie-color-picker {
@@ -577,11 +570,6 @@ img.sb-qr:hover{
   }
   .spotbie-text-link{
     font-size: 11px !important;
-  }
-  .spotbie-button {
-    max-width: 100%;
-    width: 100%;
-    min-width: 100%;
   }
 }
 @media (max-width: 360px) {
@@ -628,8 +616,6 @@ img.sb-qr:hover{
   }
   .sb-inputWithIconWrapper .sb-input{
     font-size: 16px;
-    padding-top: 12px;
-    padding-bottom: 12px;
   }
   .sb-iconInInputWrapper{
     padding: 10px;

@@ -15,6 +15,7 @@ import {
   metersToMiles,
   setYelpRatingImage,
 } from '../../helpers/info-object-helper';
+import {Gesture, GestureController} from '@ionic/angular';
 import {Capacitor, Plugins} from '@capacitor/core';
 import {DateFormatPipe, TimeFormatPipe} from '../../pipes/date-format.pipe';
 import {MapObjectIconPipe} from '../../pipes/map-object-icon.pipe';
@@ -36,6 +37,7 @@ import MapOptions = google.maps.MapOptions;
 import MarkerOptions = google.maps.MarkerOptions;
 import MapTypeStyle = google.maps.MapTypeStyle;
 import {Platform} from '@ionic/angular';
+import {InfoObject} from '../../models/info-object';
 const {Geolocation, Toast} = Plugins;
 
 const YELP_BUSINESS_SEARCH_API = 'https://api.yelp.com/v3/businesses/search';
@@ -61,6 +63,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   @ViewChild('scrollMapAppAnchor') scrollMapAppAnchor: ElementRef;
   @ViewChild('bottomAdBanner') bottomAdBanner: BottomAdBannerComponent = null;
   @ViewChild('singleAdApp') singleAdApp: HeaderAdBannerComponent = null;
+  @ViewChild('categoryMenuSlide') categoryMenuSlide: ElementRef;
 
   loading$ = new BehaviorSubject<boolean>(false);
 
@@ -90,9 +93,9 @@ export class MapComponent implements OnInit, AfterViewInit {
   allPages: number = 0;
   maxDistanceCap: number = 45;
   maxDistance: number = 10;
-  searchCategory: string;
-  previousSearchCategory: string;
-  searchCategorySorter: string;
+  searchCategory: number;
+  previousSearchCategory: number;
+  searchCategorySorter: number;
   searchKeyword: string;
   typeOfInfoObject: string;
   eventDateParam: string;
@@ -112,14 +115,14 @@ export class MapComponent implements OnInit, AfterViewInit {
   showSearchBox: boolean;
   locationFound: boolean = false;
   sliderRight: boolean = false;
-  catsUp: boolean = false;
+  catsUp$ = new BehaviorSubject(false);
   toastHelper: boolean = false;
   displaySurroundingObjectList: boolean = false;
   showNoResultsBox: boolean = false;
   showMobilePrompt: boolean = true;
   showMobilePrompt2: boolean = false;
   firstTimeShowingMap: boolean = true;
-  showOpened: boolean = false;
+  showOpened$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   noResults: boolean = false;
   currentSearchType = '0';
   surroundingObjectList = [];
@@ -131,8 +134,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   numberCategories: number;
   bottomBannerCategories: number;
   mapStyles = map_extras.MAP_STYLES;
-  infoObject: any;
-  infoObjectWindow: any = {open: false};
+  infoObject$: any = new BehaviorSubject(null);
   currentMarker: any;
   categories: any;
   myFavoritesWindow = {open: false};
@@ -163,7 +165,8 @@ export class MapComponent implements OnInit, AfterViewInit {
     private deviceService: DeviceDetectorService,
     private mapIconPipe: MapObjectIconPipe,
     private httpClient: HttpClient,
-    private platform: Platform
+    private platform: Platform,
+    private gestureCtrl: GestureController
   ) {
     this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
     this.userDefaultImage = localStorage.getItem('spotbie_userDefaultImage');
@@ -202,9 +205,9 @@ export class MapComponent implements OnInit, AfterViewInit {
     a = a.price;
     b = b.price;
 
-    if (a === undefined) {
+    if (!a) {
       return 1;
-    } else if (b === undefined) {
+    } else if (!b) {
       return -1;
     }
     return a.length > b.length ? -1 : b.length > a.length ? 1 : 0;
@@ -270,9 +273,9 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   showOpen() {
-    this.showOpened = !this.showOpened;
+    this.showOpened$.next(!this.showOpened$.getValue());
 
-    if (!this.showOpened) {
+    if (!this.showOpened$.getValue()) {
       this.showingOpenedStatus = 'Show Opened and Closed';
       this.showOpenedParam = 'open_now=true';
     } else {
@@ -483,7 +486,7 @@ export class MapComponent implements OnInit, AfterViewInit {
 
       this.eventCategories = this.eventCategories.reverse();
 
-      this.catsUp = true;
+      this.catsUp$.next(true);
     } else {
       console.log('getClassifications Error ', httpResponse);
     }
@@ -544,20 +547,20 @@ export class MapComponent implements OnInit, AfterViewInit {
     let apiUrl: string;
 
     switch (this.searchCategory) {
-      case '1': // food
+      case 1: // food
         apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
         this.numberCategories = this.foodCategories.indexOf(this.searchKeyword);
         break;
-      case '2': // shopping
+      case 2: // shopping
         apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
         this.numberCategories = this.shoppingCategories.indexOf(
           this.searchKeyword
         );
         break;
-      case '3': // events
+      case 3: // events
         apiUrl = `size=2&latlong=${this.lat},${this.lng}&classificationName=${keyword}&radius=45&${this.eventDateParam}`;
         this.numberCategories = this.eventCategories.indexOf(
-            this.searchKeyword
+          this.searchKeyword
         );
         break;
     }
@@ -573,31 +576,31 @@ export class MapComponent implements OnInit, AfterViewInit {
     };
 
     switch (this.searchCategory) {
-      case '1':
-      case '2':
-        //Retrieve the thirst party API Yelp Results
+      case 1:
+      case 2:
+        // Retrieve the third party API Yelp Results
         this.locationService.getBusinesses(searchObj).subscribe(resp => {
           this.getBusinessesSearchCallback(resp);
         });
-        //Retrieve the SpotBie Community Member Results
+        // Retrieve the SpotBie Community Member Results
         this.locationService
           .getSpotBieCommunityMemberList(searchObjSb)
           .subscribe(resp => {
             this.getSpotBieCommunityMemberListCb(resp);
           });
         break;
-      case '3':
-        //Retrieve the SpotBie Community Member Results
+      case 3:
+        // Retrieve the SpotBie Community Member Results
         this.locationService.getEvents(searchObj).subscribe(resp => {
           this.getEventsSearchCallback(resp);
         });
 
-        //Retrieve the SpotBie Community Member Results
+        // Retrieve the SpotBie Community Member Results
         this.locationService
-            .getSpotBieCommunityMemberList(searchObjSb)
-            .subscribe(resp => {
-              this.getSpotBieCommunityMemberListCb(resp);
-            });
+          .getSpotBieCommunityMemberList(searchObjSb)
+          .subscribe(resp => {
+            this.getSpotBieCommunityMemberListCb(resp);
+          });
         break;
     }
   }
@@ -616,29 +619,28 @@ export class MapComponent implements OnInit, AfterViewInit {
       block: 'start',
     });
 
-    this.catsUp = false;
+    this.catsUp$.next(false);
     this.map = false;
     this.showSearchBox = false;
     this.showSearchResults = false;
-    this.infoObject = null;
+    this.infoObject$.next(null);
     this.searchResults = [];
-    this.infoObjectWindow.open = false;
   }
 
   sortingOrderClass(sortingOrder: string) {
     return new SortOrderPipe().transform(sortingOrder);
   }
 
-  async spawnCategories(obj: any) {
+  async spawnCategories(category: number) {
     this.loading$.next(true);
     this.scrollMapAppAnchor.nativeElement.scrollIntoView();
     this.zoom = 18;
     this.fitBounds = false;
+    this.infoObject$.next(null);
 
-    if (!this.locationFound && !this.isDesktop) {
+    if (!this.locationFound && Capacitor.isNativePlatform()) {
       Geolocation.getCurrentPosition(
         position => {
-          console.log('your position', position);
           this.map = true;
           this.showPosition(position);
         },
@@ -647,10 +649,9 @@ export class MapComponent implements OnInit, AfterViewInit {
           this.showMapError();
         }
       );
-    } else if (!this.locationFound && this.isDesktop) {
+    } else if (!this.locationFound) {
       window.navigator.geolocation.getCurrentPosition(
         position => {
-          console.log('your position isDesktop', position);
           this.showPosition(position);
         },
         err => {
@@ -664,13 +665,6 @@ export class MapComponent implements OnInit, AfterViewInit {
       this.showMobilePrompt = false;
     }
 
-    let category;
-    if (!obj.category) {
-      category = obj.toString();
-    } else {
-      category = obj.category;
-    }
-
     this.showSearchBox = true;
 
     if (this.searchResults.length === 0) {
@@ -678,7 +672,8 @@ export class MapComponent implements OnInit, AfterViewInit {
     }
 
     if (category === this.searchCategory) {
-      this.catsUp = true;
+      this.catsUp$.next(true);
+      this.loading$.next(false);
       return;
     }
 
@@ -686,10 +681,10 @@ export class MapComponent implements OnInit, AfterViewInit {
       this.previousSearchCategory = this.searchCategory;
     }
 
-    this.searchCategory = category.toString();
+    console.log('this.searchCategory', this.searchCategory);
 
     switch (this.searchCategory) {
-      case '1':
+      case 1:
         // food
         this.searchApiUrl = YELP_BUSINESS_SEARCH_API;
         this.searchCategoriesPlaceHolder = 'Search Places to Eat...';
@@ -698,7 +693,7 @@ export class MapComponent implements OnInit, AfterViewInit {
           this.categories[Math.floor(Math.random() * this.categories.length)]
         );
         break;
-      case '2':
+      case 2:
         // shopping
         this.searchApiUrl = YELP_BUSINESS_SEARCH_API;
         this.searchCategoriesPlaceHolder = 'Search Shopping...';
@@ -707,7 +702,7 @@ export class MapComponent implements OnInit, AfterViewInit {
           this.categories[Math.floor(Math.random() * this.categories.length)]
         );
         break;
-      case '3':
+      case 3:
         // events
         this.eventCategories = [];
         this.searchCategoriesPlaceHolder = 'Search Events...';
@@ -719,7 +714,19 @@ export class MapComponent implements OnInit, AfterViewInit {
         return;
     }
 
-    this.catsUp = true;
+    this.catsUp$.next(true);
+
+    const closeCategoryPicker: Gesture = this.gestureCtrl.create(
+      {
+        el: this.categoryMenuSlide.nativeElement,
+        threshold: 15,
+        gestureName: 'closeCategoryPicker',
+        onMove: ev => this.catsUp$.next(false),
+      },
+      true
+    );
+
+    closeCategoryPicker.enable();
   }
 
   cleanCategory() {
@@ -727,12 +734,12 @@ export class MapComponent implements OnInit, AfterViewInit {
       this.searchResults = [];
 
       switch (this.searchCategory) {
-        case '1': // food
-        case '2': // shopping
+        case 1: // food
+        case 2: // shopping
           this.typeOfInfoObject = 'yelp_business';
           this.maxDistanceCap = 25;
           break;
-        case '3': // events
+        case 3: // events
           this.typeOfInfoObject = 'ticketmaster_events';
           this.maxDistanceCap = 45;
           return;
@@ -763,7 +770,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   closeCategories(): void {
-    this.catsUp = false;
+    this.catsUp$.next(false);
   }
 
   searchSpotBie(evt: any): void {
@@ -778,7 +785,7 @@ export class MapComponent implements OnInit, AfterViewInit {
 
       let apiUrl: string;
 
-      if (this.searchCategory === '3') {
+      if (this.searchCategory === 3) {
         // Used for loading events from ticketmaster API
         apiUrl = `size=20&latlong=${this.lat},${this.lng}&keyword=${searchTerm}&radius=45`;
 
@@ -936,7 +943,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       window.scrollTo(0, 0);
 
       this.showSearchResults = true;
-      this.catsUp = false;
+      this.catsUp$.next(false);
       this.loading$.next(false);
 
       const eventObjectList = eventObject._embedded.events;
@@ -1021,21 +1028,21 @@ export class MapComponent implements OnInit, AfterViewInit {
         business.is_community_member = true;
 
         switch (this.searchCategory) {
-          case '1':
-            if (business.photo === '') {
+          case 1:
+            if (!business.photo) {
               business.photo = 'assets/images/home_imgs/find-places-to-eat.svg';
             }
             this.currentCategoryList = this.foodCategories;
             break;
-          case '2':
-            if (business.photo === '') {
+          case 2:
+            if (!business.photo) {
               business.photo =
                 'assets/images/home_imgs/find-places-for-shopping.svg';
             }
             this.currentCategoryList = this.shoppingCategories;
             break;
-          case '3':
-            if (business.photo === '') {
+          case 3:
+            if (!business.photo) {
               business.photo = 'assets/images/home_imgs/find-events.svg';
             }
             this.currentCategoryList = this.eventClassifications;
@@ -1071,7 +1078,7 @@ export class MapComponent implements OnInit, AfterViewInit {
             categories: JSON.stringify(this.numberCategories),
           };
 
-          //Retrieve the SpotBie Community Member Results
+          // Retrieve the SpotBie Community Member Results
           this.locationService
             .getSpotBieCommunityMemberList(searchObjSb)
             .subscribe(resp => {
@@ -1102,7 +1109,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       this.cleanCategory();
 
       this.showSearchResults = true;
-      this.catsUp = false;
+      this.catsUp$.next(false);
 
       const placesResults = httpResponse.data;
 
@@ -1117,8 +1124,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   pullSearchMarker(infoObject: any): void {
-    this.infoObjectWindow.open = true;
-    this.infoObject = infoObject;
+    this.infoObject$.next(infoObject);
   }
 
   checkSearchResultsFitBounds() {
@@ -1185,7 +1191,6 @@ export class MapComponent implements OnInit, AfterViewInit {
     //   url: this.userDefaultImage,
     //   scaledSize: new google.maps.Size(50, 50),
     // };
-
   }
 
   pullMarker(mapObject: any): void {
@@ -1346,7 +1351,7 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   mobileStartLocation() {
     this.loading$.next(true);
-    this.spawnCategories({category: 'food'});
+    this.spawnCategories(1);
 
     this.showMobilePrompt = false;
     this.showMobilePrompt2 = true;
@@ -1435,10 +1440,10 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.sortBy(this.sortAc);
 
     switch (this.searchCategory) {
-      case '1':
+      case 1:
         this.searchResultsSubtitle = 'Spots';
         break;
-      case '2':
+      case 2:
         this.searchResultsSubtitle = 'cShopping Spots';
         break;
     }

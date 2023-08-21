@@ -13,6 +13,7 @@ import {
 } from '../../map/map_extras/map_extras';
 import {AdsService} from '../ads.service';
 import {externalBrowserOpen} from '../../../helpers/cordova/web-intent';
+import {getRandomInt} from '../../../helpers/numbers.helper';
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
@@ -32,7 +33,7 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
   @Input() lng: number;
   @Input() business: Business = new Business();
   @Input() ad: Ad = null;
-  @Input() accountType: string = null;
+  @Input() accountType: number = null;
   @Input() editMode = false;
   @Input() categories: number;
   @Input() eventsClassification: number = null;
@@ -108,17 +109,16 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
           break;
       }
     } else {
+      accountType = getRandomInt(1, 3).toString();
+
       switch (this.accountType) {
-        case '1':
-          accountType = '1';
+        case 1:
           this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
           break;
-        case '2':
-          accountType = '2';
+        case 2:
           this.genericAdImage = SHOPPING_AD_IMAGE;
           break;
-        case '3':
-          accountType = '3';
+        case 3:
           this.genericAdImage = EVENTS_AD_IMAGE;
           this.categories = this.eventsClassification;
           break;

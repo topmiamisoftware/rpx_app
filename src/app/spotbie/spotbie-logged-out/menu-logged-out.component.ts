@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 import {Location} from '@angular/common';
 import {externalBrowserOpen} from '../../helpers/cordova/web-intent';
-import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
+import {Router} from '@angular/router';
+import {Platform} from '@ionic/angular';
 
 @Component({
   selector: 'app-menu-logged-out',

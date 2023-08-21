@@ -16,6 +16,7 @@ import {BusinessMenuServiceService} from '../../../services/spotbie-logged-in/bu
 import {RewardCreatorComponent} from './reward-creator/reward-creator.component';
 import {RewardComponent} from './reward/reward.component';
 import {environment} from '../../../../environments/environment';
+import { BehaviorSubject } from "rxjs";
 
 @Component({
   selector: 'app-reward-menu',
@@ -37,12 +38,12 @@ export class RewardMenuComponent implements OnInit {
   eAllowedAccountTypes = AllowedAccountTypes;
   menuItemList: Array<any>;
   itemCreator = false;
-  rewardApp = false;
+  rewardApp$ = new BehaviorSubject(false);
   userLoyaltyPoints;
   userResetBalance;
   userPointToDollarRatio;
-  rewards: Array<Reward> = null;
-  reward: Reward;
+  rewards$ = new BehaviorSubject<Array<Reward>>(null);
+  reward$ = new BehaviorSubject<Reward>(null);
   userType: number = null;
   business: Business = new Business();
   loyaltyPointsBalance: LoyaltyPointBalance;
@@ -81,7 +82,8 @@ export class RewardMenuComponent implements OnInit {
 
   private async fetchRewardsCb(resp) {
     if (resp.success) {
-      this.rewards = resp.rewards;
+      console.log('RWARDS', resp.rewards);
+      this.rewards$.next(resp.rewards);
 
       if (
         this.userType === this.eAllowedAccountTypes.Personal ||
@@ -109,24 +111,24 @@ export class RewardMenuComponent implements OnInit {
 
   openReward(reward: Reward) {
     console.log('reward', reward);
+    reward.link = `${environment.baseUrl}business-menu/${this.qrCodeLink}/${reward.uuid}`;
+    this.reward$.next(reward);
 
-    this.reward = reward;
-    this.reward.link = `${environment.baseUrl}business-menu/${this.qrCodeLink}/${this.reward.uuid}`;
-    this.rewardApp = true;
+    this.rewardApp$.next(true);
   }
 
   closeReward() {
-    this.reward = null;
-    this.rewardApp = false;
+    this.reward$.next(null);
+    this.rewardApp$.next(false);
   }
 
   editReward(reward: Reward) {
-    this.reward = reward;
+    this.reward$.next(reward);
     this.itemCreator = true;
   }
 
   closeRewardCreator() {
-    this.reward = null;
+    this.reward$.next(null);
     this.itemCreator = false;
   }
 
@@ -136,7 +138,7 @@ export class RewardMenuComponent implements OnInit {
   }
 
   rewardTileStyling(reward: Reward) {
-    if (reward.type === '0') {
+    if (reward.type === 0) {
       return {background: 'url(' + reward.images + ')'};
     } else {
       return {background: 'linear-gradient(90deg,#35a99f,#64e56f)'};

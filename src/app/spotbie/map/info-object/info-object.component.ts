@@ -1,6 +1,6 @@
 import {Component, OnInit, Input, Output, EventEmitter} from '@angular/core';
 import {InfoObjectServiceService} from './info-object-service.service';
-import {MyFavoritesService} from '../../my-favorites/my-favorites.service';
+// import {MyFavoritesService} from '../../my-favorites/my-favorites.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {DateFormatPipe, TimeFormatPipe} from '../../../pipes/date-format.pipe';
 import {SpotbieMetaService} from '../../../services/meta/spotbie-meta.service';
@@ -16,6 +16,7 @@ import {InfoObject} from '../../../models/info-object';
 import {environment} from '../../../../environments/environment';
 import {Ad} from '../../../models/ad';
 import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
+import {BehaviorSubject} from 'rxjs';
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
@@ -29,7 +30,10 @@ const SPOTBIE_META_IMAGE = spotbieMetaImage;
   styleUrls: ['./info-object.component.css'],
 })
 export class InfoObjectComponent implements OnInit {
-  @Input() info_object: InfoObject;
+  @Input() set info_object(infoObject: InfoObject) {
+    this.accountType = infoObject.user_type;
+    this.infoObject$.next(infoObject);
+  }
   @Input() ad: Ad;
   @Input() fullScreenMode: boolean = false;
   @Input() lat: number = null;
@@ -42,13 +46,14 @@ export class InfoObjectComponent implements OnInit {
   @Output() removeFavoriteEvent = new EventEmitter();
 
   bgColor: string;
-  loading: boolean;
-  rewardMenuUp: boolean;
+  loading$ = new BehaviorSubject(false);
+  rewardMenuUp$ = new BehaviorSubject(false);
   urlApi: string;
   apiAction: string;
-  infoObject: any = null;
+  infoObject$: BehaviorSubject<InfoObject> | null =
+    new BehaviorSubject<InfoObject>(null);
   infoObjectImageUrl: string;
-  private infoObjectCategory: string;
+  private infoObjectCategory: number;
   showFavorites: boolean = true;
   isLoggedIn: string;
   infoObjectLink: string;
@@ -122,62 +127,67 @@ export class InfoObjectComponent implements OnInit {
   }
 
   private pullInfoObjectCallback(httpResponse: any): void {
+    console.log('pullInfoObjectCallback', httpResponse);
     if (httpResponse.success) {
-      this.info_object = httpResponse.data as InfoObject;
-      this.info_object.type_of_info_object_category = this.infoObjectCategory;
+      const infoObject = httpResponse.data as InfoObject;
+      infoObject.type_of_info_object_category = this.infoObjectCategory;
 
-      if (this.info_object.is_community_member)
+      if (infoObject.is_community_member) {
         this.infoObjectImageUrl =
           'assets/images/home_imgs/spotbie-green-icon.svg';
-      else
+      } else {
         this.infoObjectImageUrl =
           'assets/images/home_imgs/spotbie-white-icon.svg';
+      }
 
       if (
         this.router.url.indexOf('place-to-eat') > -1 ||
-        this.info_object.type_of_info_object_category === 'food'
+        infoObject.type_of_info_object_category === 1
       ) {
-        this.info_object.type_of_info_object = InfoObjectType.Yelp;
-        this.info_object.type_of_info_object_category = 'food';
-        this.infoObjectLink = `${environment.baseUrl}place-to-eat/${this.info_object.alias}/${this.info_object.id}`;
+        infoObject.type_of_info_object = InfoObjectType.Yelp;
+        infoObject.type_of_info_object_category = 1;
+        this.infoObjectLink = `${environment.baseUrl}place-to-eat/${infoObject.alias}/${infoObject.id}`;
       }
 
       if (
         this.router.url.indexOf('shopping') > -1 ||
-        this.info_object.type_of_info_object_category === 'shopping'
+        infoObject.type_of_info_object_category === 2
       ) {
-        this.info_object.type_of_info_object = InfoObjectType.Yelp;
-        this.info_object.type_of_info_object_category = 'shopping';
-        this.infoObjectLink = `${environment.baseUrl}shopping/${this.info_object.alias}/${this.info_object.id}`;
+        infoObject.type_of_info_object = InfoObjectType.Yelp;
+        infoObject.type_of_info_object_category = 2;
+        this.infoObjectLink = `${environment.baseUrl}shopping/${infoObject.alias}/${infoObject.id}`;
       }
 
       if (
         this.router.url.indexOf('events') > -1 ||
-        this.info_object.type_of_info_object_category === 'events'
+        infoObject.type_of_info_object_category === 3
       ) {
-        this.info_object.type_of_info_object = InfoObjectType.TicketMaster;
-        this.info_object.type_of_info_object_category = 'events';
-        this.infoObjectLink = `${environment.baseUrl}event/${this.info_object.alias}/${this.info_object.id}`;
+        infoObject.type_of_info_object = InfoObjectType.TicketMaster;
+        infoObject.type_of_info_object_category = 3;
+        this.infoObjectLink = `${environment.baseUrl}event/${infoObject.alias}/${infoObject.id}`;
       }
 
-      if (this.info_object.is_community_member) {
-        this.info_object.type_of_info_object = InfoObjectType.SpotBieCommunity;
-        this.info_object.image_url = this.info_object.photo;
-        this.infoObjectLink = `${environment.baseUrl}${this.info_object.name}/${this.info_object.id}`;
+      if (infoObject.is_community_member) {
+        infoObject.type_of_info_object = InfoObjectType.SpotBieCommunity;
+        infoObject.image_url = infoObject.photo;
+        this.infoObjectLink = `${environment.baseUrl}${infoObject.name}/${infoObject.id}`;
       }
 
-      if (this.info_object.hours !== undefined) {
-        this.info_object.hours.forEach(hours => {
-          if (hours.hours_type === 'REGULAR')
-            this.info_object.isOpenNow = hours.is_open_now;
+      if (infoObject.hours) {
+        infoObject.hours.forEach(hours => {
+          if (hours.hours_type === 'REGULAR') {
+            infoObject.isOpenNow = hours.is_open_now;
+          }
         });
       }
 
-      if (this.info_object.is_community_member)
-        this.objectDisplayAddress = `${this.info_object.location.display_address[0]}, ${this.info_object.location.display_address[1]}`;
-      else this.objectDisplayAddress = this.info_object.address;
+      if (infoObject.is_community_member) {
+        this.objectDisplayAddress = `${infoObject.location.display_address[0]}, ${infoObject.location.display_address[1]}`;
+      } else {
+        this.objectDisplayAddress = infoObject.address;
+      }
 
-      this.info_object.categories.forEach(category => {
+      infoObject.categories.forEach(category => {
         this.objectCategories = `${this.objectCategories}, ${category.title}`;
       });
 
@@ -186,70 +196,57 @@ export class InfoObjectComponent implements OnInit {
         this.objectCategories.length
       );
 
-      switch (this.info_object.type_of_info_object_category) {
-        case 'food':
-          this.infoObjectTitle = `${this.info_object.name} - ${this.objectCategories} - ${this.objectDisplayAddress}`;
-          this.infoObjectDescription = `Let's go eat at ${this.info_object.name}. I know you'll enjoy some of these categories ${this.objectCategories}. They are located at ${this.objectDisplayAddress}.`;
+      switch (infoObject.type_of_info_object_category) {
+        case 1:
+          this.infoObjectTitle = `${infoObject.name} - ${this.objectCategories} - ${this.objectDisplayAddress}`;
+          this.infoObjectDescription = `Let's go eat at ${infoObject.name}. I know you'll enjoy some of these categories ${this.objectCategories}. They are located at ${this.objectDisplayAddress}.`;
           break;
-        case 'shopping':
-          this.infoObjectTitle = `${this.info_object.name} - ${this.objectCategories} - ${this.objectDisplayAddress}`;
-          this.infoObjectDescription = `I really recommend you go shopping at ${this.info_object.name}!`;
+        case 2:
+          this.infoObjectTitle = `${infoObject.name} - ${this.objectCategories} - ${this.objectDisplayAddress}`;
+          this.infoObjectDescription = `I really recommend you go shopping at ${infoObject.name}!`;
           break;
       }
 
-      this.info_object.rating_image = setYelpRatingImage(
-        this.info_object.rating
-      );
+      infoObject.rating_image = setYelpRatingImage(infoObject.rating);
 
       this.spotbieMetaService.setTitle(this.infoObjectTitle);
       this.spotbieMetaService.setDescription(this.infoObjectDescription);
       this.spotbieMetaService.setImage(this.infoObjectImageUrl);
 
-      this.loading = false;
-
-      //this.isInMyFavorites(this.info_object.id, this.info_object.type_of_info_object)
-    } else console.log('pullInfoObjectCallback', httpResponse);
+      this.infoObject$.next(infoObject);
+      this.loading$.next(false);
+      // this.isInMyFavorites(this.infoObject$.id, this.infoObject$.type_of_info_object)
+    } else {
+      console.log('pullInfoObjectCallback', httpResponse);
+    }
   }
 
   /*private isInMyFavorites(objId: string, objType: string): void{
-
     if(this.isLoggedIn === '1'){
-
       this.myFavoritesService.isInMyFavorites(objId, objType).subscribe(
         resp =>{
           this.isInMyFavoritesCb(resp)
         }
       )
-
     } else {
-
       let isAFavorite = this.myFavoritesService.isInMyFavoritesLoggedOut(objId)
-
       if(isAFavorite)
         this.showFavorites = false
       else
         this.showFavorites = true
-
     }
-
   }
 
   private isInMyFavoritesCb(httpResponse: any): void{
-
     if (httpResponse.success) {
-
       let isAFavorite = httpResponse.is_a_favorite
-
       if(isAFavorite)
         this.showFavorites = false
       else
         this.showFavorites = true
-
     } else
       console.log('pullInfoObjectCallback', httpResponse)
-
     this.loading = false
-
   }*/
 
   openWithGoogleMaps(): void {
@@ -259,12 +256,13 @@ export class InfoObjectComponent implements OnInit {
 
     let displayAddress = '';
 
-    this.info_object.location.display_address.forEach(element => {
+    this.infoObject$.getValue().location.display_address.forEach(element => {
       displayAddress = displayAddress + ' ' + element;
     });
 
-    if (confirmNav)
+    if (confirmNav) {
       externalBrowserOpen(`http://www.google.com/maps/place/${displayAddress}`);
+    }
   }
 
   switchPhoto(thumbnail): void {
@@ -272,54 +270,66 @@ export class InfoObjectComponent implements OnInit {
   }
 
   goToTicket(): void {
-    externalBrowserOpen(this.info_object.url);
+    externalBrowserOpen(this.infoObject$.getValue().url);
   }
 
-  getTitleStyling() {
-    if (this.info_object.is_community_member)
-      return 'spotbie-text-gradient sb-titleGreen text-uppercase';
-    else return 'sb-titleGrey text-uppercase';
+  getTitleStyling(): string {
+    let className = 'sb-titleGrey text-uppercase';
+    if (this.infoObject$.getValue().is_community_member) {
+      className = 'spotbie-text-gradient sb-titleGreen text-uppercase';
+    }
+    return className;
   }
 
-  getCloseButtonStyling() {
-    if (!this.info_object.is_community_member) return {color: '#332f3e'};
-    else return {color: 'white'};
+  getCloseButtonStyling(): {color: string} {
+    let style = {color: 'white'};
+    if (!this.infoObject$.getValue().is_community_member) {
+      style = {color: '#332f3e'};
+    }
+    return style;
   }
 
-  getOverlayWindowStyling() {
-    if (this.info_object.is_community_member)
-      return 'spotbie-overlay-window communityMemberWindow';
-    else return 'spotbie-overlay-window infoObjectWindow';
+  getOverlayWindowStyling(): string {
+    let className = 'spotbie-overlay-window infoObjectWindow';
+    if (this.infoObject$.getValue().is_community_member) {
+      className = 'spotbie-overlay-window communityMemberWindow';
+    }
+    return className;
   }
 
-  getFontClasses() {
-    if (this.info_object.is_community_member)
-      return 'spotbie-text-gradient text-uppercase';
-    else return 'text-uppercase';
+  getFontClasses(): string {
+    let className = 'text-uppercase';
+    if (this.infoObject$.getValue().is_community_member) {
+      className = 'spotbie-text-gradient text-uppercase';
+    }
+    return className;
   }
 
-  getIconTheme() {
-    if (this.info_object.is_community_member) return 'material-dark';
-    else return 'material-light';
+  getIconTheme(): string {
+    let className = 'material-light';
+    if (this.infoObject$.getValue().is_community_member) {
+      className = 'material-dark';
+    }
+    return className;
   }
 
   addFavorite(): void {
-    this.loading = true;
+    /*    this.loading$.next(true);
 
-    const id = this.info_object.id;
-    const name = this.info_object.name;
+    const id = this.infoObject$.id;
+    const name = this.infoObject$.name;
 
     let locX = null;
     let locY = null;
 
     if (
-      this.info_object.type_of_info_object === InfoObjectType.SpotBieCommunity
+      this.infoObject$.type_of_info_object === InfoObjectType.SpotBieCommunity
     ) {
-      locX = this.info_object.loc_x;
-      locY = this.info_object.loc_y;
+      locX = this.infoObject$.loc_x;
+      locY = this.infoObject$.loc_y;
     } else {
-      locX = this.info_object.coordinates.latitude;
-      locY = this.info_object.coordinates.longitude;
+      locX = this.infoObject$.coordinates.latitude;
+      locY = this.infoObject$.coordinates.longitude;
     }
 
     const favoriteObj = {
@@ -329,33 +339,33 @@ export class InfoObjectComponent implements OnInit {
       loc_x: locX,
       loc_y: locY,
       type_of_info_object_category:
-        this.info_object.type_of_info_object_category,
+        this.infoObject$.type_of_info_object_category,
     };
 
     if (this.isLoggedIn === '1') {
-      /*this.myFavoritesService.addFavorite(favoriteObj).subscribe(
+      /!*this.myFavoritesService.addFavorite(favoriteObj).subscribe(
         resp => {
           this.addFavoriteCb(resp)
         }
-      )*/
+      )*!/
     } else {
       //this.myFavoritesService.addFavoriteLoggedOut(favoriteObj)
       this.showFavorites = false;
-      this.loading = false;
-    }
+      this.loading$.next(false);
+    }*/
   }
 
   addFavoriteCb(resp: any): void {
-    if (resp.success) this.showFavorites = false;
+    /*    if (resp.success) this.showFavorites = false;
     else console.log('addFavoriteCb', resp);
 
-    this.loading = false;
+    this.loading$.next(false);*/
   }
 
   removeFavorite() {
     /*
     this.loading = true
-    const yelpId = this.info_object.id
+    const yelpId = this.infoObject$.id
 
     if(this.isLoggedIn == '1'){
       this.myFavoritesService.removeFavorite(yelpId).subscribe(resp => {
@@ -371,52 +381,49 @@ export class InfoObjectComponent implements OnInit {
   }
 
   removeFavoriteCb(resp, favoriteId: string) {
-    if (resp.success) {
+    /*    if (resp.success) {
       this.showFavorites = true;
       this.removeFavoriteEvent.emit({favoriteId: favoriteId});
     } else console.log('removeFavoriteCb', resp);
-    this.loading = false;
+    this.loading$.next(false);*/
   }
 
   getEventCallback(httpResponse: any): void {
-    if (httpResponse.success) {
-      if (httpResponse.data._embedded.events[0] === undefined) {
-        this.loading = false;
-        return;
-      }
+    const eventObject = httpResponse.data._embedded.events[0] ?? undefined;
 
-      const event_object = httpResponse.data._embedded.events[0];
-
-      event_object.coordinates = {
+    if (httpResponse.success && eventObject) {
+      eventObject.coordinates = {
         latitude: '',
         longitude: '',
       };
 
-      event_object.coordinates.latitude = parseFloat(
-        event_object._embedded.venues[0].location.latitude
+      eventObject.coordinates.latitude = parseFloat(
+        eventObject._embedded.venues[0].location.latitude
       );
-      event_object.coordinates.longitude = parseFloat(
-        event_object._embedded.venues[0].location.longitude
+      eventObject.coordinates.longitude = parseFloat(
+        eventObject._embedded.venues[0].location.longitude
       );
-      event_object.icon = event_object.images[0].url;
-      event_object.image_url = event_object.images[8].url;
-      event_object.type_of_info_object = 'ticketmaster_event';
+      eventObject.icon = eventObject.images[0].url;
+      eventObject.image_url = eventObject.images[8].url;
+      eventObject.type_of_info_object = 'ticketmaster_event';
 
-      const dt_obj = new Date(event_object.dates.start.localDate);
-      const time_date = new DateFormatPipe().transform(dt_obj);
-      const time_hr = new TimeFormatPipe().transform(
-        event_object.dates.start.localTime
+      const datetObj = new Date(eventObject.dates.start.localDate);
+      const timeDate = new DateFormatPipe().transform(datetObj);
+      const timeHr = new TimeFormatPipe().transform(
+        eventObject.dates.start.localTime
       );
 
-      event_object.dates.start.spotbieDate = time_date;
-      event_object.dates.start.spotbieHour = time_hr;
+      eventObject.dates.start.spotbieDate = timeDate;
+      eventObject.dates.start.spotbieHour = timeHr;
 
-      this.info_object = event_object;
-
+      this.infoObject$.next(eventObject);
       this.setEventMetaData();
-    } else console.log('getEventsSearchCallback Error: ', httpResponse);
+    } else {
+      console.log('getEventsSearchCallback Error: ', httpResponse);
+    }
 
-    this.loading = false;
+    this.loading$.next(false);
+    return;
   }
 
   shareThisNative() {
@@ -428,83 +435,84 @@ export class InfoObjectComponent implements OnInit {
     shareNative(message, subject, url, chooserTitle);
   }
 
-  setEventMetaData() {
-    const alias = this.info_object.name
+  setEventMetaData(): void {
+    const infoObject = this.infoObject$.getValue();
+    const alias = infoObject.name
       .toLowerCase()
       .replace(/ /g, '-')
       .replace(/[-]+/g, '-')
       .replace(/[^\w-]+/g, '');
-    const title = `${this.info_object.name} at ${this.info_object._embedded.venues[0].name}`;
+    const title = `${infoObject.name} at ${infoObject._embedded.venues[0].name}`;
 
-    if (this.info_object.is_community_member)
-      this.infoObjectImageUrl = `${environment.baseUrl}${this.info_object.type_of_info_object_category}/${this.info_object.id}`;
-    else
-      this.infoObjectLink = `${environment.baseUrl}event/${alias}/${this.info_object.id}`;
+    if (infoObject.is_community_member) {
+      this.infoObjectImageUrl = `${environment.baseUrl}${infoObject.type_of_info_object_category}/${infoObject.id}`;
+    } else {
+      this.infoObjectLink = `${environment.baseUrl}event/${alias}/${infoObject.id}`;
+    }
 
-    this.infoObjectDescription = `Hey! Let's go to ${this.info_object.name} together. It's at ${this.info_object._embedded.venues[0].name} located in ${this.info_object._embedded.venues[0].address.line1}, ${this.info_object._embedded.venues[0].city.name} ${this.info_object._embedded.venues[0].postalCode}. Prices range from $${this.info_object.priceRanges[0].min} to $${this.info_object.priceRanges[0].min}`;
+    this.infoObjectDescription = `Hey! Let's go to ${infoObject.name} together. It's at ${infoObject._embedded.venues[0].name} located in ${infoObject._embedded.venues[0].address.line1}, ${infoObject._embedded.venues[0].city.name} ${infoObject._embedded.venues[0].postalCode}. Prices range from $${infoObject.priceRanges[0].min} to $${infoObject.priceRanges[0].min}`;
     this.infoObjectTitle = title;
 
     this.spotbieMetaService.setTitle(title);
     this.spotbieMetaService.setDescription(this.infoObjectDescription);
-    this.spotbieMetaService.setImage(this.info_object.image_url);
+    this.spotbieMetaService.setImage(infoObject.image_url);
+
+    return;
   }
 
-  visitInfoObjectPage() {
-    if (this.info_object.type_of_info_object === InfoObjectType.Yelp)
-      externalBrowserOpen(`${this.info_object.url}`);
-    else if (
-      this.info_object.type_of_info_object === InfoObjectType.TicketMaster
-    )
+  visitInfoObjectPage(): void {
+    const infoObject = this.infoObject$.getValue();
+    if (infoObject.type_of_info_object === InfoObjectType.Yelp) {
+      externalBrowserOpen(`${infoObject.url}`);
+    } else if (infoObject.type_of_info_object === InfoObjectType.TicketMaster) {
       this.goToTicket();
+    }
+    return;
   }
 
-  getInputClass() {
-    if (this.info_object.is_community_member) return 'sb-infoObjectInputLight';
-    else return 'sb-infoObjectInputDark';
+  getInputClass(): string {
+    let className = 'sb-infoObjectInputDark';
+    if (this.infoObject$.getValue().is_community_member) {
+      className = 'sb-infoObjectInputLight';
+    }
+    return className;
   }
 
-  clickGoToSponsored() {
+  clickGoToSponsored(): void {
     window.open('/business', '_blank');
-  }
-
-  showPosition(position: any): void {
-    this.displayAds = true;
+    return;
   }
 
   ngOnInit() {
-    this.loading = true;
+    this.loading$.next(true);
 
     this.bgColor = localStorage.getItem('spotbie_backgroundColor');
     this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
 
-    if (this.info_object !== undefined) {
-      this.infoObjectCategory = this.info_object.type_of_info_object_category;
+    const infoObject = this.infoObject$.getValue();
 
-      switch (this.info_object.type_of_info_object) {
+    if (infoObject) {
+      this.infoObjectCategory = infoObject.type_of_info_object_category;
+
+      switch (infoObject.type_of_info_object) {
         case InfoObjectType.Yelp:
-          this.urlApi = YELP_BUSINESS_DETAILS_API + this.info_object.id;
+          this.urlApi = YELP_BUSINESS_DETAILS_API + infoObject.id;
           break;
         case InfoObjectType.TicketMaster:
-          this.loading = false;
+          this.loading$.next(false);
           return;
         case InfoObjectType.SpotBieCommunity:
-          this.rewardMenuUp = true;
+          this.rewardMenuUp$.next(true);
 
-          if (this.info_object.user_type === 1)
-            this.infoObjectLink =
-              environment.baseUrl +
-              'community/' +
-              this.info_object.qr_code_link;
-          else if (this.info_object.user_type === 2)
-            this.infoObjectLink =
-              environment.baseUrl +
-              'community/' +
-              this.info_object.qr_code_link;
-          else if (this.info_object.user_type === 3)
-            this.infoObjectLink =
-              environment.baseUrl +
-              'community/' +
-              this.info_object.qr_code_link;
+          if (
+            infoObject.user_type === 1 ||
+            infoObject.user_type === 2 ||
+            infoObject.user_type === 3
+          ) {
+            this.infoObjectLink = `${environment.baseUrl}community/${infoObject.qr_code_link}`;
+          }
+
+          this.loading$.next(false);
           return;
       }
     } else {

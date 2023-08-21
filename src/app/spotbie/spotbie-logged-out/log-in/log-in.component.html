@@ -47,7 +47,12 @@
           </td>
 
           <td>
-            <input class="sb-input" id="spotbieLoginUsername" formControlName="spotbieUsername" type="text" placeholder="USERNAME/EMAIL" autocomplete="username"/>
+            <ion-input class="sb-input"
+                       id="spotbieLoginUsername"
+                       formControlName="spotbieUsername"
+                       type="text"
+                       placeholder="USERNAME/EMAIL"
+                       autocomplete="username"></ion-input>
           </td>
         </table>
 
@@ -63,13 +68,12 @@
           </td>
 
           <td>
-            <input class='sb-input'
+            <ion-input class='sb-input'
                    [type]="!passwordShow ? 'password' : 'text'"
                    formControlName="spotbiePassword"
                    id='spotbieLoginPassword'
                    autocomplete="password"
-                   placeholder='PASSWORD'/>
-
+                   placeholder='PASSWORD'></ion-input>
             <fa-icon class='fa-eye' [icon]="faEye" (click)="togglePassword()" *ngIf="!passwordShow"></fa-icon>
             <fa-icon class='fa-eye' [icon]="faEyeSlash" (click)="togglePassword()" *ngIf="passwordShow"></fa-icon>
           </td>

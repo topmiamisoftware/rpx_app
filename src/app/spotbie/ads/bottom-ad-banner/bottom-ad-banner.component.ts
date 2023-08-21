@@ -12,6 +12,8 @@ import {
   SHOPPING_CATEGORIES,
 } from '../../map/map_extras/map_extras';
 import {AdsService} from '../ads.service';
+import {getRandomInt} from '../../../helpers/numbers.helper';
+import {BehaviorSubject} from 'rxjs';
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/footer_banner_in_house.jpg';
@@ -39,7 +41,7 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
   @Input() lng: number;
   @Input() business: Business = new Business();
   @Input() ad: Ad = null;
-  @Input() accountType: string = null;
+  @Input() accountType: number = null;
   @Input() categories: number;
   @Input() editMode: boolean = false;
   @Input() eventsClassification: number = null;
@@ -47,7 +49,7 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
 
   isDesktop: boolean = false;
   link: string;
-  displayAd: boolean = false;
+  displayAd$ = new BehaviorSubject(false);
   distance: number = 0;
   totalRewards: number = 0;
   categoriesListFriendly: string[] = [];
@@ -111,7 +113,8 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
           break;
       }
     } else {
-      switch (this.accountType) {
+      accountType = this.accountType ? this.accountType : getRandomInt(1, 3);
+      switch (accountType) {
         case 'food':
           accountType = 1;
           this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
@@ -139,6 +142,8 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
       account_type: accountType,
     };
 
+    console.log('the search object', searchObjSb);
+
     // Retrieve the SpotBie Ads
     this.adsService.getBottomHeader(searchObjSb).subscribe(resp => {
       this.getBottomHeaderCb(resp);
@@ -165,7 +170,7 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
       this.ad = resp.ad;
       this.business = resp.business;
 
-      if (!this.editMode && resp.business !== null) {
+      if (!this.editMode && resp.business) {
         switch (this.business.user_type) {
           case AllowedAccountTypes.PlaceToEat:
             this.currentCategoryList = FOOD_CATEGORIES;
@@ -197,18 +202,20 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
         this.business.is_community_member = true;
         this.business.type_of_info_object = InfoObjectType.SpotBieCommunity;
 
-        if (!this.editMode)
+        if (!this.editMode) {
           this.distance = getDistanceFromLatLngInMiles(
             this.business.loc_x,
             this.business.loc_y,
             this.lat,
             this.lng
           );
-        else this.distance = 5;
+        } else {
+          this.distance = 5;
+        }
       }
 
       this.totalRewards = resp.totalRewards;
-      this.displayAd = true;
+      this.displayAd$.next(true);
     } else {
       console.log('getSingleAdListCb', resp);
 
@@ -248,14 +255,14 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
   }
 
   updateAdImage(image = '') {
-    if (image !== '') {
+    if (image) {
       this.ad.images = image;
       this.genericAdImage = image;
     }
   }
 
   updateAdImageMobile(image: string) {
-    if (image !== '') {
+    if (image) {
       this.ad.images_mobile = image;
       this.genericAdImageMobile = image;
     }
@@ -263,7 +270,7 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isDesktop = this.deviceDetectorService.isDesktop();
-    if (this.isMobile === false) {
+    if (!this.isMobile) {
       this.isMobile =
         this.deviceDetectorService.isMobile() ||
         this.deviceDetectorService.isTablet();

@@ -13,7 +13,6 @@ import {UserDashboardModule} from '../spotbie-logged-in/user-dashboard/user-dash
 import {ShareIconsModule} from 'ngx-sharebuttons/icons';
 import {InfoObjectModule} from './info-object/info-object.module';
 import {AdsModule} from '../ads/ads.module';
-import {environment} from '../../../environments/environment';
 import {StopClickPropagationDirective} from '../../directives/stop-click-propagation.directive';
 import {GoogleMapsModule} from '@angular/google-maps';
 
