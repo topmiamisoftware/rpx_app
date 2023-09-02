@@ -28,7 +28,7 @@
     </div>
 
     <app-qr [fullScreenWindow]="false"
-            *ngIf="scannerStarted"
+            *ngIf="scannerStarted$ | async"
             (closeQrUserEvt)="closeQrScanner()"
             #qrApp>
     </app-qr>
@@ -38,5 +38,5 @@
     <app-loyalty-points [fullScreenWindow]="false" (openRedeemed)="redeemedLp()" #loyaltyPointsApp></app-loyalty-points>
   </div>
 
-  <app-redeemable *ngIf="getRedeemableItems" (closeWindowEvt)="closeRedeemables()"></app-redeemable>
+  <app-redeemable *ngIf="getRedeemableItems$ | async" (closeWindowEvt)="closeRedeemables()"></app-redeemable>
 </div>

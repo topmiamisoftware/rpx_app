@@ -10,35 +10,36 @@ import {
   ViewChildren,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import {MatSliderChange} from '@angular/material/slider';
+import { MatSliderChange } from '@angular/material/slider';
 import {
   metersToMiles,
   setYelpRatingImage,
 } from '../../helpers/info-object-helper';
-import {Gesture, GestureController} from '@ionic/angular';
-import {Capacitor, Plugins} from '@capacitor/core';
-import {DateFormatPipe, TimeFormatPipe} from '../../pipes/date-format.pipe';
-import {MapObjectIconPipe} from '../../pipes/map-object-icon.pipe';
-import {LocationService} from '../../services/location-service/location.service';
+import { Gesture, GestureController } from '@ionic/angular';
+import { Capacitor, Plugins } from '@capacitor/core';
+import { DateFormatPipe, TimeFormatPipe } from '../../pipes/date-format.pipe';
+import { MapObjectIconPipe } from '../../pipes/map-object-icon.pipe';
+import { LocationService } from '../../services/location-service/location.service';
 import * as map_extras from './map_extras/map_extras';
-import {FOOD_CATEGORIES, SHOPPING_CATEGORIES} from './map_extras/map_extras';
+import { FOOD_CATEGORIES, SHOPPING_CATEGORIES } from './map_extras/map_extras';
 import * as sorterHelpers from '../../helpers/results-sorter.helper';
-import {UserDashboardComponent} from '../spotbie-logged-in/user-dashboard/user-dashboard.component';
-import {SortOrderPipe} from '../../pipes/sort-order.pipe';
-import {Business} from '../../models/business';
-import {BottomAdBannerComponent} from '../ads/bottom-ad-banner/bottom-ad-banner.component';
-import {HeaderAdBannerComponent} from '../ads/header-ad-banner/header-ad-banner.component';
-import {environment} from '../../../environments/environment';
-import {Observable, BehaviorSubject} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
-import {GoogleMap, MapMarker} from '@angular/google-maps';
-import {DeviceDetectorService} from 'ngx-device-detector';
+import { UserDashboardComponent } from '../spotbie-logged-in/user-dashboard/user-dashboard.component';
+import { SortOrderPipe } from '../../pipes/sort-order.pipe';
+import { Business } from '../../models/business';
+import { BottomAdBannerComponent } from '../ads/bottom-ad-banner/bottom-ad-banner.component';
+import { HeaderAdBannerComponent } from '../ads/header-ad-banner/header-ad-banner.component';
+import { environment } from '../../../environments/environment';
+import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { GoogleMap, MapMarker } from '@angular/google-maps';
+import { DeviceDetectorService } from 'ngx-device-detector';
 import MapOptions = google.maps.MapOptions;
 import MarkerOptions = google.maps.MarkerOptions;
 import MapTypeStyle = google.maps.MapTypeStyle;
-import {Platform} from '@ionic/angular';
-import {InfoObject} from '../../models/info-object';
-const {Geolocation, Toast} = Plugins;
+import { Platform } from '@ionic/angular';
+import { InfoObject } from '../../models/info-object';
+import { filter, tap } from 'rxjs/operators';
+const { Geolocation, Toast } = Plugins;
 
 const YELP_BUSINESS_SEARCH_API = 'https://api.yelp.com/v3/businesses/search';
 const BANNED_YELP_IDS = map_extras.BANNED_YELP_IDS;
@@ -73,7 +74,13 @@ export class MapComponent implements OnInit, AfterViewInit {
   private rad_11 = null;
   private rad_1 = null;
   private finderSearchTimeout: any;
-  private searchResultsOriginal: Array<any> = [];
+  private searchResultsOriginal$ = new BehaviorSubject<Array<any>>([]);
+
+  // The map HTML container.
+  spotbieMap: google.maps.Map;
+
+  // The marker for the logged-in user.
+  myMarker: google.maps.Marker;
 
   isLoggedIn: string;
   iconUrl: string;
@@ -92,58 +99,68 @@ export class MapComponent implements OnInit, AfterViewInit {
   loadedTotalResults: number = 0;
   allPages: number = 0;
   maxDistanceCap: number = 45;
-  maxDistance: number = 10;
-  searchCategory: number;
+  maxDistance$ = new BehaviorSubject<number>(10);
+  searchCategory$ = new BehaviorSubject<number>(null);
   previousSearchCategory: number;
-  searchCategorySorter: number;
-  searchKeyword: string;
-  typeOfInfoObject: string;
+  searchCategorySorter$ = new BehaviorSubject<number>(null);
+  searchKeyword$ = new BehaviorSubject<string>(null);
+  typeOfInfoObject$ = new BehaviorSubject<string>(null);
   eventDateParam: string;
   sortEventDate: string = 'none';
   showingOpenedStatus: string = 'Showing Opened & Closed';
   searchApiUrl: string;
   center: google.maps.LatLngLiteral;
   width: string;
-  lat: number;
-  lng: number;
-  ogLat: number;
-  ogLng: number;
+  lat$ = new BehaviorSubject<number>(null);
+  lng$ = new BehaviorSubject<number>(null);
+  ogLat$ = new BehaviorSubject<number>(null);
+  ogLng$ = new BehaviorSubject<number>(null);
   fitBounds: boolean = false;
   zoom: number = 18;
-  map: boolean = false;
-  showSearchResults: boolean;
-  showSearchBox: boolean;
-  locationFound: boolean = false;
+  map$ = new BehaviorSubject<boolean>(false);
+  showSearchResults$ = new BehaviorSubject<boolean>(false);
+  showSearchBox$ = new BehaviorSubject<boolean>(false);
+  locationFound$ = new BehaviorSubject<boolean>(false);
   sliderRight: boolean = false;
-  catsUp$ = new BehaviorSubject(false);
+  catsUp$ = new BehaviorSubject<boolean>(false);
   toastHelper: boolean = false;
-  displaySurroundingObjectList: boolean = false;
-  showNoResultsBox: boolean = false;
-  showMobilePrompt: boolean = true;
-  showMobilePrompt2: boolean = false;
+  showNoResultsBox$ = new BehaviorSubject<boolean>(false);
+  showMobilePrompt2$ = new BehaviorSubject<boolean>(false);
   firstTimeShowingMap: boolean = true;
   showOpened$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   noResults: boolean = false;
   currentSearchType = '0';
-  surroundingObjectList = [];
-  searchResults = [];
+  surroundingObjectList$ = new BehaviorSubject<Array<any>>([]);
+
+  // This will store the third-party API search results.
+  searchResults$ = new BehaviorSubject([]);
+
+  // This will store the third-party API search resutls markers.
+  searchResultsMarkers: any[] = [];
+
+  // This will store the third-party API search results.
+  communityMemberList$ = new BehaviorSubject<Array<Business>>([]);
+
+  // This will store the third-party API search resutls markers.
+  cmSearchResultsMarkers: any[] = [];
+
   eventCategories;
   eventClassifications = map_extras.EVENT_CATEGORIES;
   foodCategories = map_extras.FOOD_CATEGORIES;
   shoppingCategories = map_extras.SHOPPING_CATEGORIES;
-  numberCategories: number;
-  bottomBannerCategories: number;
+  numberCategories$ = new BehaviorSubject<number>(null);
+  bottomBannerCategories$ = new BehaviorSubject<number>(null);
   mapStyles = map_extras.MAP_STYLES;
   infoObject$: any = new BehaviorSubject(null);
   currentMarker: any;
   categories: any;
-  myFavoritesWindow = {open: false};
+  myFavoritesWindow = { open: false };
   updateDistanceTimeout: any;
   subCategory: any = {
-    food_sub: {open: false},
-    media_sub: {open: false},
-    artist_sub: {open: false},
-    place_sub: {open: false},
+    food_sub: { open: false },
+    media_sub: { open: false },
+    artist_sub: { open: false },
+    place_sub: { open: false },
   };
   placesToEat: boolean = false;
   eventsNearYou: boolean = false;
@@ -153,10 +170,9 @@ export class MapComponent implements OnInit, AfterViewInit {
   isTablet: boolean = false;
   isMobile: boolean = false;
   loadingText: string = null;
-  displayLocationEnablingInstructions: boolean = false;
+  displayLocationEnablingInstructions$ = new BehaviorSubject<boolean>(false);
   bannedYelpIDs = BANNED_YELP_IDS;
-  communityMemberList: Array<Business> = [];
-  eventsClassification: number = null;
+  eventsClassification$ = new BehaviorSubject<number>(null);
   getSpotBieCommunityMemberListInterval: any = false;
   currentCategoryList: any;
 
@@ -171,13 +187,95 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
     this.userDefaultImage = localStorage.getItem('spotbie_userDefaultImage');
     this.spotbieUsername = localStorage.getItem('spotbie_userLogin');
+
+    combineLatest([this.lat$, this.lng$])
+      .pipe(
+        filter(([lat, lng]) => !!lat && !!lng),
+        tap(([lat, lng]) => {
+          this.spotbieMap.setCenter({ lat, lng });
+
+          // Delete myMarker from the map if it exists
+          this.myMarker = new google.maps.Marker({
+            position: { lat, lng },
+            map: this.spotbieMap,
+          });
+        })
+      )
+      .subscribe();
+
+    this.communityMemberList$
+      .pipe(
+        filter(cmList => cmList.length > 0),
+        tap(async cmList => {
+          const { AdvancedMarkerElement } = (await google.maps.importLibrary(
+            'marker'
+          )) as google.maps.MarkerLibrary;
+          this.hideMarkers(this.cmSearchResultsMarkers);
+          cmList.forEach(cm => {
+            const el = this.createCmMarker(cm);
+            const newMarker = new AdvancedMarkerElement({
+              position: {
+                lat: cm.loc_x,
+                lng: cm.loc_y,
+              },
+              map: this.spotbieMap,
+              content: el,
+            });
+            newMarker.addListener('click', ({ _domEvent, _latLng }) => {
+              this.pullSearchMarker(cm);
+            });
+            this.cmSearchResultsMarkers.push(newMarker);
+          });
+        })
+      )
+      .subscribe();
+
+    this.searchResults$
+      .pipe(
+        filter(srList => srList.length > 0),
+        tap(async srList => {
+          const { AdvancedMarkerElement } = (await google.maps.importLibrary(
+            'marker'
+          )) as google.maps.MarkerLibrary;
+          this.hideMarkers(this.searchResultsMarkers);
+          srList.forEach(sr => {
+            const el = this.createSrMarker(sr);
+            const newMarker = new AdvancedMarkerElement({
+              position: {
+                lat: sr.coordinates.latitude,
+                lng: sr.coordinates.longitude,
+              },
+              map: this.spotbieMap,
+              content: el,
+            });
+            newMarker.addListener('click', ({ _domEvent, _latLng }) => {
+              this.pullSearchMarker(sr);
+            });
+
+            this.searchResultsMarkers.push(newMarker);
+          });
+        })
+      )
+      .subscribe();
   }
 
-  get markerOptions(): MarkerOptions {
-    return {
-      icon: this.iconUrl,
-      draggable: false,
-    };
+  hideMarkers(markerList: google.maps.Marker[]): void {
+    markerList.forEach(marker => marker.setMap(null));
+    return;
+  }
+
+  createCmMarker(cm) {
+    const el = document.createElement('div');
+    el.className = 'spotbie-marker-bg sb-communityMember';
+    el.style.background = `url('${cm.photo}')`;
+    return el;
+  }
+
+  createSrMarker(sr) {
+    const el = document.createElement('div');
+    el.className = 'spotbie-marker-bg';
+    el.style.background = `url('${sr.image_url}')`;
+    return el;
   }
 
   ngOnInit() {
@@ -214,21 +312,33 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   deliverySort() {
-    this.searchResults = this.searchResults.filter(
-      searchResult => searchResult.transactions.indexOf('delivery') > -1
+    this.searchResults$.next(
+      this.searchResults$
+        .getValue()
+        .filter(
+          searchResult => searchResult.transactions.indexOf('delivery') > -1
+        )
     );
   }
 
   pickUpSort() {
-    this.searchResults = this.searchResults.filter(
-      searchResult => searchResult.transactions.indexOf('pickup') > -1
+    this.searchResults$.next(
+      this.searchResults$
+        .getValue()
+        .filter(
+          searchResult => searchResult.transactions.indexOf('pickup') > -1
+        )
     );
   }
 
   reservationSort() {
-    this.searchResults = this.searchResults.filter(
-      searchResult =>
-        searchResult.transactions.indexOf('restaurant_reservation') > -1
+    this.searchResults$.next(
+      this.searchResults$
+        .getValue()
+        .filter(
+          searchResult =>
+            searchResult.transactions.indexOf('restaurant_reservation') > -1
+        )
     );
   }
 
@@ -245,7 +355,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     newEndTime = `${newEndTime}00:00:00Z`;
 
     this.eventDateParam = `startEndDateTime=${startTime},${newEndTime}`;
-    this.apiSearch(this.searchKeyword);
+    this.apiSearch(this.searchKeyword$.getValue());
   }
 
   eventsThisWeekend() {
@@ -263,7 +373,7 @@ export class MapComponent implements OnInit, AfterViewInit {
 
     this.eventDateParam = `startEndDateTime=${newStartTime},${newEndTime}`;
 
-    this.apiSearch(this.searchKeyword);
+    this.apiSearch(this.searchKeyword$.getValue());
   }
 
   nextWeekdayDate(date, dayInWeek) {
@@ -284,27 +394,16 @@ export class MapComponent implements OnInit, AfterViewInit {
       this.showOpenedParam = `open_at=${unixTime}`;
     }
 
-    this.apiSearch(this.searchKeyword);
+    this.apiSearch(this.searchKeyword$.getValue());
   }
 
-  updateDistance(evt: any): void {
+  updateDistance(value: number): void {
     clearTimeout(this.updateDistanceTimeout);
 
     this.updateDistanceTimeout = setTimeout(() => {
-      this.maxDistance = evt.value;
+      this.maxDistance$.next(value);
 
-      if (this.showNoResultsBox) {
-        this.apiSearch(this.searchKeyword);
-      } else {
-        const results = this.searchResultsOriginal.filter(
-          searchResult => searchResult.distance < this.maxDistance
-        );
-
-        this.loadedTotalResults = results.length;
-        this.searchResults = results;
-
-        this.sortBy(this.sortAc);
-      }
+      this.apiSearch(this.searchKeyword$.getValue());
     }, 500);
   }
 
@@ -349,50 +448,52 @@ export class MapComponent implements OnInit, AfterViewInit {
       }
     }
 
+    const searchResults = this.searchResults$.getValue();
     switch (ac) {
       case 0:
         //sort by distance
         if (this.sortingOrder === 'desc') {
-          this.searchResults = this.searchResults.sort(
-            sorterHelpers.distanceSortDesc
+          this.searchResults$.next(
+            searchResults.sort(sorterHelpers.distanceSortDesc)
           );
         } else {
-          this.searchResults = this.searchResults.sort(
-            sorterHelpers.distanceSortAsc
+          this.searchResults$.next(
+            searchResults.sort(sorterHelpers.distanceSortAsc)
           );
         }
         break;
       case 1:
         //sort by rating
         if (this.sortingOrder === 'desc') {
-          this.searchResults = this.searchResults.sort(
-            sorterHelpers.ratingSortDesc
+          this.searchResults$.next(
+            searchResults.sort(sorterHelpers.ratingSortDesc)
           );
         } else {
-          this.searchResults = this.searchResults.sort(
-            sorterHelpers.ratingSortAsc
+          this.searchResults$.next(
+            searchResults.sort(sorterHelpers.ratingSortAsc)
           );
         }
         break;
       case 2:
         //sort by reviews
+        console.log('REVIEW BY SORT', this.sortingOrder);
         if (this.sortingOrder === 'desc') {
-          this.searchResults = this.searchResults.sort(
-            sorterHelpers.reviewsSortDesc
+          this.searchResults$.next(
+            searchResults.sort(sorterHelpers.reviewsSortDesc)
           );
         } else {
-          this.searchResults = this.searchResults.sort(
-            sorterHelpers.reviewsSortAsc
+          this.searchResults$.next(
+            searchResults.sort(sorterHelpers.reviewsSortAsc)
           );
         }
         break;
       case 3:
         //sort by price
         if (this.sortingOrder === 'desc') {
-          this.searchResults = this.searchResults.sort(this.priceSortDesc);
+          this.searchResults$.next(searchResults.sort(this.priceSortDesc));
         } else {
-          this.searchResults = this.searchResults.sort(
-            sorterHelpers.priceSortAsc
+          this.searchResults$.next(
+            searchResults.sort(sorterHelpers.priceSortAsc)
           );
         }
         break;
@@ -428,6 +529,8 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   classificationSearchCallback(httpResponse: any) {
     this.loading$.next(false);
+
+    console.log('classificationSearchCallback', httpResponse);
 
     if (httpResponse.success) {
       const classifications: Array<any> =
@@ -465,7 +568,7 @@ export class MapComponent implements OnInit, AfterViewInit {
           });
         }
 
-        if (classification.name !== undefined) {
+        if (classification.name) {
           classification.show_sub = false;
 
           if (
@@ -513,8 +616,8 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   showEventSub(classification: any) {
-    this.eventsClassification = this.eventClassifications.indexOf(
-      classification.name
+    this.eventsClassification$.next(
+      this.eventClassifications.indexOf(classification.name)
     );
     classification.show_sub = !classification.show_sub;
   }
@@ -524,18 +627,18 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.allPages = 0;
     this.currentOffset = 0;
     this.aroundMeSearchPage = 1;
-    this.searchResults = [];
+    this.searchResults$.next([]);
   }
 
   apiSearch(keyword: string, resetEventSorter = false) {
     this.loading$.next(true);
-    this.searchKeyword = keyword;
+    this.searchKeyword$.next(keyword);
 
     keyword = encodeURIComponent(keyword);
 
-    this.communityMemberList = [];
+    this.communityMemberList$.next([]);
 
-    if (this.searchKeyword !== keyword) {
+    if (this.searchKeyword$.getValue() !== keyword) {
       this.newKeyWord();
     }
 
@@ -545,22 +648,26 @@ export class MapComponent implements OnInit, AfterViewInit {
     }
 
     let apiUrl: string;
+    const lat = this.lat$.getValue();
+    const lng = this.lng$.getValue();
 
-    switch (this.searchCategory) {
+    switch (this.searchCategory$.getValue()) {
       case 1: // food
-        apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
-        this.numberCategories = this.foodCategories.indexOf(this.searchKeyword);
+        apiUrl = `${this.searchApiUrl}?latitude=${lat}&longitude=${lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
+        this.numberCategories$.next(
+          this.foodCategories.indexOf(this.searchKeyword$.getValue())
+        );
         break;
       case 2: // shopping
-        apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
-        this.numberCategories = this.shoppingCategories.indexOf(
-          this.searchKeyword
+        apiUrl = `${this.searchApiUrl}?latitude=${lat}&longitude=${lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
+        this.numberCategories$.next(
+          this.shoppingCategories.indexOf(this.searchKeyword$.getValue())
         );
         break;
       case 3: // events
-        apiUrl = `size=2&latlong=${this.lat},${this.lng}&classificationName=${keyword}&radius=45&${this.eventDateParam}`;
-        this.numberCategories = this.eventCategories.indexOf(
-          this.searchKeyword
+        apiUrl = `size=2&latlong=${lat},${lng}&classificationName=${keyword}&radius=45&${this.eventDateParam}`;
+        this.numberCategories$.next(
+          this.eventCategories.indexOf(this.searchKeyword$.getValue())
         );
         break;
     }
@@ -570,12 +677,12 @@ export class MapComponent implements OnInit, AfterViewInit {
     };
 
     const searchObjSb = {
-      loc_x: this.lat,
-      loc_y: this.lng,
-      categories: JSON.stringify(this.numberCategories),
+      loc_x: this.lat$.getValue(),
+      loc_y: this.lng$.getValue(),
+      categories: JSON.stringify(this.numberCategories$.getValue()),
     };
 
-    switch (this.searchCategory) {
+    switch (this.searchCategory$.getValue()) {
       case 1:
       case 2:
         // Retrieve the third party API Yelp Results
@@ -605,11 +712,14 @@ export class MapComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getMapOptions(): MapOptions {
+  getMapOptions(): any {
     return {
       styles: this.mapStyles,
       zoom: this.zoom,
-      gestureHandling: 'cooperative',
+      clickable: false,
+      mapTypeControl: false,
+      streetViewControl: false,
+      mapId: environment.mapId,
     };
   }
 
@@ -620,11 +730,11 @@ export class MapComponent implements OnInit, AfterViewInit {
     });
 
     this.catsUp$.next(false);
-    this.map = false;
-    this.showSearchBox = false;
-    this.showSearchResults = false;
+    this.map$.next(false);
+    this.showSearchBox$.next(false);
+    this.showSearchResults$.next(false);
     this.infoObject$.next(null);
-    this.searchResults = [];
+    this.searchResults$.next([]);
   }
 
   sortingOrderClass(sortingOrder: string) {
@@ -632,65 +742,66 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   async spawnCategories(category: number) {
-    this.loading$.next(true);
-    this.scrollMapAppAnchor.nativeElement.scrollIntoView();
-    this.zoom = 18;
-    this.fitBounds = false;
     this.infoObject$.next(null);
+    this.showSearchBox$.next(true);
 
-    if (!this.locationFound && Capacitor.isNativePlatform()) {
-      Geolocation.getCurrentPosition(
-        position => {
-          this.map = true;
-          this.showPosition(position);
-        },
-        err => {
-          console.log(err);
-          this.showMapError();
-        }
-      );
-    } else if (!this.locationFound) {
-      window.navigator.geolocation.getCurrentPosition(
-        position => {
-          this.showPosition(position);
-        },
-        err => {
-          console.log(err);
-          this.showMapError();
-        }
-      );
+    if (this.searchCategory$.getValue() !== category) {
+      this.previousSearchCategory = this.searchCategory$.getValue();
     }
 
-    if (this.showMobilePrompt) {
-      this.showMobilePrompt = false;
-    }
-
-    this.showSearchBox = true;
-
-    if (this.searchResults.length === 0) {
-      this.showSearchResults = false;
-    }
-
-    if (category === this.searchCategory) {
+    if (category === this.previousSearchCategory) {
       this.catsUp$.next(true);
       this.loading$.next(false);
       return;
     }
 
-    if (this.searchCategory) {
-      this.previousSearchCategory = this.searchCategory;
+    this.loading$.next(true);
+    this.scrollMapAppAnchor.nativeElement.scrollIntoView();
+    this.zoom = 18;
+    this.fitBounds = false;
+
+    if (!this.locationFound$.getValue() && Capacitor.isNativePlatform()) {
+      Geolocation.getCurrentPosition(
+        async position => {
+          this.map$.next(true);
+          await this.initMap();
+          this.showPosition(position);
+        },
+        err => {
+          console.log(err);
+          this.showMapError();
+        }
+      );
+    } else if (!this.locationFound$.getValue()) {
+      window.navigator.geolocation.getCurrentPosition(
+        async position => {
+          this.map$.next(true);
+          await this.initMap();
+          this.showPosition(position);
+        },
+        err => {
+          console.log(err);
+          this.showMapError();
+        }
+      );
     }
 
-    console.log('this.searchCategory', this.searchCategory);
+    if (this.searchResults$.getValue().length === 0) {
+      this.showSearchResults$.next(false);
+    }
 
-    switch (this.searchCategory) {
+    this.searchCategory$.next(category);
+
+    switch (this.searchCategory$.getValue()) {
       case 1:
         // food
         this.searchApiUrl = YELP_BUSINESS_SEARCH_API;
         this.searchCategoriesPlaceHolder = 'Search Places to Eat...';
         this.categories = this.foodCategories;
-        this.bottomBannerCategories = this.categories.indexOf(
-          this.categories[Math.floor(Math.random() * this.categories.length)]
+        this.bottomBannerCategories$.next(
+          this.categories.indexOf(
+            this.categories[Math.floor(Math.random() * this.categories.length)]
+          )
         );
         break;
       case 2:
@@ -698,8 +809,10 @@ export class MapComponent implements OnInit, AfterViewInit {
         this.searchApiUrl = YELP_BUSINESS_SEARCH_API;
         this.searchCategoriesPlaceHolder = 'Search Shopping...';
         this.categories = this.shoppingCategories;
-        this.bottomBannerCategories = this.categories.indexOf(
-          this.categories[Math.floor(Math.random() * this.categories.length)]
+        this.bottomBannerCategories$.next(
+          this.categories.indexOf(
+            this.categories[Math.floor(Math.random() * this.categories.length)]
+          )
         );
         break;
       case 3:
@@ -707,14 +820,17 @@ export class MapComponent implements OnInit, AfterViewInit {
         this.eventCategories = [];
         this.searchCategoriesPlaceHolder = 'Search Events...';
         this.categories = this.eventCategories;
-        this.bottomBannerCategories = this.categories.indexOf(
-          this.categories[Math.floor(Math.random() * this.categories.length)]
+        this.bottomBannerCategories$.next(
+          this.categories.indexOf(
+            this.categories[Math.floor(Math.random() * this.categories.length)]
+          )
         );
         this.classificationSearch();
         return;
     }
 
     this.catsUp$.next(true);
+    this.loading$.next(false);
 
     const closeCategoryPicker: Gesture = this.gestureCtrl.create(
       {
@@ -730,17 +846,17 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   cleanCategory() {
-    if (this.searchCategory !== this.previousSearchCategory) {
-      this.searchResults = [];
+    if (this.searchCategory$.getValue() !== this.previousSearchCategory) {
+      this.searchResults$.next([]);
 
-      switch (this.searchCategory) {
+      switch (this.searchCategory$.getValue()) {
         case 1: // food
         case 2: // shopping
-          this.typeOfInfoObject = 'yelp_business';
+          this.typeOfInfoObject$.next('yelp_business');
           this.maxDistanceCap = 25;
           break;
         case 3: // events
-          this.typeOfInfoObject = 'ticketmaster_events';
+          this.typeOfInfoObject$.next('ticketmaster_events');
           this.maxDistanceCap = 45;
           return;
       }
@@ -774,7 +890,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   searchSpotBie(evt: any): void {
-    this.searchKeyword = evt.target.value;
+    this.searchKeyword$.next(evt.target.value);
 
     const searchTerm = encodeURIComponent(evt.target.value);
 
@@ -785,9 +901,9 @@ export class MapComponent implements OnInit, AfterViewInit {
 
       let apiUrl: string;
 
-      if (this.searchCategory === 3) {
+      if (this.searchCategory$.getValue() === 3) {
         // Used for loading events from ticketmaster API
-        apiUrl = `size=20&latlong=${this.lat},${this.lng}&keyword=${searchTerm}&radius=45`;
+        apiUrl = `size=20&latlong=${this.lat$.getValue()},${this.lng$.getValue()}&keyword=${searchTerm}&radius=45`;
 
         const searchObj = {
           config_url: apiUrl,
@@ -798,7 +914,13 @@ export class MapComponent implements OnInit, AfterViewInit {
         });
       } else {
         //Used for loading places to eat and shopping from yelp
-        apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${searchTerm}&${this.showOpenedParam}&radius=40000&sort_by=best_match&limit=20&offset=${this.currentOffset}`;
+        apiUrl = `${
+          this.searchApiUrl
+        }?latitude=${this.lat$.getValue()}&longitude=${this.lng$.getValue()}&term=${searchTerm}&${
+          this.showOpenedParam
+        }&radius=40000&sort_by=best_match&limit=20&offset=${
+          this.currentOffset
+        }`;
 
         const searchObj = {
           config_url: apiUrl,
@@ -809,9 +931,9 @@ export class MapComponent implements OnInit, AfterViewInit {
         });
 
         const searchObjSb = {
-          loc_x: this.lat,
-          loc_y: this.lng,
-          categories: this.searchKeyword,
+          loc_x: this.lat$.getValue(),
+          loc_y: this.lng$.getValue(),
+          categories: this.searchKeyword$.getValue(),
         };
 
         //Retrieve the SpotBie Community Member Results
@@ -828,7 +950,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     if (page < this.allPages) {
       return {};
     } else {
-      return {display: 'none'};
+      return { display: 'none' };
     }
   }
 
@@ -836,7 +958,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     if (page > 0) {
       return {};
     } else {
-      return {display: 'none'};
+      return { display: 'none' };
     }
   }
 
@@ -844,7 +966,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.aroundMeSearchPage = page;
     this.currentOffset =
       this.aroundMeSearchPage * this.itemsPerPage - this.itemsPerPage;
-    this.apiSearch(this.searchKeyword);
+    this.apiSearch(this.searchKeyword$.getValue());
     this.scrollMapAppAnchor.nativeElement.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
@@ -879,7 +1001,7 @@ export class MapComponent implements OnInit, AfterViewInit {
 
     this.currentOffset =
       this.aroundMeSearchPage * this.itemsPerPage - this.itemsPerPage;
-    this.apiSearch(this.searchKeyword);
+    this.apiSearch(this.searchKeyword$.getValue());
     this.scrollMapAppAnchor.nativeElement.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
@@ -887,7 +1009,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   hideSearchResults(): void {
-    this.showSearchResults = !this.showSearchResults;
+    this.showSearchResults$.next(!this.showSearchResults$.getValue());
   }
 
   formatPhoneNumber(phoneNumberString) {
@@ -902,7 +1024,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   getMapWrapperClass() {
-    if (this.showSearchResults) {
+    if (this.showSearchResults$.getValue()) {
       return 'spotbie-map sb-map-results-open';
     } else {
       return 'spotbie-map';
@@ -910,7 +1032,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   getMapClass() {
-    if (this.showSearchResults) {
+    if (this.showSearchResults$.getValue()) {
       return 'spotbie-agm-map sb-map-results-open';
     } else {
       if (this.isMobile) {
@@ -929,12 +1051,12 @@ export class MapComponent implements OnInit, AfterViewInit {
       const eventObject = httpResponse.data;
 
       if (this.totalResults === 0 || !!eventObject._embedded) {
-        this.showNoResultsBox = true;
+        this.showNoResultsBox$.next(true);
         this.loading$.next(false);
-        this.searchResults = [];
+        this.searchResults$.next([]);
         return;
       } else {
-        this.showNoResultsBox = false;
+        this.showNoResultsBox$.next(false);
         this.sortEventDate = 'none';
       }
 
@@ -942,7 +1064,7 @@ export class MapComponent implements OnInit, AfterViewInit {
 
       window.scrollTo(0, 0);
 
-      this.showSearchResults = true;
+      this.showSearchResults$.next(true);
       this.catsUp$.next(false);
       this.loading$.next(false);
 
@@ -956,6 +1078,7 @@ export class MapComponent implements OnInit, AfterViewInit {
         this.allPages = 1;
       }
 
+      const searchResults = [];
       for (let i = 0; i < eventObjectList.length; i++) {
         eventObjectList[i].coordinates = {
           latitude: '',
@@ -984,21 +1107,21 @@ export class MapComponent implements OnInit, AfterViewInit {
         eventObjectList[i].dates.start.spotbieDate = timeDate;
         eventObjectList[i].dates.start.spotbieHour = timeHr;
 
-        this.searchResults.push(eventObjectList[i]);
+        searchResults.push(eventObjectList[i]);
       }
+
+      this.searchResults$.next(searchResults);
 
       this.sortingOrder = 'desc';
       this.sortBy(0);
 
-      this.searchCategorySorter = this.searchCategory;
+      this.searchCategorySorter$.next(this.searchCategory$.getValue());
       this.searchResultsSubtitle = 'Events';
-      this.searchResultsOriginal = this.searchResults;
-      this.showSearchResults = true;
-
-      this.displaySurroundingObjectList = false;
-      this.showSearchBox = true;
-      this.loadedTotalResults = this.searchResults.length;
-      this.maxDistance = 45;
+      this.searchResultsOriginal$.next(this.searchResults$.getValue());
+      this.showSearchResults$.next(true);
+      this.showSearchBox$.next(true);
+      this.loadedTotalResults = this.searchResults$.getValue().length;
+      this.maxDistance$.next(45);
     } else {
       console.log('getEventsSearchCallback Error: ', httpResponse);
     }
@@ -1027,7 +1150,7 @@ export class MapComponent implements OnInit, AfterViewInit {
         business.type_of_info_object = 'spotbie_community';
         business.is_community_member = true;
 
-        switch (this.searchCategory) {
+        switch (this.searchCategory$.getValue()) {
           case 1:
             if (!business.photo) {
               business.photo = 'assets/images/home_imgs/find-places-to-eat.svg';
@@ -1068,14 +1191,14 @@ export class MapComponent implements OnInit, AfterViewInit {
         business.rewardRate = business.loyalty_point_dollar_percent_value / 100;
       });
 
-      this.communityMemberList = communityMemberList;
+      this.communityMemberList$.next(communityMemberList);
 
       if (this.getSpotBieCommunityMemberListInterval) {
         this.getSpotBieCommunityMemberListInterval = setInterval(() => {
           const searchObjSb = {
-            loc_x: this.lat,
-            loc_y: this.lng,
-            categories: JSON.stringify(this.numberCategories),
+            loc_x: this.lat$.getValue(),
+            loc_y: this.lng$.getValue(),
+            categories: JSON.stringify(this.numberCategories$.getValue()),
           };
 
           // Retrieve the SpotBie Community Member Results
@@ -1098,37 +1221,52 @@ export class MapComponent implements OnInit, AfterViewInit {
       this.totalResults = httpResponse.data.total;
 
       if (this.totalResults === 0) {
-        this.showNoResultsBox = true;
+        this.showNoResultsBox$.next(true);
         return;
       } else {
-        this.showNoResultsBox = false;
+        this.showNoResultsBox$.next(false);
       }
 
       window.scrollTo(0, 0);
 
       this.cleanCategory();
 
-      this.showSearchResults = true;
+      this.showSearchResults$.next(true);
       this.catsUp$.next(false);
 
       const placesResults = httpResponse.data;
 
       this.populateYelpResults(placesResults);
 
-      this.searchCategorySorter = this.searchCategory;
-      this.displaySurroundingObjectList = false;
-      this.showSearchBox = true;
+      this.searchCategorySorter$.next(this.searchCategory$.getValue());
+      this.showSearchBox$.next(true);
     } else {
       console.log('Place Search Error: ', httpResponse);
     }
   }
 
   pullSearchMarker(infoObject: any): void {
+    console.log('the marker', infoObject);
     this.infoObject$.next(infoObject);
   }
 
+  async initMap(): Promise<void> {
+    const { Map } = (await google.maps.importLibrary(
+      'maps'
+    )) as google.maps.MapsLibrary;
+
+    const mapOptions = this.getMapOptions();
+    this.spotbieMap = new Map(
+      document.getElementById('map') as HTMLElement,
+      mapOptions
+    );
+  }
+
   checkSearchResultsFitBounds() {
-    if (this.communityMemberList.length < 3 && this.searchResults.length > 0) {
+    if (
+      this.communityMemberList$.getValue().length < 3 &&
+      this.searchResults$.getValue().length > 0
+    ) {
       return true;
     } else {
       return false;
@@ -1136,7 +1274,10 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   checkCommunityMemberFitBounds() {
-    if (this.searchResults.length < 3 || this.communityMemberList.length >= 3) {
+    if (
+      this.searchResults$.getValue().length < 3 ||
+      this.communityMemberList$.getValue().length >= 3
+    ) {
       return true;
     } else {
       return false;
@@ -1149,48 +1290,37 @@ export class MapComponent implements OnInit, AfterViewInit {
    * @param position
    */
   async showPosition(position: any) {
-    this.locationFound = true;
-    this.displayLocationEnablingInstructions = false;
+    this.locationFound$.next(true);
+    this.displayLocationEnablingInstructions$.next(false);
 
     if (environment.fakeLocation) {
-      this.lat = environment.myLocX;
-      this.lng = environment.myLocY;
-      this.ogLat = environment.myLocX;
-      this.ogLng = environment.myLocY;
+      this.lat$.next(environment.myLocX);
+      this.lng$.next(environment.myLocY);
+      this.ogLat$.next(environment.myLocX);
+      this.ogLng$.next(environment.myLocY);
     } else {
-      this.lat = position.coords.latitude;
-      this.lng = position.coords.longitude;
-      this.ogLat = position.coords.latitude;
-      this.ogLng = position.coords.longitude;
+      this.lat$.next(position.coords.latitude);
+      this.lng$.next(position.coords.longitude);
+      this.ogLat$.next(position.coords.latitude);
+      this.ogLng$.next(position.coords.longitude);
     }
 
     this.center = {
-      lat: this.lat,
-      lng: this.lng,
+      lat: this.lat$.getValue(),
+      lng: this.lng$.getValue(),
     };
 
     this.width = '100%';
 
-    this.map = true;
+    this.map$.next(true);
 
     if (this.firstTimeShowingMap) {
       this.firstTimeShowingMap = false;
       this.saveUserLocation();
     }
 
-    this.showMobilePrompt2 = false;
+    this.showMobilePrompt2$.next(false);
     this.loading$.next(false);
-  }
-
-  initMap() {
-    // this.spotbieMap.options = this.getMapOptions();
-  }
-
-  drawPosition() {
-    // this.iconUrl = {
-    //   url: this.userDefaultImage,
-    //   scaledSize: new google.maps.Size(50, 50),
-    // };
   }
 
   pullMarker(mapObject: any): void {
@@ -1208,8 +1338,8 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   saveUserLocation(): void {
     const saveLocationObj = {
-      loc_x: this.lat,
-      loc_y: this.lng,
+      loc_x: this.lat$.getValue(),
+      loc_y: this.lng$.getValue(),
     };
 
     if (this.isLoggedIn === '1') {
@@ -1234,8 +1364,8 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   retrieveSurroudings() {
     const retrieveSurroundingsObj = {
-      loc_x: this.lat,
-      loc_y: this.lng,
+      loc_x: this.lat$.getValue(),
+      loc_y: this.lng$.getValue(),
       search_type: this.currentSearchType,
     };
 
@@ -1282,7 +1412,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     }
 
     this.loading$.next(false);
-    this.showMobilePrompt2 = false;
+    this.showMobilePrompt2$.next(false);
     this.createObjectMarker(surroundingObjectList);
   }
 
@@ -1301,7 +1431,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   createObjectMarker(surroundingObjectList): void {
-    this.surroundingObjectList = surroundingObjectList;
+    this.surroundingObjectList$.next(surroundingObjectList);
   }
 
   getNewCoords(x, y, i, f): any {
@@ -1322,19 +1452,18 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.n2_x = this.n2_x + 1;
 
     const angle = (i / this.n3_x) * Math.PI * 2;
-    x = this.lat + Math.cos(angle) * radius;
-    y = this.lng + Math.sin(angle) * radius;
+    x = this.lat$.getValue() + Math.cos(angle) * radius;
+    y = this.lng$.getValue() + Math.sin(angle) * radius;
 
-    const p = {lat: x, lng: y};
+    const p = { lat: x, lng: y };
     return p;
   }
 
   closeSearchResults() {
     this.closeCategories();
-    this.showSearchResults = false;
-    this.displaySurroundingObjectList = true;
-    this.showSearchBox = false;
-    this.map = false;
+    this.showSearchResults$.next(false);
+    this.showSearchBox$.next(false);
+    this.map$.next(false);
   }
 
   myFavorites(): void {
@@ -1342,8 +1471,8 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   showMapError() {
-    this.displayLocationEnablingInstructions = true;
-    this.map = false;
+    this.displayLocationEnablingInstructions$.next(true);
+    this.map$.next(false);
     this.loading$.next(false);
     this.closeCategories();
     this.cleanCategory();
@@ -1353,11 +1482,12 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.loading$.next(true);
     this.spawnCategories(1);
 
-    this.showMobilePrompt = false;
-    this.showMobilePrompt2 = true;
+    this.showMobilePrompt2$.next(true);
   }
 
   private async populateYelpResults(data: any) {
+    console.log('populateYelpResults', data);
+
     let results = data.businesses;
 
     let i = 0;
@@ -1370,8 +1500,8 @@ export class MapComponent implements OnInit, AfterViewInit {
       }
 
       business.rating_image = setYelpRatingImage(business.rating);
-      business.type_of_info_object = this.typeOfInfoObject;
-      business.type_of_info_object_category = this.searchCategory;
+      business.type_of_info_object = this.typeOfInfoObject$.getValue();
+      business.type_of_info_object_category = this.searchCategory$.getValue();
       business.is_community_member = false;
 
       if (business.is_closed) {
@@ -1423,13 +1553,27 @@ export class MapComponent implements OnInit, AfterViewInit {
       results.splice(resultsToRemove[y], 1);
     }
 
-    this.searchResultsOriginal = results;
+    this.searchResultsOriginal$.next(results);
+
+    console.log('this.maxDistance$.getValue()', this.maxDistance$.getValue());
 
     results = results.filter(
-      searchResult => searchResult.distance < this.maxDistance
+      searchResult => searchResult.distance < this.maxDistance$.getValue()
     );
 
-    this.searchResults = results;
+    this.searchResults$.next(results);
+
+    // Create a merge observable that also takes in the community members array.
+    const markers = this.searchResults$.getValue();
+    const bounds = new google.maps.LatLngBounds();
+    for (let i = 0; i < markers.length; i++) {
+      bounds.extend({
+        lat: markers[i].coordinates.latitude,
+        lng: markers[i].coordinates.longitude,
+      });
+    }
+
+    this.spotbieMap.fitBounds(bounds);
 
     if (this.sortingOrder === 'desc') {
       this.sortingOrder = 'asc';
@@ -1439,16 +1583,16 @@ export class MapComponent implements OnInit, AfterViewInit {
 
     this.sortBy(this.sortAc);
 
-    switch (this.searchCategory) {
+    switch (this.searchCategory$.getValue()) {
       case 1:
         this.searchResultsSubtitle = 'Spots';
         break;
       case 2:
-        this.searchResultsSubtitle = 'cShopping Spots';
+        this.searchResultsSubtitle = 'Shopping Spots';
         break;
     }
 
-    this.loadedTotalResults = this.searchResults.length;
+    this.loadedTotalResults = this.searchResults$.getValue().length;
 
     this.allPages = Math.ceil(this.totalResults / this.itemsPerPage);
 

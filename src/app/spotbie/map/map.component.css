@@ -599,19 +599,21 @@ span.spotbie-button{
     padding-right: 5px;
 }
 .spotbie-marker-bg{
-    position: absolute;
     left: -8px;
     top: -20px;
+    max-height: 40px;
     min-height: 40px;
     height: 40px;
-    width: 40px;
+    max-width: 40px;
     min-width: 40px;
+    max-width: 40px;
     background-color: teal;
     border-radius: 99px;
     background-position: center !important;
-    background-size: cover !important;
+    background-size: 40px !important;
     cursor: pointer;
-    z-index: 99;
+    overflow: hidden;
+    z-index: 98;
     border: 2px solid rgb(22 181 146);
 }
 .spotbie-marker-bg:hover{
@@ -622,7 +624,9 @@ span.spotbie-button{
     height: 45px;
     width: 45px;
     min-width: 45px;
+    background-size: 45px !important;
     border: 2px solid #ff7220;
+    z-index: 99;
 }
 
 .pulse {

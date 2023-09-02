@@ -1,19 +1,19 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {DeviceDetectorService} from 'ngx-device-detector';
-import {AllowedAccountTypes} from '../../../helpers/enum/account-type.enum';
-import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
-import {getDistanceFromLatLngInMiles} from '../../../helpers/measure-units.helper';
-import {Ad} from '../../../models/ad';
-import {Business} from '../../../models/business';
-import {LoyaltyPointBalance} from '../../../models/loyalty-point-balance';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { DeviceDetectorService } from 'ngx-device-detector';
+import { AllowedAccountTypes } from '../../../helpers/enum/account-type.enum';
+import { InfoObjectType } from '../../../helpers/enum/info-object-type.enum';
+import { getDistanceFromLatLngInMiles } from '../../../helpers/measure-units.helper';
+import { Ad } from '../../../models/ad';
+import { Business } from '../../../models/business';
+import { LoyaltyPointBalance } from '../../../models/loyalty-point-balance';
 import {
   EVENT_CATEGORIES,
   FOOD_CATEGORIES,
   SHOPPING_CATEGORIES,
 } from '../../map/map_extras/map_extras';
-import {AdsService} from '../ads.service';
-import {externalBrowserOpen} from '../../../helpers/cordova/web-intent';
-import {getRandomInt} from '../../../helpers/numbers.helper';
+import { AdsService } from '../ads.service';
+import { AppLauncher } from '@capacitor/app-launcher';
+import { getRandomInt } from '../../../helpers/numbers.helper';
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
@@ -227,12 +227,13 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
     this.getNearByFeatured();
   }
 
-  openAd(): void {
+  async openAd() {
     if (this.business !== null) {
       this.communityMemberOpen = true;
     } else {
-      externalBrowserOpen('/business', '_blank');
+      await AppLauncher.openUrl({ url: 'https://spotbie.com/business' });
     }
+    return;
   }
 
   updateAdImage(image = '') {

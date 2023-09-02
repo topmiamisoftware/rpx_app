@@ -10,7 +10,7 @@
          style="display: grid;
                 align-content: center;
                 min-height: 70vh;"
-         *ngIf="displayLocationEnablingInstructions">
+         *ngIf="displayLocationEnablingInstructions$ | async">
 
       <i class="fas fa-map-marker-alt"></i>
 
@@ -29,144 +29,53 @@
       </div>
     </div>
 
-    <google-map [ngClass]="getMapClass()"
-                *ngIf="map"
-                [width]="'{{ width }}'"
-                [center]="center"
-                [zoom]="zoom">
-    </google-map>
+    <div id='map' #spotbieMap
+                  *ngIf="map$ | async"
+                  [ngClass]="getMapClass()"></div>
 
-<!--    <agm-map  [ngClass]="getMapClass()"
-              [streetViewControl]="false"
-              *ngIf="map"
-              #spotbie_map
-              [latitude]="lat"
-              [longitude]="lng"
-              [styles]="mapStyles"
-              [zoom]="zoom"
-              [gestureHandling]="'cooperative'"
-              [fitBounds]="fitBounds">
-
-&lt;!&ndash;      <agm-overlay [latitude]="lat" [longitude]="lng" *ngIf="locationFound">
-        <div class='spotbie-marker-bg'
-             *ngIf="iconUrl"
-             [ngStyle]="{'background' : 'url(' + iconUrl + ')',
-                            'border' : '2px solid' }">
-        </div>
-      </agm-overlay>&ndash;&gt;
-
-&lt;!&ndash;      <agm-marker [latitude]="lat"
-                  [longitude]="lng"
-                  *ngIf="locationFound"
-                  [opacity]="0"
-                  [agmFitBounds]="true">
-
-        <agm-info-window #spotbie_user_marker_info_window [isOpen]="true">
-          <div class='agm_infowindow_color'>{{ spotbieUsername }}</div>
-        </agm-info-window>
-      </agm-marker>&ndash;&gt;
-
-      <div *ngIf="displaySurroundingObjectList">
-        <agm-overlay *ngFor="let mapObject of surroundingObjectList"
-                     [latitude]="mapObject.loc_x"
-                     [longitude]="mapObject.loc_y">
-          <div class='spotbie-marker-bg'
-               (click)="pullMarker(mapObject)"
-               title="{{ mapObject.username }}"
-               [ngStyle]="{ 'background' : 'url(' + mapObject.map_icon + ')' }">
-          </div>
-        </agm-overlay>
-      </div>
-
-      <div *ngIf="showSearchBox && searchResults.length > 0">
-        <div *ngFor="let mapObject of searchResults">
-          <div *ngIf="mapObject.business_id == undefined">
-            <agm-overlay
-              [latitude]="mapObject.coordinates.latitude"
-              [longitude]="mapObject.coordinates.longitude">
-              <div class='spotbie-marker-bg'
-                   (click)="pullSearchMarker(mapObject)"
-                   [ngStyle]="{ 'background' : 'url(' + mapObject.icon + ')' }">
-              </div>
-            </agm-overlay>
-
-            <agm-marker [latitude]="mapObject.coordinates.latitude"
-                        [longitude]="mapObject.coordinates.longitude"
-                        [agmFitBounds]="checkSearchResultsFitBounds()"
-                        [visible]="false">
-            </agm-marker>
-          </div>
-        </div>
-
-        <agm-overlay *ngFor="let communityMember of communityMemberList"
-                     [latitude]="communityMember.loc_x"
-                     [longitude]="communityMember.loc_y">
-
-          <div class='spotbie-marker-bg sb-communityMember pulse'
-               (click)="pullSearchMarker(communityMember)"
-               [ngStyle]="{ 'background' : 'url(' + communityMember.photo + ')' }">
-            <img src="assets/images/home_imgs/spotbie-green-icon.svg" />
-          </div>
-
-        </agm-overlay>
-
-        <agm-marker *ngFor="let communityMember of communityMemberList"
-                    [latitude]="communityMember.loc_x"
-                    [longitude]="communityMember.loc_y"
-                    [agmFitBounds]="checkCommunityMemberFitBounds()"
-                    [visible]="false"></agm-marker>
-
-      </div>
-    </agm-map>-->
-
-    <div class='spotbie-categoryPull' *ngIf="!isDesktop && map">
+    <div class='spotbie-categoryPull' *ngIf="!isDesktop && (map$ | async)">
       <div class='sb-optionGet' (click)="spawnCategories(1)">
         <img src="assets/images/home_imgs/find-places-to-eat.svg" />
+      </div>
+
+      <div class='sb-optionGet' (click)="spawnCategories(2)">
+        <img src="assets/images/home_imgs/find-places-for-shopping.svg" />
       </div>
 
       <div class='sb-optionGet' (click)="spawnCategories(3)">
         <img src="assets/images/home_imgs/find-events.svg" />
       </div>
-
-      <div class='sb-optionGet' (click)="spawnCategories(1)">
-        <img src="assets/images/home_imgs/find-places-for-shopping.svg" />
-      </div>
     </div>
 
     <app-bottom-ad-banner
       class='mt-4'
-      *ngIf="map && locationFound && searchResults.length < 1 && isMobile"
-      [eventsClassification]="eventsClassification"
-      [accountType]="searchCategory"
-      [categories]="bottomBannerCategories"
-      [lat]="lat"
-      [lng]="lng">
+      *ngIf="(map$ | async) && (locationFound$ | async) && (searchResults$ | async).length < 1 && isMobile"
+      [eventsClassification]="eventsClassification$ | async"
+      [accountType]="searchCategory$ | async"
+      [categories]="bottomBannerCategories$ | async"
+      [lat]="lat$ | async"
+      [lng]="lng$ | async">
     </app-bottom-ad-banner>
 
-    <div class='spotbie-search-results' *ngIf="showSearchBox && searchResults.length > 0">
+    <div class='spotbie-search-results' *ngIf="(showSearchBox$ | async) && (searchResults$ | async).length > 0">
       <div #scrollMapAppAnchor></div>
 
       <app-header-ad-banner #singleAdApp class='spotbie-ad'
-                            [eventsClassification]="eventsClassification"
-                            [accountType]="searchCategory"
-                            [categories]="numberCategories"
-                            [lat]="lat"
-                            [lng]="lng"></app-header-ad-banner>
+                            [eventsClassification]="eventsClassification$ | async"
+                            [accountType]="searchCategory$ | async"
+                            [categories]="numberCategories$ | async"
+                            [lat]="lat$ | async"
+                            [lng]="lng$ | async"></app-header-ad-banner>
 
-      <div class='spotbie-search-results-title text-uppercase' *ngIf="typeOfInfoObject === 'yelp_business'">
-        Distance {{ maxDistance }} mi.
-        <mat-slider min="1" max="25" step="1"
-                    (change)="updateDistance($event)"></mat-slider>
-      </div>
-
-      <div class='spotbie-search-results-title text-uppercase' *ngIf="typeOfInfoObject === 'ticketmaster_events'">
-        Distance
-        <mat-slider min="1" max="50" step="1" (change)="updateDistance($event)"></mat-slider>
-        {{ maxDistance }} mi.
+      <div class='spotbie-search-results-title text-uppercase'>
+        Distance {{ maxDistance$ | async  }} mi.
+        <mat-slider [min]="1" [max]="(typeOfInfoObject$ | async) === 'ticketmaster_events' ? 50 : 25" [step]="1">
+          <input matSliderThumb [value]="maxDistance$ | async" (valueChange)="updateDistance($event)">
+        </mat-slider>
       </div>
 
       <div class='spotbie-search-results-title'>
-        <table class='spotbie-controls-search-results' *ngIf="searchCategorySorter === 1">
+        <table class='spotbie-controls-search-results' *ngIf="(searchCategorySorter$ | async) === 1">
           <tr>
             <td (click)="sortBy(0)" title="Sort By Distance">
               <img src='assets/images/map/distance.svg' />
@@ -185,11 +94,11 @@
             </td>
 
             <td (click)="sortBy(4)" title="Offers Delivery">
-              <img class="sb-deliverySortImg"  src='assets/images/map/delivery.svg' />
+              <img class="sb-deliverySortImg" src='assets/images/map/delivery.svg' />
             </td>
 
             <td (click)="sortBy(5)" title="Offers Pick-Up">
-              <img class="sb-pickUpSortImg"  src='assets/images/map/pick-up.svg' />
+              <img class="sb-pickUpSortImg" src='assets/images/map/pick-up.svg' />
             </td>
 
             <td (click)="sortBy(6)" title="Offers Reservations">
@@ -198,37 +107,7 @@
           </tr>
         </table>
 
-        <div class="mt-4 mb-4 text-uppercase">
-          Sorted by {{ sortByTxt }}
-          <span *ngIf="sortAc !== 4 && sortAc !== 5 && sortAc !== 6 && sortAc !== 7 && sortAc !== 8">
-            <i [ngClass]="sortingOrderClass(sortingOrder)"></i>
-          </span>
-        </div>
-
-        <table class='spotbie-controls-search-results'
-               (click)="showOpen()"
-               title="Opened or Closed"
-               [ngStyle]="{ 'border-right' : 'unset' }"
-               *ngIf="searchCategorySorter === 1">
-
-          <td *ngIf="!isMobile">
-            <span class='fa fa-circle spotbie-is-open'></span>
-          </td>
-
-          <td *ngIf="!(showOpened$ | async) && !isMobile">
-            <span class='fa fa-circle spotbie-is-closed'></span>
-          </td>
-
-          <td *ngIf="(showOpened$ | async) ">
-            OPEN
-          </td>
-
-          <td *ngIf="!(showOpened$ | async) ">
-            OPEN/CLOSED
-          </td>
-        </table>
-
-        <table class='spotbie-controls-search-results' *ngIf="searchCategorySorter === 2">
+        <table class='spotbie-controls-search-results' *ngIf="(searchCategorySorter$ | async) === 2">
           <tr>
             <td (click)="sortBy(0)" title="Sort By Distance">
               <img src='assets/images/map/distance.svg' />
@@ -248,11 +127,18 @@
           </tr>
         </table>
 
-        <table  class='spotbie-controls-search-results'
-                (click)="showOpen()"
-                title="Opened or Closed"
-                [ngStyle]="{ 'border-right' : 'unset' }"
-                *ngIf="searchCategorySorter === 2">
+        <div class="mt-4 mb-4 text-uppercase">
+          Sorted by {{ sortByTxt }}
+          <span *ngIf="sortAc !== 4 && sortAc !== 5 && sortAc !== 6 && sortAc !== 7 && sortAc !== 8">
+            <i [ngClass]="sortingOrderClass(sortingOrder)"></i>
+          </span>
+        </div>
+
+        <table class='spotbie-controls-search-results'
+               (click)="showOpen()"
+               title="Opened or Closed"
+               [ngStyle]="{ 'border-right' : 'unset' }"
+               *ngIf="(searchCategorySorter$ | async) === 1">
 
           <td *ngIf="!isMobile">
             <span class='fa fa-circle spotbie-is-open'></span>
@@ -271,7 +157,30 @@
           </td>
         </table>
 
-        <table class='spotbie-controls-search-results text-uppercase' *ngIf="searchCategorySorter === 3">
+        <table  class='spotbie-controls-search-results'
+                (click)="showOpen()"
+                title="Opened or Closed"
+                [ngStyle]="{ 'border-right' : 'unset' }"
+                *ngIf="(searchCategorySorter$ | async) === 2">
+
+          <td *ngIf="!isMobile">
+            <span class='fa fa-circle spotbie-is-open'></span>
+          </td>
+
+          <td *ngIf="!(showOpened$ | async) && !isMobile">
+            <span class='fa fa-circle spotbie-is-closed'></span>
+          </td>
+
+          <td *ngIf="(showOpened$ | async) ">
+            OPEN
+          </td>
+
+          <td *ngIf="!(showOpened$ | async) ">
+            OPEN/CLOSED
+          </td>
+        </table>
+
+        <table class='spotbie-controls-search-results text-uppercase' *ngIf="(searchCategorySorter$ | async) === 3">
           <tr>
             <td (click)="hideSearchResults()" title="Hide Results"><img src='assets/images/map/hide.svg' /></td>
             <td (click)="sortBy(0)" title="Sort By Distance"><img src='assets/images/map/distance.svg' /></td>
@@ -283,21 +192,21 @@
       </div>
 
       <div class='spotbie-search-results-title spotbie-sorting text-uppercase'>
-        <ng-template *ngIf="searchCategorySorter !== 3">
+        <ng-template *ngIf="(searchCategorySorter$ | async) !== 3">
           <span class='fa fa-circle spotbie-is-open' [ngStyle]="{ 'margin-left' : '5px' }"></span>
           <span class='fa fa-circle spotbie-is-closed' *ngIf="!(showOpened$ | async)" [ngStyle]="{ 'margin-left' : '5px' }"></span>
         </ng-template>
       </div>
 
-      <div class='spotbie-search-result-wrapper' *ngIf="showSearchResults">
-        <div class='spotbie-search-results-title text-uppercase' style="margin-top:0px;" *ngIf="communityMemberList.length > 0">
+      <div class='spotbie-search-result-wrapper' *ngIf="showSearchResults$ | async">
+        <div class='spotbie-search-results-title text-uppercase' style="margin-top:0px;" *ngIf="(communityMemberList$ | async).length > 0">
           <img src="assets/images/home_imgs/spotbie-green-icon.svg" class="sb-miniLogoIconM">
           SPOTBIE COMMUNITY MEMBERS
         </div>
 
         <!-- First let's display the spotbie community member list for -->
         <div class='spotbie-search-result spotbie-communityMember-search-result'
-             *ngFor='let communityMember of communityMemberList'
+             *ngFor='let communityMember of (communityMemberList$ | async)'
              (click)="pullSearchMarker(communityMember)">
           <table class='spotbie-search-result-table'>
             <tr>
@@ -326,16 +235,16 @@
           </table>
         </div>
 
-        <div class='spotbie-no-results mt-4 mb-4 text-uppercase' *ngIf="searchResults.length === 0">No results available.</div>
+        <div class='spotbie-no-results mt-4 mb-4 text-uppercase' *ngIf="(searchResults$ | async).length === 0">No results available.</div>
 
-        <div class='spotbie-search-result' *ngFor='let search_result of searchResults' (click)="pullSearchMarker(search_result)">
+        <div class='spotbie-search-result' *ngFor='let search_result of (searchResults$ | async)' (click)="pullSearchMarker(search_result)">
           <table class='spotbie-search-result-table'>
             <tr>
               <td *ngIf="search_result.image_url !== '0'">
                 <div class='spotbie-search-result-image'[ngStyle]="{ 'background' : 'url(' + search_result.image_url + ')' }" ></div>
               </td>
 
-              <td *ngIf="typeOfInfoObject === 'yelp_business'">
+              <td *ngIf="(typeOfInfoObject$ | async) === 'yelp_business'">
                 <div class='spotbie-search-result-title' >
                   {{ search_result.name }}
                 </div>
@@ -364,7 +273,7 @@
                   {{ search_result.display_phone }}
                 </div>
               </td>
-              <td *ngIf="typeOfInfoObject === 'ticketmaster_events'">
+              <td *ngIf="(typeOfInfoObject$ | async) === 'ticketmaster_events'">
                 <div class='spotbie-venue-name' *ngIf="search_result._embedded.venues[0]">
                   {{ search_result._embedded.venues[0].name }}
                 </div>
@@ -437,36 +346,39 @@
 
         <app-bottom-ad-banner class='mt-4'
                               #bottomAdBanner
-                              [eventsClassification]="eventsClassification"
-                              [accountType]="searchCategory"
-                              [categories]="numberCategories"
-                              [lat]="lat"
-                              [lng]="lng"></app-bottom-ad-banner>
+                              [eventsClassification]="eventsClassification$ | async"
+                              [accountType]="searchCategory$ | async"
+                              [categories]="numberCategories$ | async"
+                              [lat]="lat$ | async"
+                              [lng]="lng$ | async"></app-bottom-ad-banner>
       </div>
     </div>
 
-    <div class='spotbie-search-results no-results' *ngIf="showNoResultsBox">
-      <div class='spotbie-no-results' style="text-align: center;" *ngIf="sortEventDate === 'none'">No results available for "{{ searchKeyword }}" within {{ maxDistance }} miles.</div>
-      <div class='spotbie-no-results' style="text-align: center;" *ngIf="sortEventDate === 'today'">No results today available for "{{ searchKeyword }}" within {{ maxDistance }} miles.</div>
-      <div class='spotbie-no-results' style="text-align: center;" *ngIf="sortEventDate === 'weekend'">No results this weekend available for "{{ searchKeyword }}" within {{ maxDistance }} miles.</div>
+    <div class='spotbie-search-results no-results' *ngIf="showNoResultsBox$ | async">
+      <div class='spotbie-no-results' style="text-align: center;" *ngIf="sortEventDate === 'none'">No results available for "{{ searchKeyword$ | async }}" within {{ maxDistance$ | async }} miles.</div>
+      <div class='spotbie-no-results' style="text-align: center;" *ngIf="sortEventDate === 'today'">No results today available for "{{ searchKeyword$ | async }}" within {{ maxDistance$ | async }} miles.</div>
+      <div class='spotbie-no-results' style="text-align: center;" *ngIf="sortEventDate === 'weekend'">No results this weekend available for "{{ searchKeyword$ | async }}" within {{ maxDistance$ | async }} miles.</div>
 
       <div class='spotbie-search-results-title text-uppercase'>
-        Distance  <mat-slider min="0" max="{{ maxDistanceCap }}" step="1" (change)="updateDistance($event)"></mat-slider>
-        {{ maxDistance }} mi.
+        Distance
+        <mat-slider min="0" max="{{ maxDistanceCap }}" step="1">
+          <input matSliderThumb [value]="maxDistance$ | async" (valueChange)="updateDistance($event)">
+        </mat-slider>
+        {{ maxDistance$ | async  }} mi.
       </div>
     </div>
 
-    <div class="sb-footer pt-5 pb-5" *ngIf="showSearchResults || (showSearchResults && isLoggedIn !== '1' )">
+    <div class="sb-footer pt-5 pb-5" *ngIf="(showSearchResults$ | async) || ((showSearchResults$ | async) && isLoggedIn !== '1' )">
       <p (click)="openTerms()">Terms & Privacy Policy</p>
       <img class="mt-3 mb-3" src="assets/images/logo_spotbie_green.svg" />
       <p (click)="openTerms()">SpotBie, LLC.&copy; Copyright 2022</p>
     </div>
 
-    <div class="map-prompt-mobile pe-none" *ngIf="showMobilePrompt2">
+    <div class="map-prompt-mobile pe-none" *ngIf="(showMobilePrompt2$ | async)">
       <div class="spotbie-text-gradient text-uppercase title" id="doubleTapThis"></div>
     </div>
 
-    <ng-container *ngIf="isLoggedIn === '1' && !showSearchResults && !map">
+    <ng-container *ngIf="isLoggedIn === '1' && !(showSearchResults$ | async) && !(map$ | async)">
       <div class='map-prompt-mobile align-items-center justify-content-center' #featureWrapper>
         <div class='map-prompt-v-align mt-2'>
           <app-user-dashboard (spawnCategoriesEvt)="spawnCategories($event)" #homeDashboard
@@ -478,14 +390,14 @@
 
   <!-- Show categories for shopping & food -->
   <div #categoryMenuSlide>
-    <div class='spotbie-categories animated slideInRight' *ngIf="(catsUp$ | async) && searchCategory !== 3">
+    <div class='spotbie-categories animated slideInRight' *ngIf="(catsUp$ | async) && (searchCategory$ | async) !== 3">
       <div *ngFor="let category of categories; let i = index" [ngClass]="getSingleCatClass(i)" (click)="apiSearch(category)">
         {{ category }}
       </div>
     </div>
 
     <!-- Show categories for events -->
-    <div class='spotbie-categories animated slideInRight' *ngIf="(catsUp$ | async) && searchCategory === 3">
+    <div class='spotbie-categories animated slideInRight' *ngIf="(catsUp$ | async) && (searchCategory$ | async) === 3">
       <div [ngClass]="getSingleCatClass(i)" *ngFor="let category of categories; let i = index" (click)="showEventSub(category)">
         {{ category.name }}
 
@@ -516,12 +428,12 @@
         <img src="assets/images/home_imgs/find-places-to-eat.svg" />
       </div>
 
-      <div class='sb-optionGet' (click)="spawnCategories(3)">
-        <img src="assets/images/home_imgs/find-events.svg" />
+      <div class='sb-optionGet' (click)="spawnCategories(2)">
+        <img src="assets/images/home_imgs/find-places-for-shopping.svg" />
       </div>
 
-      <div class='sb-optionGet' (click)="spawnCategories(1)">
-        <img src="assets/images/home_imgs/find-places-for-shopping.svg" />
+      <div class='sb-optionGet' (click)="spawnCategories(3)">
+        <img src="assets/images/home_imgs/find-events.svg" />
       </div>
     </div>
 
@@ -537,10 +449,10 @@
   </div>
 
   <app-info-object [info_object]="(infoObject$ | async)"
-                   [eventsClassification]="eventsClassification"
-                   [categories]="numberCategories"
-                   [lat]="lat"
-                   [lng]="lng"
+                   [eventsClassification]="eventsClassification$ | async"
+                   [categories]="numberCategories$ | async"
+                   [lat]="lat$ | async"
+                   [lng]="lng$ | async"
                    (closeWindow)="infoObject$.next(null)"
                    *ngIf="(infoObject$ | async)">
   </app-info-object>

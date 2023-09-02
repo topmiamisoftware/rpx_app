@@ -19,9 +19,8 @@ export class HomeComponent implements OnInit {
     this.getStartedPrompt = false;
   }
 
-  spawnCategories(category: string): void {
-    const evt: any = {category};
-    this.appMap.spawnCategories(evt);
+  spawnCategories(category: number): void {
+    this.appMap.spawnCategories(category);
   }
 
   openHome() {

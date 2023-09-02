@@ -7,15 +7,21 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
-import {environment} from '../../../../environments/environment';
-import {Redeemable} from '../../../models/redeemable';
-import {UserauthService} from '../../../services/userauth.service';
-import {Reward} from '../../../models/reward';
-import {LoyaltyPointsService} from '../../../services/loyalty-points/loyalty-points.service';
-import {Business} from '../../../models/business';
-import {DeviceDetectorService} from 'ngx-device-detector';
-import {RewardCreatorService} from '../../../services/spotbie-logged-in/business-menu/reward-creator/reward-creator.service';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
+import { environment } from '../../../../environments/environment';
+import { Redeemable } from '../../../models/redeemable';
+import { UserauthService } from '../../../services/userauth.service';
+import { Reward } from '../../../models/reward';
+import { LoyaltyPointsService } from '../../../services/loyalty-points/loyalty-points.service';
+import { Business } from '../../../models/business';
+import { DeviceDetectorService } from 'ngx-device-detector';
+import { RewardCreatorService } from '../../../services/spotbie-logged-in/business-menu/reward-creator/reward-creator.service';
+import { BehaviorSubject } from 'rxjs';
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 
 const QR_CODE_LOYALTY_POINTS_SCAN_BASE_URL =
   environment.qrCodeLoyaltyPointsScanBaseUrl;
@@ -36,30 +42,31 @@ export class QrComponent implements OnInit {
 
   @ViewChild('sbEarnedPoints') sbEarnedPoints: ElementRef;
 
-  business = new Business();
-  redeemable = new Redeemable();
-  userHash: string;
+  business$ = new BehaviorSubject<Business>(null);
+  redeemable$ = new BehaviorSubject<Redeemable>(null);
+  userHash$ = new BehaviorSubject<string>(null);
+  isBusiness$ = false;
+  userLoyaltyPoints$ = new BehaviorSubject<number>(0);
+  loyaltyPointWorth$ = new BehaviorSubject<number>(0);
+  businessLoyaltyPointsFormUp$ = new BehaviorSubject<boolean>(false);
+  rewardPrompted$ = new BehaviorSubject<boolean>(false);
+  rewardPrompt$ = new BehaviorSubject<boolean>(false);
+  loyaltyPointReward$ = new BehaviorSubject<number>(null);
+  loyaltyPointRewardDollarValue$ = new BehaviorSubject<number>(null);
+  qrCodeLink$ = new BehaviorSubject<string>(null);
+  businessLoyaltyPointsSubmitted$ = new BehaviorSubject<boolean>(false);
+  qrWidth$ = new BehaviorSubject<number>(0);
+  scanSuccess$ = new BehaviorSubject<boolean>(false);
+  awarded$ = new BehaviorSubject<boolean>(false);
+  reward$ = new BehaviorSubject<Reward>(null);
+  rewarded$ = new BehaviorSubject<boolean>(false);
+  pointsCharged$ = new BehaviorSubject<number>(0);
+
   qrType = 'url';
-  isBusiness = false;
-  userLoyaltyPoints = 0;
-  loyaltyPointWorth = 0;
-  businessLoyaltyPointsForm: UntypedFormGroup;
-  businessLoyaltyPointsFormUp = false;
-  rewardPrompted = false;
   promptForRewardTimeout;
-  rewardPrompt = false;
-  loyaltyPointReward: number;
-  loyaltyPointRewardDollarValue: number;
-  qrCodeLink: string;
+  businessLoyaltyPointsForm: UntypedFormGroup;
   qrCodeLoyaltyPointsBaseUrl = QR_CODE_LOYALTY_POINTS_SCAN_BASE_URL;
   qrCodeRewardBaseUrl = QR_CODE_CALIM_REWARD_SCAN_BASE_URL;
-  businessLoyaltyPointsSubmitted = false;
-  qrWidth = 0;
-  scanSuccess = false;
-  awarded = false;
-  reward: Reward;
-  rewarded = false;
-  pointsCharged: number;
 
   constructor(
     private userAuthService: UserauthService,
@@ -98,23 +105,77 @@ export class QrComponent implements OnInit {
 
   claimRewardCb(resp) {
     if (resp.success) {
-      this.rewarded = true;
-      this.reward = resp.reward;
-      this.pointsCharged = this.reward.point_cost;
+      this.rewarded$.next(true);
+      this.reward$.next(resp.reward);
+      this.pointsCharged$.next(this.reward$.getValue().point_cost);
       this.sbEarnedPoints.nativeElement.style.display = 'block';
     } else {
       alert(resp.message);
     }
 
-    this.scanSuccess = false;
+    this.scanSuccess$.next(false);
+  }
+
+  async checkPermission() {
+    // check if user already granted permission
+    const status = await BarcodeScanner.checkPermission({ force: false });
+
+    if (status.granted) {
+      // user granted permission
+      return true;
+    }
+
+    if (status.denied) {
+      // user denied permission
+      return false;
+    }
+
+    if (status.asked) {
+      // system requested the user for permission during this call
+      // only possible when force set to true
+    }
+
+    if (status.neverAsked) {
+      // user has not been requested this permission before
+      // it is advised to show the user some sort of prompt
+      // this way you will not waste your only chance to ask for the permission
+      const c = confirm('We need your permission to use your camera to be able to scan barcodes');
+      if (!c) {
+        return false;
+      }
+    }
+
+    if (status.restricted || status.unknown) {
+      // ios only
+      // probably means the permission has been denied
+      return false;
+    }
+
+    // user has not denied permission
+    // but the user also has not yet granted the permission
+    // so request it
+    const statusRequest = await BarcodeScanner.checkPermission({ force: true });
+
+    if (statusRequest.asked) {
+      // system requested the user for permission during this call
+      // only possible when force set to true
+    }
+
+    if (statusRequest.granted) {
+      // the user did grant the permission now
+      return true;
+    }
+
+    // user did not grant the permission, so he must have declined the request
+    return false;
   }
 
   scanSuccessHandler(urlString: string) {
-    if (this.scanSuccess) {
+    if (this.scanSuccess$.getValue()) {
       return;
     }
 
-    this.scanSuccess = true;
+    this.scanSuccess$.next(true);
 
     const url = new URL(urlString);
     const urlParams = new URLSearchParams(url.search);
@@ -138,14 +199,14 @@ export class QrComponent implements OnInit {
 
   scanSuccessHandlerCb(resp: any) {
     if (resp.success) {
-      this.awarded = true;
-      this.userLoyaltyPoints = resp.redeemable.amount;
+      this.awarded$.next(true);
+      this.userLoyaltyPoints$.next(resp.redeemable.amount);
       this.sbEarnedPoints.nativeElement.style.display = 'block';
     } else {
       alert(resp.message);
     }
 
-    this.scanSuccess = false;
+    this.scanSuccess$.next(false);
   }
 
   scanErrorHandler(event) {}
@@ -158,11 +219,15 @@ export class QrComponent implements OnInit {
     this.loyaltyPointsService.getLoyaltyPointBalance();
 
     this.userAuthService.getSettings().subscribe(resp => {
-      this.userHash = resp.user.hash;
-      this.business.address = resp.business.address;
-      this.business.name = resp.business.name;
-      this.business.qr_code_link = resp.business.qr_code_link;
-      this.business.trial_ends_at = resp.business.trial_ends_at;
+      this.userHash$.next(resp.user.hash);
+
+      this.business$.next({
+        ...new Business(),
+        address: resp.business.address,
+        name: resp.business.name,
+        qr_code_link: resp.business.qr_code_link,
+        trial_ends_at: resp.business.trial_ends_at,
+      });
     });
 
     const totalSpentValidators = [Validators.required];
@@ -171,15 +236,21 @@ export class QrComponent implements OnInit {
       totalSpent: ['', totalSpentValidators],
     });
 
-    this.businessLoyaltyPointsFormUp = true;
+    this.businessLoyaltyPointsFormUp$.next(true);
   }
 
   startQrCodeScanner() {
     this.loyaltyPointsService.getLoyaltyPointBalance();
+
+    BarcodeScanner.hideBackground();
+    const result = await BarcodeScanner.startScan();
+    if (result.hasContent) {
+      console.log(result.content);
+    }
   }
 
   closeQr() {
-    this.rewardPrompted = false;
+    this.rewardPrompted$.next(false);
   }
 
   closeQrUser() {
@@ -188,9 +259,9 @@ export class QrComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.deviceDetectorService.isMobile()) {
-      this.qrWidth = 250;
+      this.qrWidth$.next(250);
     } else {
-      this.qrWidth = 450;
+      this.qrWidth$.next(450);
     }
 
     this.startQrCodeScanner();

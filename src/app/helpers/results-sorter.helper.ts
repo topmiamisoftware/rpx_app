@@ -23,14 +23,14 @@ export function ratingSortDesc(a: any, b: any) {
 }
 
 export function reviewsSortAsc(a: any, b: any) {
-  a = a.reviewCount;
-  b = b.reviewCount;
+  a = a.review_count;
+  b = b.review_count;
   return a > b ? 1 : b > a ? -1 : 0;
 }
 
 export function reviewsSortDesc(a: any, b: any) {
-  a = a.reviewCount;
-  b = b.reviewCount;
+  a = a.review_count;
+  b = b.review_count;
   return a > b ? -1 : b > a ? 1 : 0;
 }
 

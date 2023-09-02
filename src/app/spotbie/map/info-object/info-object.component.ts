@@ -1,22 +1,25 @@
-import {Component, OnInit, Input, Output, EventEmitter} from '@angular/core';
-import {InfoObjectServiceService} from './info-object-service.service';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { InfoObjectServiceService } from './info-object-service.service';
 // import {MyFavoritesService} from '../../my-favorites/my-favorites.service';
-import {ActivatedRoute, Router} from '@angular/router';
-import {DateFormatPipe, TimeFormatPipe} from '../../../pipes/date-format.pipe';
-import {SpotbieMetaService} from '../../../services/meta/spotbie-meta.service';
-import {setYelpRatingImage} from '../../../helpers/info-object-helper';
-import {shareNative} from '../../../helpers/cordova/sharesheet';
-import {externalBrowserOpen} from '../../../helpers/cordova/web-intent';
+import { ActivatedRoute, Router } from '@angular/router';
+import {
+  DateFormatPipe,
+  TimeFormatPipe,
+} from '../../../pipes/date-format.pipe';
+import { SpotbieMetaService } from '../../../services/meta/spotbie-meta.service';
+import { setYelpRatingImage } from '../../../helpers/info-object-helper';
+import { shareNative } from '../../../helpers/cordova/sharesheet';
 import {
   spotbieMetaDescription,
   spotbieMetaTitle,
   spotbieMetaImage,
 } from '../../../constants/spotbie';
-import {InfoObject} from '../../../models/info-object';
-import {environment} from '../../../../environments/environment';
-import {Ad} from '../../../models/ad';
-import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
-import {BehaviorSubject} from 'rxjs';
+import { InfoObject } from '../../../models/info-object';
+import { environment } from '../../../../environments/environment';
+import { Ad } from '../../../models/ad';
+import { InfoObjectType } from '../../../helpers/enum/info-object-type.enum';
+import { BehaviorSubject } from 'rxjs';
+import { AppLauncher } from '@capacitor/app-launcher';
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
@@ -127,7 +130,6 @@ export class InfoObjectComponent implements OnInit {
   }
 
   private pullInfoObjectCallback(httpResponse: any): void {
-    console.log('pullInfoObjectCallback', httpResponse);
     if (httpResponse.success) {
       const infoObject = httpResponse.data as InfoObject;
       infoObject.type_of_info_object_category = this.infoObjectCategory;
@@ -249,7 +251,7 @@ export class InfoObjectComponent implements OnInit {
     this.loading = false
   }*/
 
-  openWithGoogleMaps(): void {
+  async openWithGoogleMaps() {
     const confirmNav = confirm(
       "We will try to open and navigate on your device's default navigation app."
     );
@@ -261,16 +263,21 @@ export class InfoObjectComponent implements OnInit {
     });
 
     if (confirmNav) {
-      externalBrowserOpen(`http://www.google.com/maps/place/${displayAddress}`);
+      await AppLauncher.openUrl({
+        url: `http://www.google.com/maps/place/${displayAddress}`,
+      });
     }
+
+    return;
   }
 
   switchPhoto(thumbnail): void {
     this.infoObjectImageUrl = thumbnail;
   }
 
-  goToTicket(): void {
-    externalBrowserOpen(this.infoObject$.getValue().url);
+  async goToTicket() {
+    await AppLauncher.openUrl({ url: this.infoObject$.getValue().url });
+    return;
   }
 
   getTitleStyling(): string {
@@ -281,10 +288,10 @@ export class InfoObjectComponent implements OnInit {
     return className;
   }
 
-  getCloseButtonStyling(): {color: string} {
-    let style = {color: 'white'};
+  getCloseButtonStyling(): { color: string } {
+    let style = { color: 'white' };
     if (!this.infoObject$.getValue().is_community_member) {
-      style = {color: '#332f3e'};
+      style = { color: '#332f3e' };
     }
     return style;
   }
@@ -460,10 +467,10 @@ export class InfoObjectComponent implements OnInit {
     return;
   }
 
-  visitInfoObjectPage(): void {
+  async visitInfoObjectPage() {
     const infoObject = this.infoObject$.getValue();
     if (infoObject.type_of_info_object === InfoObjectType.Yelp) {
-      externalBrowserOpen(`${infoObject.url}`);
+      await AppLauncher.openUrl({ url: `${infoObject.url}` });
     } else if (infoObject.type_of_info_object === InfoObjectType.TicketMaster) {
       this.goToTicket();
     }

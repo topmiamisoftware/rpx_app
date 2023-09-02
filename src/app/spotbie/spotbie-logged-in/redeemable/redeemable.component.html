@@ -1,5 +1,9 @@
 <div class='spotbie-overlay-window' id="redeemWindow">
-    <div class="spotbie-redeemListWrapper" *ngIf="(rewards || lpRedeemed || ledger || showBalanceList)">
+    <div class="spotbie-redeemListWrapper"
+         *ngIf="((rewards$ | async) ||
+                 (lpRedeemed$ | async) ||
+                 (ledger$ | async) ||
+                 (showBalanceList$ | async))">
         <div class="nav">
             <table id="redeemWindowNav">
                 <tr>
@@ -22,8 +26,8 @@
             </table>
         </div>
         <div id="redeemWindowNavMargin"></div>
-        <div *ngIf="rewards">
-            <div class="card spotbie-redeemedItem" *ngFor="let redeemedItem of rewardList">
+        <div *ngIf="rewards$ | async">
+            <div class="card spotbie-redeemedItem" *ngFor="let redeemedItem of (rewardList$ | async)">
                 <div class='card-header'>
                     <span class='sb-text-light-green-gradient'>{{ redeemedItem.business.name }}</span>
 
@@ -62,12 +66,11 @@
             </div>
         </div>
 
-        <div *ngIf="lpRedeemed">
-            <div class="card spotbie-redeemedItem" *ngFor="let redeemedItem of lpRedeemedList">
+        <div *ngIf="lpRedeemed$ | async">
+            <div class="card spotbie-redeemedItem" *ngFor="let redeemedItem of (lpRedeemedList$ | async)">
                 <div class='card-header'>
                     <span class='sb-text-light-green-gradient'>{{ redeemedItem.business.name }}</span>
-
-                    <img *ngIf="redeemedItem.business.spotbie_user.user_type == 1" [src]="'assets/images/home_imgs/find-places-to-eat.svg'" />
+                    <img *ngIf="redeemedItem.business.spotbie_user.user_type === 1" [src]="'assets/images/home_imgs/find-places-to-eat.svg'" />
                     <img *ngIf="redeemedItem.business.spotbie_user.user_type === 2" [src]="'assets/images/home_imgs/find-places-for-shopping.svg'" />
                     <img *ngIf="redeemedItem.business.spotbie_user.user_type === 3" [src]="'assets/images/home_imgs/find-events.svg'" />
                 </div>
@@ -102,8 +105,8 @@
             </div>
         </div>
 
-        <div *ngIf="ledger">
-            <div class="card spotbie-redeemedItem" *ngFor="let legerRecord of lpLedgerList">
+        <div *ngIf="ledger$ | async">
+            <div class="card spotbie-redeemedItem" *ngFor="let legerRecord of (lpLedgerList$ | async)">
                 <div class='card-header'>
                     <span class='sb-text-light-green-gradient'>{{ legerRecord.business.name }}</span>
 
@@ -125,13 +128,13 @@
                 </div>
 
                 <div class='card-footer text-uppercase text-center'>
-                    transaction id: {{ legerRecord.uuid }}
+                    ID: {{ legerRecord.uuid }}
                 </div>
             </div>
         </div>
 
-        <div *ngIf="showBalanceList">
-            <div class="card spotbie-redeemedItem" *ngFor="let balance of balanceList">
+        <div *ngIf="(showBalanceList$ | async)">
+            <div class="card spotbie-redeemedItem" *ngFor="let balance of (balanceList$ | async)">
                 <div class='card-header'>
                     <span class='sb-text-light-green-gradient'>{{ balance.from_business.name }}</span>
 
@@ -162,17 +165,17 @@
             LOAD MORE
         </div>
 
-        <div class='spotbie-no-notis-box' *ngIf="((rewardList.length === 0 && rewards) ||
-                                                  (lpRedeemedList.length === 0 && lpRedeemed) ||
-                                                  (lpLedgerList.length === 0 && ledger) ||
-                                                  (balanceList.length === 0 && showBalanceList))">
+        <div class='spotbie-no-notis-box' *ngIf="((rewardList$ | async).length === 0 && rewards$ | async) ||
+                                                  ((lpRedeemedList$ | async).length === 0 && lpRedeemed$ | async) ||
+                                                  ((lpLedgerList$ | async).length === 0 && ledger$ | async) ||
+                                                  ((balanceList$ | async).length === 0 && showBalanceList$ | async)">
             <i class="fas fa-exclamation-triangle"></i>
             <br/><br/>
             <p class="spotbie-text-gradient">
-                <span *ngIf="balanceList.length === 0 && showBalanceList">You have not redeemed any points.</span>
-                <span *ngIf="rewardList.length === 0 && rewards">You have no redeemed rewards.</span>
-                <span *ngIf="lpRedeemedList.length === 0 && lpRedeemed">You have no redeemed points.</span>
-                <span *ngIf="lpLedgerList.length === 0 && ledger">You have no transaction history.</span>
+                <span *ngIf="(balanceList$ | async).length === 0 && showBalanceList$ | async">You have not redeemed any points.</span>
+                <span *ngIf="(rewardList$ | async).length === 0 && rewards$ | async">You have no redeemed rewards.</span>
+                <span *ngIf="(lpRedeemedList$ | async).length === 0 && lpRedeemed$ | async">You have no redeemed points.</span>
+                <span *ngIf="(lpLedgerList$ | async).length === 0 && ledger$ | async">You have no transaction history.</span>
             </p>
             <br/><br/>
             <div class='spotbie-text-gradient mt-3 cursor-pointer' (click)="closeWindow()">

@@ -7,11 +7,12 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import {LoyaltyPointsComponent} from '../loyalty-points/loyalty-points.component';
-import {QrComponent} from '../qr/qr.component';
-import {RedeemableComponent} from '../redeemable/redeemable.component';
-import {RewardMenuComponent} from '../reward-menu/reward-menu.component';
-import {Platform} from '@ionic/angular';
+import { LoyaltyPointsComponent } from '../loyalty-points/loyalty-points.component';
+import { QrComponent } from '../qr/qr.component';
+import { RedeemableComponent } from '../redeemable/redeemable.component';
+import { RewardMenuComponent } from '../reward-menu/reward-menu.component';
+import { Platform } from '@ionic/angular';
+import { BehaviorSubject } from "rxjs";
 
 @Component({
   selector: 'app-user-dashboard',
@@ -30,16 +31,16 @@ export class UserDashboardComponent {
   @ViewChild('rewardMenuAppAnchor') rewardMenuAppAnchor: ElementRef;
   @ViewChild('qrCodeAppAnchor') qrCodeAppAnchor: ElementRef;
 
-  scannerStarted = false;
-  isMobile = false;
-  getRedeemableItems = false;
+  scannerStarted$ = new BehaviorSubject<boolean>(false);
+  isMobile$ = new BehaviorSubject<boolean>(false);
+  getRedeemableItems$ = new BehaviorSubject<boolean>(false);
 
   constructor(private platform: Platform) {
-    this.isMobile = this.platform.is('mobile');
+    this.isMobile$.next(this.platform.is('mobile'));
   }
 
   redeemedLp() {
-    this.getRedeemableItems = true;
+    this.getRedeemableItems$.next(true);
   }
 
   scrollToLpAppAnchor() {
@@ -67,15 +68,15 @@ export class UserDashboardComponent {
   }
 
   startQrScanner() {
-    this.scannerStarted = true;
+    this.scannerStarted$.next(true);
   }
 
   closeQrScanner() {
-    this.scannerStarted = false;
+    this.scannerStarted$.next(false);
   }
 
   closeRedeemables() {
-    this.getRedeemableItems = false;
+    this.getRedeemableItems$.next(false);
   }
 
   spawnCategories(category: number) {

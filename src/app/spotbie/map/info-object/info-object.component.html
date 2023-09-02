@@ -150,7 +150,8 @@
         </div>
     </div>
 
-    <app-reward-menu [qrCodeLink]="infoObject?.qr_code_link"
+    <app-reward-menu *ngIf="infoObject?.type_of_info_object === eInfoObjectType.SpotBieCommunity"
+                     [qrCodeLink]="infoObject?.qr_code_link"
                      [rewardAppFullScreen]="fullScreenMode"
                      [fullScreenMode]="false">
     </app-reward-menu>

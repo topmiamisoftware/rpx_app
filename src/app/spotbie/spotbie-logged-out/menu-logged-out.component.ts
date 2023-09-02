@@ -7,10 +7,10 @@ import {
   ElementRef,
   AfterViewInit,
 } from '@angular/core';
-import {Location} from '@angular/common';
-import {externalBrowserOpen} from '../../helpers/cordova/web-intent';
-import {Router} from '@angular/router';
-import {Platform} from '@ionic/angular';
+import { Location } from '@angular/common';
+import { AppLauncher } from '@capacitor/app-launcher';
+import { Router } from '@angular/router';
+import { Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-menu-logged-out',
@@ -24,8 +24,8 @@ export class MenuLoggedOutComponent implements OnInit, AfterViewInit {
 
   @ViewChild('spotbieMainMenu') spotbieMainMenu: ElementRef;
 
-  logInWindow = {open: true};
-  signUpWindow = {open: false};
+  logInWindow = { open: true };
+  signUpWindow = { open: false };
   menuActive = false;
   isMobile: boolean;
   isDesktop: boolean;
@@ -79,8 +79,9 @@ export class MenuLoggedOutComponent implements OnInit, AfterViewInit {
     this.spawnCategoriesOut.emit(type);
   }
 
-  goToBlog() {
-    externalBrowserOpen('https://blog.spotbie.com/');
+  async goToBlog() {
+    await AppLauncher.openUrl({ url: 'https://blog.spotbie.com/' });
+    return;
   }
 
   openWindow(window: any) {
@@ -115,7 +116,7 @@ export class MenuLoggedOutComponent implements OnInit, AfterViewInit {
 
   getMenuStyle() {
     if (!this.menuActive) {
-      return {'background-color': 'transparent'};
+      return { 'background-color': 'transparent' };
     }
   }
 

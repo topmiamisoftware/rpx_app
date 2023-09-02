@@ -114,6 +114,9 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
       }
     } else {
       accountType = this.accountType ? this.accountType : getRandomInt(1, 3);
+
+      console.log('account type', accountType);
+
       switch (accountType) {
         case 'food':
           accountType = 1;

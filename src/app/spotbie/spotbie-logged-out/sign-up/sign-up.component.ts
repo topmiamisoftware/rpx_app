@@ -7,23 +7,27 @@ import {
   Input,
   EventEmitter,
 } from '@angular/core';
-import {Router} from '@angular/router';
-import {Validators, UntypedFormGroup, UntypedFormBuilder} from '@angular/forms';
-import {ValidateUsername} from '../../../helpers/username.validator';
-import {ValidatePassword} from '../../../helpers/password.validator';
-import {SignUpService} from '../../../services/spotbie-logged-out/sign-up/sign-up.service';
-import {catchError} from 'rxjs/operators';
-import {Observable} from 'rxjs/internal/Observable';
-import {of} from 'rxjs';
-import {EmailConfirmationService} from '../../email-confirmation/email-confirmation.service';
-import {ValidateUniqueEmail} from '../../../validators/email-unique.validator';
+import { Router } from '@angular/router';
+import {
+  Validators,
+  UntypedFormGroup,
+  UntypedFormBuilder,
+} from '@angular/forms';
+import { ValidateUsername } from '../../../helpers/username.validator';
+import { ValidatePassword } from '../../../helpers/password.validator';
+import { SignUpService } from '../../../services/spotbie-logged-out/sign-up/sign-up.service';
+import { catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs/internal/Observable';
+import { of } from 'rxjs';
+import { EmailConfirmationService } from '../../email-confirmation/email-confirmation.service';
+import { ValidateUniqueEmail } from '../../../validators/email-unique.validator';
 import {
   faEye,
   faEyeSlash,
   faInfoCircle,
 } from '@fortawesome/free-solid-svg-icons';
-import {UserauthService} from '../../../services/userauth.service';
-import {externalBrowserOpen} from '../../../helpers/cordova/web-intent';
+import { UserauthService } from '../../../services/userauth.service';
+import { AppLauncher } from '@capacitor/app-launcher';
 
 @Component({
   selector: 'app-sign-up',
@@ -88,7 +92,7 @@ export class SignUpComponent implements OnInit {
   }
 
   scrollTo(el: ElementRef): void {
-    $('html, body').animate({scrollTop: $(el).offset().top}, 'slow');
+    $('html, body').animate({ scrollTop: $(el).offset().top }, 'slow');
   }
 
   closeWindowX(): void {
@@ -164,7 +168,7 @@ export class SignUpComponent implements OnInit {
       const errorList = error.error.errors;
 
       if (errorList.username) {
-        const errors: {[k: string]: any} = {};
+        const errors: { [k: string]: any } = {};
         errorList.username.forEach(err => {
           errors[err] = true;
         });
@@ -177,7 +181,7 @@ export class SignUpComponent implements OnInit {
       }
 
       if (errorList.email) {
-        const errors: {[k: string]: any} = {};
+        const errors: { [k: string]: any } = {};
         errorList.email.forEach(err => {
           errors[err] = true;
         });
@@ -189,7 +193,7 @@ export class SignUpComponent implements OnInit {
       }
 
       if (errorList.password) {
-        const errors: {[k: string]: any} = {};
+        const errors: { [k: string]: any } = {};
         errorList.username.forEach(err => {
           errors[err] = true;
         });
@@ -249,6 +253,7 @@ export class SignUpComponent implements OnInit {
     this.router.navigate(['/business']);
   }
 
+
   getCurrentWindowBg() {
     if (this.business) {
       return 'sb-businessBg';
@@ -257,8 +262,9 @@ export class SignUpComponent implements OnInit {
     }
   }
 
-  openTerms() {
-    externalBrowserOpen('https://spotbie.com/terms');
+  async openTerms() {
+    await AppLauncher.openUrl({ url: 'https://spotbie.com/terms' });
+    return;
   }
 
   private initSignUpCallback(resp: any) {

@@ -849,6 +849,34 @@ app-community-member{
     z-index: 99;
 }
 
+.spotbie-marker-bg{
+    left: -8px;
+    top: -20px;
+    min-height: 40px;
+    height: 40px;
+    max-height: 40px;
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    background-color: teal;
+    border-radius: 99px;
+    background-position: center !important;
+    background-size: cover !important;
+    cursor: pointer;
+    z-index: 99;
+    border: 2px solid rgb(22 181 146);
+}
+.spotbie-marker-bg:hover{
+    border: 1px solid rgb(22 181 146);
+}
+.spotbie-marker-bg.sb-communityMember{
+    min-height: 45px;
+    height: 45px;
+    width: 45px;
+    min-width: 45px;
+    border: 2px solid #ff7220;
+}
+
 /**WIDTH MEDIA QUERIES */
 @media (max-width: 1440px) {
 

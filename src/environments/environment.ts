@@ -2,7 +2,7 @@
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 const ngrok =
-  'https://a0ee-2601-586-cd80-6e0-3e7b-5ed1-2886-1893.ngrok-free.app/';
+  'https://21a0-2601-586-cd80-6e0-5d33-e188-a7fb-2ad6.ngrok-free.app/';
 const baseUrl = 'http://localhost:8100/';
 
 export const environment = {
@@ -11,6 +11,7 @@ export const environment = {
   baseUrl,
   googleMapsApiKey: 'AIzaSyBg9GGAv2rRn8WQbylRbpF4j6u-9TFxBG8',
   googlePlacesApiAkey: 'AIzaSyChSn9IE6Dp0Jv8TS013np1b4X1rCsQt_E',
+  mapId: 'IDe50e7edb94949c5',
   qrCodeLoyaltyPointsScanBaseUrl: baseUrl + 'loyalty-points',
   qrCodeRewardScanBaseUrl: baseUrl + 'reward',
   publishableStripeKey:
