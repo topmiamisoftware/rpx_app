@@ -7,10 +7,10 @@ import {
   ElementRef,
   AfterViewInit,
 } from '@angular/core';
-import { Location } from '@angular/common';
-import { AppLauncher } from '@capacitor/app-launcher';
-import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
+import {Location} from '@angular/common';
+import {AppLauncher} from '@capacitor/app-launcher';
+import {Router} from '@angular/router';
+import {Platform} from '@ionic/angular';
 
 @Component({
   selector: 'app-menu-logged-out',
@@ -24,8 +24,8 @@ export class MenuLoggedOutComponent implements OnInit, AfterViewInit {
 
   @ViewChild('spotbieMainMenu') spotbieMainMenu: ElementRef;
 
-  logInWindow = { open: true };
-  signUpWindow = { open: false };
+  logInWindow = {open: true};
+  signUpWindow = {open: false};
   menuActive = false;
   isMobile: boolean;
   isDesktop: boolean;
@@ -62,11 +62,7 @@ export class MenuLoggedOutComponent implements OnInit, AfterViewInit {
     }
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.spotbieMainMenu.nativeElement.style.display = 'table';
-    }, 750);
-  }
+  ngAfterViewInit(): void {}
 
   spawnCategories(type: any, slideMenu = true): void {
     this.logInWindow.open = false;
@@ -80,7 +76,7 @@ export class MenuLoggedOutComponent implements OnInit, AfterViewInit {
   }
 
   async goToBlog() {
-    await AppLauncher.openUrl({ url: 'https://blog.spotbie.com/' });
+    await AppLauncher.openUrl({url: 'https://blog.spotbie.com/'});
     return;
   }
 
@@ -116,7 +112,7 @@ export class MenuLoggedOutComponent implements OnInit, AfterViewInit {
 
   getMenuStyle() {
     if (!this.menuActive) {
-      return { 'background-color': 'transparent' };
+      return {'background-color': 'transparent'};
     }
   }
 

@@ -6,15 +6,20 @@ const core_1 = require("@angular/core");
 const date_format_pipe_1 = require("../../../pipes/date-format.pipe");
 const info_object_helper_1 = require("../../../helpers/info-object-helper");
 const sharesheet_1 = require("../../../helpers/cordova/sharesheet");
-const web_intent_1 = require("../../../helpers/cordova/web-intent");
 const spotbie_1 = require("../../../constants/spotbie");
 const environment_1 = require("../../../../environments/environment");
 const info_object_type_enum_1 = require("../../../helpers/enum/info-object-type.enum");
+const rxjs_1 = require("rxjs");
+const app_launcher_1 = require("@capacitor/app-launcher");
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 const SPOTBIE_META_DESCRIPTION = spotbie_1.spotbieMetaDescription;
 const SPOTBIE_META_TITLE = spotbie_1.spotbieMetaTitle;
 const SPOTBIE_META_IMAGE = spotbie_1.spotbieMetaImage;
 let InfoObjectComponent = class InfoObjectComponent {
+    set info_object(infoObject) {
+        this.accountType = infoObject.user_type;
+        this.infoObject$.next(infoObject);
+    }
     constructor(infoObjectService, 
     // private myFavoritesService: MyFavoritesService,
     router, activatedRoute, spotbieMetaService) {
@@ -28,7 +33,9 @@ let InfoObjectComponent = class InfoObjectComponent {
         this.eventsClassification = null;
         this.closeWindow = new core_1.EventEmitter();
         this.removeFavoriteEvent = new core_1.EventEmitter();
-        this.infoObject = null;
+        this.loading$ = new rxjs_1.BehaviorSubject(false);
+        this.rewardMenuUp$ = new rxjs_1.BehaviorSubject(false);
+        this.infoObject$ = new rxjs_1.BehaviorSubject(null);
         this.showFavorites = true;
         this.objectCategories = '';
         this.eInfoObjectType = info_object_type_enum_1.InfoObjectType;
@@ -83,202 +90,211 @@ let InfoObjectComponent = class InfoObjectComponent {
     }
     pullInfoObjectCallback(httpResponse) {
         if (httpResponse.success) {
-            this.info_object = httpResponse.data;
-            this.info_object.type_of_info_object_category = this.infoObjectCategory;
-            if (this.info_object.is_community_member)
+            const infoObject = httpResponse.data;
+            infoObject.type_of_info_object_category = this.infoObjectCategory;
+            if (infoObject.is_community_member) {
                 this.infoObjectImageUrl =
                     'assets/images/home_imgs/spotbie-green-icon.svg';
-            else
+            }
+            else {
                 this.infoObjectImageUrl =
                     'assets/images/home_imgs/spotbie-white-icon.svg';
+            }
             if (this.router.url.indexOf('place-to-eat') > -1 ||
-                this.info_object.type_of_info_object_category === 'food') {
-                this.info_object.type_of_info_object = info_object_type_enum_1.InfoObjectType.Yelp;
-                this.info_object.type_of_info_object_category = 'food';
-                this.infoObjectLink = `${environment_1.environment.baseUrl}place-to-eat/${this.info_object.alias}/${this.info_object.id}`;
+                infoObject.type_of_info_object_category === 1) {
+                infoObject.type_of_info_object = info_object_type_enum_1.InfoObjectType.Yelp;
+                infoObject.type_of_info_object_category = 1;
+                this.infoObjectLink = `${environment_1.environment.baseUrl}place-to-eat/${infoObject.alias}/${infoObject.id}`;
             }
             if (this.router.url.indexOf('shopping') > -1 ||
-                this.info_object.type_of_info_object_category === 'shopping') {
-                this.info_object.type_of_info_object = info_object_type_enum_1.InfoObjectType.Yelp;
-                this.info_object.type_of_info_object_category = 'shopping';
-                this.infoObjectLink = `${environment_1.environment.baseUrl}shopping/${this.info_object.alias}/${this.info_object.id}`;
+                infoObject.type_of_info_object_category === 2) {
+                infoObject.type_of_info_object = info_object_type_enum_1.InfoObjectType.Yelp;
+                infoObject.type_of_info_object_category = 2;
+                this.infoObjectLink = `${environment_1.environment.baseUrl}shopping/${infoObject.alias}/${infoObject.id}`;
             }
             if (this.router.url.indexOf('events') > -1 ||
-                this.info_object.type_of_info_object_category === 'events') {
-                this.info_object.type_of_info_object = info_object_type_enum_1.InfoObjectType.TicketMaster;
-                this.info_object.type_of_info_object_category = 'events';
-                this.infoObjectLink = `${environment_1.environment.baseUrl}event/${this.info_object.alias}/${this.info_object.id}`;
+                infoObject.type_of_info_object_category === 3) {
+                infoObject.type_of_info_object = info_object_type_enum_1.InfoObjectType.TicketMaster;
+                infoObject.type_of_info_object_category = 3;
+                this.infoObjectLink = `${environment_1.environment.baseUrl}event/${infoObject.alias}/${infoObject.id}`;
             }
-            if (this.info_object.is_community_member) {
-                this.info_object.type_of_info_object = info_object_type_enum_1.InfoObjectType.SpotBieCommunity;
-                this.info_object.image_url = this.info_object.photo;
-                this.infoObjectLink = `${environment_1.environment.baseUrl}${this.info_object.name}/${this.info_object.id}`;
+            if (infoObject.is_community_member) {
+                infoObject.type_of_info_object = info_object_type_enum_1.InfoObjectType.SpotBieCommunity;
+                infoObject.image_url = infoObject.photo;
+                this.infoObjectLink = `${environment_1.environment.baseUrl}${infoObject.name}/${infoObject.id}`;
             }
-            if (this.info_object.hours !== undefined) {
-                this.info_object.hours.forEach(hours => {
-                    if (hours.hours_type === 'REGULAR')
-                        this.info_object.isOpenNow = hours.is_open_now;
+            if (infoObject.hours) {
+                infoObject.hours.forEach(hours => {
+                    if (hours.hours_type === 'REGULAR') {
+                        infoObject.isOpenNow = hours.is_open_now;
+                    }
                 });
             }
-            if (this.info_object.is_community_member)
-                this.objectDisplayAddress = `${this.info_object.location.display_address[0]}, ${this.info_object.location.display_address[1]}`;
-            else
-                this.objectDisplayAddress = this.info_object.address;
-            this.info_object.categories.forEach(category => {
+            if (infoObject.is_community_member) {
+                this.objectDisplayAddress = `${infoObject.location.display_address[0]}, ${infoObject.location.display_address[1]}`;
+            }
+            else {
+                this.objectDisplayAddress = infoObject.address;
+            }
+            infoObject.categories.forEach(category => {
                 this.objectCategories = `${this.objectCategories}, ${category.title}`;
             });
             this.objectCategories = this.objectCategories.substring(2, this.objectCategories.length);
-            switch (this.info_object.type_of_info_object_category) {
-                case 'food':
-                    this.infoObjectTitle = `${this.info_object.name} - ${this.objectCategories} - ${this.objectDisplayAddress}`;
-                    this.infoObjectDescription = `Let's go eat at ${this.info_object.name}. I know you'll enjoy some of these categories ${this.objectCategories}. They are located at ${this.objectDisplayAddress}.`;
+            switch (infoObject.type_of_info_object_category) {
+                case 1:
+                    this.infoObjectTitle = `${infoObject.name} - ${this.objectCategories} - ${this.objectDisplayAddress}`;
+                    this.infoObjectDescription = `Let's go eat at ${infoObject.name}. I know you'll enjoy some of these categories ${this.objectCategories}. They are located at ${this.objectDisplayAddress}.`;
                     break;
-                case 'shopping':
-                    this.infoObjectTitle = `${this.info_object.name} - ${this.objectCategories} - ${this.objectDisplayAddress}`;
-                    this.infoObjectDescription = `I really recommend you go shopping at ${this.info_object.name}!`;
+                case 2:
+                    this.infoObjectTitle = `${infoObject.name} - ${this.objectCategories} - ${this.objectDisplayAddress}`;
+                    this.infoObjectDescription = `I really recommend you go shopping at ${infoObject.name}!`;
                     break;
             }
-            this.info_object.rating_image = (0, info_object_helper_1.setYelpRatingImage)(this.info_object.rating);
+            infoObject.rating_image = (0, info_object_helper_1.setYelpRatingImage)(infoObject.rating);
             this.spotbieMetaService.setTitle(this.infoObjectTitle);
             this.spotbieMetaService.setDescription(this.infoObjectDescription);
             this.spotbieMetaService.setImage(this.infoObjectImageUrl);
-            this.loading = false;
-            //this.isInMyFavorites(this.info_object.id, this.info_object.type_of_info_object)
+            this.infoObject$.next(infoObject);
+            this.loading$.next(false);
+            // this.isInMyFavorites(this.infoObject$.id, this.infoObject$.type_of_info_object)
         }
-        else
+        else {
             console.log('pullInfoObjectCallback', httpResponse);
+        }
     }
     /*private isInMyFavorites(objId: string, objType: string): void{
-  
       if(this.isLoggedIn === '1'){
-  
         this.myFavoritesService.isInMyFavorites(objId, objType).subscribe(
           resp =>{
             this.isInMyFavoritesCb(resp)
           }
         )
-  
       } else {
-  
         let isAFavorite = this.myFavoritesService.isInMyFavoritesLoggedOut(objId)
-  
         if(isAFavorite)
           this.showFavorites = false
         else
           this.showFavorites = true
-  
       }
-  
     }
   
     private isInMyFavoritesCb(httpResponse: any): void{
-  
       if (httpResponse.success) {
-  
         let isAFavorite = httpResponse.is_a_favorite
-  
         if(isAFavorite)
           this.showFavorites = false
         else
           this.showFavorites = true
-  
       } else
         console.log('pullInfoObjectCallback', httpResponse)
-  
       this.loading = false
-  
     }*/
-    openWithGoogleMaps() {
+    async openWithGoogleMaps() {
         const confirmNav = confirm("We will try to open and navigate on your device's default navigation app.");
         let displayAddress = '';
-        this.info_object.location.display_address.forEach(element => {
+        this.infoObject$.getValue().location.display_address.forEach(element => {
             displayAddress = displayAddress + ' ' + element;
         });
-        if (confirmNav)
-            (0, web_intent_1.externalBrowserOpen)(`http://www.google.com/maps/place/${displayAddress}`);
+        if (confirmNav) {
+            await app_launcher_1.AppLauncher.openUrl({
+                url: `http://www.google.com/maps/place/${displayAddress}`,
+            });
+        }
+        return;
     }
     switchPhoto(thumbnail) {
         this.infoObjectImageUrl = thumbnail;
     }
-    goToTicket() {
-        (0, web_intent_1.externalBrowserOpen)(this.info_object.url);
+    async goToTicket() {
+        await app_launcher_1.AppLauncher.openUrl({ url: this.infoObject$.getValue().url });
+        return;
     }
     getTitleStyling() {
-        if (this.info_object.is_community_member)
-            return 'spotbie-text-gradient sb-titleGreen text-uppercase';
-        else
-            return 'sb-titleGrey text-uppercase';
+        let className = 'sb-titleGrey text-uppercase';
+        if (this.infoObject$.getValue().is_community_member) {
+            className = 'spotbie-text-gradient sb-titleGreen text-uppercase';
+        }
+        return className;
     }
     getCloseButtonStyling() {
-        if (!this.info_object.is_community_member)
-            return { color: '#332f3e' };
-        else
-            return { color: 'white' };
+        let style = { color: 'white' };
+        if (!this.infoObject$.getValue().is_community_member) {
+            style = { color: '#332f3e' };
+        }
+        return style;
     }
     getOverlayWindowStyling() {
-        if (this.info_object.is_community_member)
-            return 'spotbie-overlay-window communityMemberWindow';
-        else
-            return 'spotbie-overlay-window infoObjectWindow';
+        let className = 'spotbie-overlay-window infoObjectWindow';
+        if (this.infoObject$.getValue().is_community_member) {
+            className = 'spotbie-overlay-window communityMemberWindow';
+        }
+        return className;
     }
     getFontClasses() {
-        if (this.info_object.is_community_member)
-            return 'spotbie-text-gradient text-uppercase';
-        else
-            return 'text-uppercase';
+        let className = 'text-uppercase';
+        if (this.infoObject$.getValue().is_community_member) {
+            className = 'spotbie-text-gradient text-uppercase';
+        }
+        return className;
     }
     getIconTheme() {
-        if (this.info_object.is_community_member)
-            return 'material-dark';
-        else
-            return 'material-light';
+        let className = 'material-light';
+        if (this.infoObject$.getValue().is_community_member) {
+            className = 'material-dark';
+        }
+        return className;
     }
     addFavorite() {
-        this.loading = true;
-        const id = this.info_object.id;
-        const name = this.info_object.name;
+        /*    this.loading$.next(true);
+    
+        const id = this.infoObject$.id;
+        const name = this.infoObject$.name;
+    
         let locX = null;
         let locY = null;
-        if (this.info_object.type_of_info_object === info_object_type_enum_1.InfoObjectType.SpotBieCommunity) {
-            locX = this.info_object.loc_x;
-            locY = this.info_object.loc_y;
+    
+        if (
+          this.infoObject$.type_of_info_object === InfoObjectType.SpotBieCommunity
+        ) {
+          locX = this.infoObject$.loc_x;
+          locY = this.infoObject$.loc_y;
+        } else {
+          locX = this.infoObject$.coordinates.latitude;
+          locY = this.infoObject$.coordinates.longitude;
         }
-        else {
-            locX = this.info_object.coordinates.latitude;
-            locY = this.info_object.coordinates.longitude;
-        }
+    
         const favoriteObj = {
-            third_party_id: id,
-            name,
-            description: null,
-            loc_x: locX,
-            loc_y: locY,
-            type_of_info_object_category: this.info_object.type_of_info_object_category,
+          third_party_id: id,
+          name,
+          description: null,
+          loc_x: locX,
+          loc_y: locY,
+          type_of_info_object_category:
+            this.infoObject$.type_of_info_object_category,
         };
+    
         if (this.isLoggedIn === '1') {
-            /*this.myFavoritesService.addFavorite(favoriteObj).subscribe(
-              resp => {
-                this.addFavoriteCb(resp)
-              }
-            )*/
-        }
-        else {
-            //this.myFavoritesService.addFavoriteLoggedOut(favoriteObj)
-            this.showFavorites = false;
-            this.loading = false;
-        }
+          /!*this.myFavoritesService.addFavorite(favoriteObj).subscribe(
+            resp => {
+              this.addFavoriteCb(resp)
+            }
+          )*!/
+        } else {
+          //this.myFavoritesService.addFavoriteLoggedOut(favoriteObj)
+          this.showFavorites = false;
+          this.loading$.next(false);
+        }*/
     }
     addFavoriteCb(resp) {
-        if (resp.success)
-            this.showFavorites = false;
-        else
-            console.log('addFavoriteCb', resp);
-        this.loading = false;
+        /*    if (resp.success) this.showFavorites = false;
+        else console.log('addFavoriteCb', resp);
+    
+        this.loading$.next(false);*/
     }
     removeFavorite() {
         /*
         this.loading = true
-        const yelpId = this.info_object.id
+        const yelpId = this.infoObject$.id
     
         if(this.isLoggedIn == '1'){
           this.myFavoritesService.removeFavorite(yelpId).subscribe(resp => {
@@ -293,41 +309,37 @@ let InfoObjectComponent = class InfoObjectComponent {
         */
     }
     removeFavoriteCb(resp, favoriteId) {
-        if (resp.success) {
-            this.showFavorites = true;
-            this.removeFavoriteEvent.emit({ favoriteId: favoriteId });
-        }
-        else
-            console.log('removeFavoriteCb', resp);
-        this.loading = false;
+        /*    if (resp.success) {
+          this.showFavorites = true;
+          this.removeFavoriteEvent.emit({favoriteId: favoriteId});
+        } else console.log('removeFavoriteCb', resp);
+        this.loading$.next(false);*/
     }
     getEventCallback(httpResponse) {
-        if (httpResponse.success) {
-            if (httpResponse.data._embedded.events[0] === undefined) {
-                this.loading = false;
-                return;
-            }
-            const event_object = httpResponse.data._embedded.events[0];
-            event_object.coordinates = {
+        const eventObject = httpResponse.data._embedded.events[0] ?? undefined;
+        if (httpResponse.success && eventObject) {
+            eventObject.coordinates = {
                 latitude: '',
                 longitude: '',
             };
-            event_object.coordinates.latitude = parseFloat(event_object._embedded.venues[0].location.latitude);
-            event_object.coordinates.longitude = parseFloat(event_object._embedded.venues[0].location.longitude);
-            event_object.icon = event_object.images[0].url;
-            event_object.image_url = event_object.images[8].url;
-            event_object.type_of_info_object = 'ticketmaster_event';
-            const dt_obj = new Date(event_object.dates.start.localDate);
-            const time_date = new date_format_pipe_1.DateFormatPipe().transform(dt_obj);
-            const time_hr = new date_format_pipe_1.TimeFormatPipe().transform(event_object.dates.start.localTime);
-            event_object.dates.start.spotbieDate = time_date;
-            event_object.dates.start.spotbieHour = time_hr;
-            this.info_object = event_object;
+            eventObject.coordinates.latitude = parseFloat(eventObject._embedded.venues[0].location.latitude);
+            eventObject.coordinates.longitude = parseFloat(eventObject._embedded.venues[0].location.longitude);
+            eventObject.icon = eventObject.images[0].url;
+            eventObject.image_url = eventObject.images[8].url;
+            eventObject.type_of_info_object = 'ticketmaster_event';
+            const datetObj = new Date(eventObject.dates.start.localDate);
+            const timeDate = new date_format_pipe_1.DateFormatPipe().transform(datetObj);
+            const timeHr = new date_format_pipe_1.TimeFormatPipe().transform(eventObject.dates.start.localTime);
+            eventObject.dates.start.spotbieDate = timeDate;
+            eventObject.dates.start.spotbieHour = timeHr;
+            this.infoObject$.next(eventObject);
             this.setEventMetaData();
         }
-        else
+        else {
             console.log('getEventsSearchCallback Error: ', httpResponse);
-        this.loading = false;
+        }
+        this.loading$.next(false);
+        return;
     }
     shareThisNative() {
         const message = this.infoObjectDescription;
@@ -337,70 +349,69 @@ let InfoObjectComponent = class InfoObjectComponent {
         (0, sharesheet_1.shareNative)(message, subject, url, chooserTitle);
     }
     setEventMetaData() {
-        const alias = this.info_object.name
+        const infoObject = this.infoObject$.getValue();
+        const alias = infoObject.name
             .toLowerCase()
             .replace(/ /g, '-')
             .replace(/[-]+/g, '-')
             .replace(/[^\w-]+/g, '');
-        const title = `${this.info_object.name} at ${this.info_object._embedded.venues[0].name}`;
-        if (this.info_object.is_community_member)
-            this.infoObjectImageUrl = `${environment_1.environment.baseUrl}${this.info_object.type_of_info_object_category}/${this.info_object.id}`;
-        else
-            this.infoObjectLink = `${environment_1.environment.baseUrl}event/${alias}/${this.info_object.id}`;
-        this.infoObjectDescription = `Hey! Let's go to ${this.info_object.name} together. It's at ${this.info_object._embedded.venues[0].name} located in ${this.info_object._embedded.venues[0].address.line1}, ${this.info_object._embedded.venues[0].city.name} ${this.info_object._embedded.venues[0].postalCode}. Prices range from $${this.info_object.priceRanges[0].min} to $${this.info_object.priceRanges[0].min}`;
+        const title = `${infoObject.name} at ${infoObject._embedded.venues[0].name}`;
+        if (infoObject.is_community_member) {
+            this.infoObjectImageUrl = `${environment_1.environment.baseUrl}${infoObject.type_of_info_object_category}/${infoObject.id}`;
+        }
+        else {
+            this.infoObjectLink = `${environment_1.environment.baseUrl}event/${alias}/${infoObject.id}`;
+        }
+        this.infoObjectDescription = `Hey! Let's go to ${infoObject.name} together. It's at ${infoObject._embedded.venues[0].name} located in ${infoObject._embedded.venues[0].address.line1}, ${infoObject._embedded.venues[0].city.name} ${infoObject._embedded.venues[0].postalCode}. Prices range from $${infoObject.priceRanges[0].min} to $${infoObject.priceRanges[0].min}`;
         this.infoObjectTitle = title;
         this.spotbieMetaService.setTitle(title);
         this.spotbieMetaService.setDescription(this.infoObjectDescription);
-        this.spotbieMetaService.setImage(this.info_object.image_url);
+        this.spotbieMetaService.setImage(infoObject.image_url);
+        return;
     }
-    visitInfoObjectPage() {
-        if (this.info_object.type_of_info_object === info_object_type_enum_1.InfoObjectType.Yelp)
-            (0, web_intent_1.externalBrowserOpen)(`${this.info_object.url}`);
-        else if (this.info_object.type_of_info_object === info_object_type_enum_1.InfoObjectType.TicketMaster)
+    async visitInfoObjectPage() {
+        const infoObject = this.infoObject$.getValue();
+        if (infoObject.type_of_info_object === info_object_type_enum_1.InfoObjectType.Yelp) {
+            await app_launcher_1.AppLauncher.openUrl({ url: `${infoObject.url}` });
+        }
+        else if (infoObject.type_of_info_object === info_object_type_enum_1.InfoObjectType.TicketMaster) {
             this.goToTicket();
+        }
+        return;
     }
     getInputClass() {
-        if (this.info_object.is_community_member)
-            return 'sb-infoObjectInputLight';
-        else
-            return 'sb-infoObjectInputDark';
+        let className = 'sb-infoObjectInputDark';
+        if (this.infoObject$.getValue().is_community_member) {
+            className = 'sb-infoObjectInputLight';
+        }
+        return className;
     }
     clickGoToSponsored() {
         window.open('/business', '_blank');
-    }
-    showPosition(position) {
-        this.displayAds = true;
+        return;
     }
     ngOnInit() {
-        this.loading = true;
+        this.loading$.next(true);
         this.bgColor = localStorage.getItem('spotbie_backgroundColor');
         this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
-        if (this.info_object !== undefined) {
-            this.infoObjectCategory = this.info_object.type_of_info_object_category;
-            switch (this.info_object.type_of_info_object) {
+        const infoObject = this.infoObject$.getValue();
+        if (infoObject) {
+            this.infoObjectCategory = infoObject.type_of_info_object_category;
+            switch (infoObject.type_of_info_object) {
                 case info_object_type_enum_1.InfoObjectType.Yelp:
-                    this.urlApi = YELP_BUSINESS_DETAILS_API + this.info_object.id;
+                    this.urlApi = YELP_BUSINESS_DETAILS_API + infoObject.id;
                     break;
                 case info_object_type_enum_1.InfoObjectType.TicketMaster:
-                    this.loading = false;
+                    this.loading$.next(false);
                     return;
                 case info_object_type_enum_1.InfoObjectType.SpotBieCommunity:
-                    this.rewardMenuUp = true;
-                    if (this.info_object.user_type === 1)
-                        this.infoObjectLink =
-                            environment_1.environment.baseUrl +
-                                'community/' +
-                                this.info_object.qr_code_link;
-                    else if (this.info_object.user_type === 2)
-                        this.infoObjectLink =
-                            environment_1.environment.baseUrl +
-                                'community/' +
-                                this.info_object.qr_code_link;
-                    else if (this.info_object.user_type === 3)
-                        this.infoObjectLink =
-                            environment_1.environment.baseUrl +
-                                'community/' +
-                                this.info_object.qr_code_link;
+                    this.rewardMenuUp$.next(true);
+                    if (infoObject.user_type === 1 ||
+                        infoObject.user_type === 2 ||
+                        infoObject.user_type === 3) {
+                        this.infoObjectLink = `${environment_1.environment.baseUrl}community/${infoObject.qr_code_link}`;
+                    }
+                    this.loading$.next(false);
                     return;
             }
         }
@@ -417,7 +428,7 @@ let InfoObjectComponent = class InfoObjectComponent {
 };
 tslib_1.__decorate([
     (0, core_1.Input)()
-], InfoObjectComponent.prototype, "info_object", void 0);
+], InfoObjectComponent.prototype, "info_object", null);
 tslib_1.__decorate([
     (0, core_1.Input)()
 ], InfoObjectComponent.prototype, "ad", void 0);

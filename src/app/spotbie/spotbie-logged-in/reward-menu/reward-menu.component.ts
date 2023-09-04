@@ -82,7 +82,6 @@ export class RewardMenuComponent implements OnInit {
 
   private async fetchRewardsCb(resp) {
     if (resp.success) {
-      console.log('RWARDS', resp.rewards);
       this.rewards$.next(resp.rewards);
 
       if (

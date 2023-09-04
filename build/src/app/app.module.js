@@ -24,10 +24,7 @@ let AppModule = class AppModule {
 };
 AppModule = tslib_1.__decorate([
     (0, core_1.NgModule)({
-        declarations: [
-            app_component_1.AppComponent,
-            url_sanitizer_pipe_1.UrlSanitizerPipe,
-        ],
+        declarations: [app_component_1.AppComponent, url_sanitizer_pipe_1.UrlSanitizerPipe],
         imports: [
             forms_1.FormsModule,
             forms_1.ReactiveFormsModule,
@@ -39,7 +36,7 @@ AppModule = tslib_1.__decorate([
             animations_1.BrowserAnimationsModule,
             stripe_angular_1.StripeModule.forRoot(''),
             store_1.StoreModule.forRoot({
-                loyaltyPoints: loyalty_points_reducer_1.loyaltyPointsReducer
+                loyaltyPoints: loyalty_points_reducer_1.loyaltyPointsReducer,
             }),
             platform_browser_1.BrowserModule,
             angular_1.IonicModule.forRoot(),

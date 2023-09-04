@@ -12,6 +12,10 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
+    "lib": [
+      "es2022",
+      "dom",
+    ],
     "typeRoots": [
       "node_modules/@types"
     ],

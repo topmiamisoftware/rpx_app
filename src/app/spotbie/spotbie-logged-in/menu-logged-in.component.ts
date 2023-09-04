@@ -16,11 +16,12 @@ import {AllowedAccountTypes} from '../../helpers/enum/account-type.enum';
 import {SettingsComponent} from './settings/settings.component';
 import {logOutCallback} from '../../helpers/logout-callback';
 import {Router} from '@angular/router';
+import {BehaviorSubject} from 'rxjs';
 
 @Component({
   selector: 'app-menu-logged-in',
   templateUrl: './menu-logged-in.component.html',
-  styleUrls: ['../menu.component.css', './menu-logged-in.component.css'],
+  styleUrls: ['../menu.component.css', './menu-logged-in.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MenuLoggedInComponent implements AfterViewInit {
@@ -31,8 +32,8 @@ export class MenuLoggedInComponent implements AfterViewInit {
   @ViewChild('spotbieSettings') spotbieSettings: SettingsComponent;
 
   foodWindow = {open: false};
-  mapApp = {open: true};
-  settingsWindow = {open: false};
+  mapApp$ = new BehaviorSubject<boolean>(false);
+  settingsWindow$ = new BehaviorSubject<boolean>(false);
   menuActive = false;
   isMobile: boolean;
   isDesktop: boolean;
@@ -90,7 +91,7 @@ export class MenuLoggedInComponent implements AfterViewInit {
   }
 
   home() {
-    this.settingsWindow.open = false;
+    this.settingsWindow$.next(false);
     this.foodWindow.open = false;
     this.eventMenuOpen = false;
 
@@ -99,10 +100,8 @@ export class MenuLoggedInComponent implements AfterViewInit {
   }
 
   slideMenu() {
-    if (this.settingsWindow.open) {
-      this.settingsWindow.open = false;
-    } else {
-      this.menuActive = !this.menuActive;
+    if (this.settingsWindow$.getValue()) {
+      this.settingsWindow$.next(false);
     }
   }
 
@@ -112,12 +111,12 @@ export class MenuLoggedInComponent implements AfterViewInit {
     }
   }
 
-  openWindow(window: any): void {
-    window.open = true;
+  openWindow(window): void {
+    window.next(true);
   }
 
-  closeWindow(window: any): void {
-    window.open = false;
+  closeWindow(window): void {
+    window.next(false);
   }
 
   logOut(): void {
@@ -152,6 +151,6 @@ export class MenuLoggedInComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.mapApp.open = true;
+    this.mapApp$.next(true);
   }
 }

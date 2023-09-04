@@ -1,5 +1,5 @@
 .spotbie-overlay-window{
-    background-color: #332f3e;
+    background-color: transparent !important;
     z-index: 97;
 }
 .sb-readImage{
@@ -54,12 +54,35 @@ h5{
 .sb-v-wrapper{
     flex-direction: column;
 }
+.scanner-top {
+  min-height: 10vh;
+  max-height: 10vh;
+  height: 10vh;
+}
+.scanner-top, .scanner-bottom{
+  background-color: var(--ion-color-primary);
+  text-align: center;
+}
+.scanner-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: 3em;
+  padding-top: 3em;
+}
 .fa-exclamation-triangle{
     position: relative;
     color: #ffc107;
     font-size: 1rem;
     bottom: 4px;
     margin-right: 10px;
+}
+.scanner-middle {
+  position: relative;
+  min-height: 50vh;
+  height: 50vh;
+  max-height: 50vh;
 }
 @media (max-width: 768px){
     .sb-readImage{

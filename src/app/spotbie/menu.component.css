@@ -16,7 +16,7 @@
 .spotbie-top-menu-logged-out{
   position: relative;
   margin: 0 auto;
-  background-color: rgba(0, 0, 0, 0.74);
+  background-color: #32303e;
   cursor: pointer;
   table-layout: fixed;
   text-align: center;
@@ -30,25 +30,9 @@
   padding-top: 20px;
   padding-bottom: 20px;
 }
-.spotbie-menu{
-  position: relative;
-  margin: 0 auto;
-  width: 100%;
-  min-width: 100%;
-  max-width: 100%;
-  background-color: #121111eb;
-  table-layout: fixed;
-  text-align: center;
-  box-shadow: 0px 10px 8px rgba(0,0,0,.1);
-}
-.spotbie-menu td{
-  padding-top: 10px;
-  padding-bottom: 10px;
-  vertical-align: middle;
-}
+
 .spotbie-header-mini-logo{
   position: relative;
-  float: left;
   height: 30px;
   min-height: 30px;
   max-height: 30px;
@@ -75,7 +59,7 @@ span.sb-loyalty-points{
   border-left: 1px solid #01a79d;
 }
 img.sb-qr{
-  margin-left: 20px;
+  margin-left: 7px;
   width: 25px;
   min-width: 25px;
   max-width: 25px;
@@ -118,7 +102,6 @@ img.sb-qr:hover{
   font-weight: normal;
 }
 .spotbie-menu-fixed{
-  position: fixed !important;
   top: 0;
   left: 0;
   right: 0;
@@ -300,16 +283,20 @@ img.sb-qr:hover{
 }
 .spotbie-text-link{
   font-size: 15px;
+  text-align: center !important;
 }
 .sb-inputWithIconWrapper{
   position: relative;
   margin: 0 auto;
-  min-width: 440px;
+  min-width: 100%;
   margin-bottom: 15px;
   border-spacing: 0px;
   table-layout: fixed;
   background: linear-gradient(45deg,#64e56f, #35a99f );
   opacity: 0.65;
+}
+.sb-inputWithIconWrapper td{
+  text-align: center;
 }
 .sb-inputWithIconWrapper .fa.fa-user,
 .sb-inputWithIconWrapper .fa.fa-envelope,
@@ -354,7 +341,7 @@ img.sb-qr:hover{
   flex-direction: column;
   align-items: center;
   padding-bottom: unset !important;
-  overflow-y: hidden;
+  overflow-y: scroll;
 }
 .sb-login-top-padding{
   padding-top: 120px;
@@ -386,12 +373,6 @@ img.sb-qr:hover{
   top: 2%;
   right: 3%;
 }
-.sb-scroll{
-  overflow-y: scroll;
-  min-width: 100%;
-  width: 100%;
-  max-width: 100%;
-}
 .fa-business-time,
 .fa-user{
   color: white;
@@ -399,6 +380,12 @@ img.sb-qr:hover{
 }
 ::-webkit-scrollbar-button{
   background: transparent
+}
+ion-list, .ios-list{
+  background: transparent;
+}
+ion-item::part(native) {
+  border-color: #fff;
 }
 /**WIDTH MEDIA QUERIES */
 @media (max-width: 1600px) {
@@ -428,17 +415,11 @@ img.sb-qr:hover{
   .spotbie-menu-fixed{
     padding-top: env(safe-area-inset-top, 20px);
   }
-  .sb-scroll{
-    overflow-y: scroll;
-  }
   .sb-desktopNavBar{
     display: none;
   }
 }
 @media (max-width: 650px) {
-  .spotbie-header-mini-logo{
-    float: right;
-  }
   .sb-menu-nav{
     padding-left: 0px;
     padding-right: 0px;
@@ -456,11 +437,10 @@ img.sb-qr:hover{
   }
   span.sb-loyalty-points{
     padding-right: 5px !important;
-    margin-left: 10px;
     border-left: unset;
   }
   img.sb-qr{
-    margin-left: 15px;
+    margin-left: 7px;
   }
 }
 @media (max-width: 560px) {

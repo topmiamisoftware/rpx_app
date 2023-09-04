@@ -14,14 +14,14 @@
 .spotbie-overlay-window{
   z-index: 97;
 }
-.sb-loyalty-points:hover{
-  width: 25px;
-  min-width: 25px;
-  max-width: 25px;
-}
 .sb-userName{
   text-transform: uppercase;
 }
+
+.main-ion-content{
+  --background: transparent;
+}
+
 @media(max-width:768px){
   .sb-desktopNavBar{
     display: none;

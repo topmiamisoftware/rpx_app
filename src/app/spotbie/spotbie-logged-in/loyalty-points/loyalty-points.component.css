@@ -85,9 +85,9 @@ h5{
     margin-bottom: 50px;
 }
 .spotbie-overlay-window{
-    width: 103%;
-    min-width: 103%;
-    max-width: 103%;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
 }
 .fa-refresh{
     color: white;

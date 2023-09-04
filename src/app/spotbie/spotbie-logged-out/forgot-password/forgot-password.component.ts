@@ -10,6 +10,7 @@ import {ValidatePassword} from '../../../helpers/password.validator';
 import {MustMatch} from '../../../helpers/must-match.validator';
 import {UserauthService} from '../../../services/userauth.service';
 import {ActivatedRoute, Router} from '@angular/router';
+import {BehaviorSubject} from 'rxjs';
 
 const DEF_INC_PASS_OR_EM_MSG = 'Please enter your e-mail address.';
 const DEF_PIN_PASS_OR_EM_MSG = 'Check your e-mail for a reset link.';
@@ -27,22 +28,22 @@ export class ForgotPasswordComponent implements OnInit {
 
   passwordResetForm: UntypedFormGroup;
   passwordForm: UntypedFormGroup;
-  passResetSubmitted = false;
-  loading = false;
-  passwordSubmitted = false;
-  savePassword = false;
-  stepOne = false;
-  stepTwo = false;
-  stepThree = false;
-  stepFour = false;
-  pinResetSubmitted = false;
-  attemptsRemaining = 3;
+  passResetSubmitted$ = new BehaviorSubject<boolean>(false);
+  loading$ = new BehaviorSubject<boolean>(false);
+  passwordSubmitted$ = new BehaviorSubject<boolean>(false);
+  savePassword$ = new BehaviorSubject<boolean>(false);
+  stepOne$ = new BehaviorSubject<boolean>(false);
+  stepTwo$ = new BehaviorSubject<boolean>(false);
+  stepThree$ = new BehaviorSubject<boolean>(false);
+  stepFour$ = new BehaviorSubject<boolean>(false);
+  pinResetSubmitted$ = new BehaviorSubject<boolean>(false);
+  attemptsRemaining$ = new BehaviorSubject<number>(3);
   resetPin: string;
-  pinReadyMsg: string = DEF_PIN_PASS_OR_EM_MSG;
-  emailOrPhError: string = DEF_INC_PASS_OR_EM_MSG;
-  newPasswordMsg: string = NEW_PASS_MSG;
-  token: string;
-  userEmail: string;
+  pinReadyMsg$ = new BehaviorSubject<string>(DEF_PIN_PASS_OR_EM_MSG);
+  emailOrPhError$ = new BehaviorSubject<string>(DEF_INC_PASS_OR_EM_MSG);
+  newPasswordMsg$ = new BehaviorSubject<string>(NEW_PASS_MSG);
+  token$ = new BehaviorSubject<string>(null);
+  userEmail$ = new BehaviorSubject<string>(null);
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -71,18 +72,18 @@ export class ForgotPasswordComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.token = this.activatedRoute.snapshot.paramMap.get('token');
+    this.token$.next(this.activatedRoute.snapshot.paramMap.get('token'));
 
-    if (this.token !== null) {
+    if (this.token$.getValue() !== null) {
       const urlParams = new URLSearchParams(window.location.search);
 
-      this.userEmail = urlParams.get('email');
+      this.userEmail$.next(urlParams.get('email'));
       this.initPasswordForm();
 
-      this.stepThree = true;
+      this.stepThree$.next(true);
     } else {
       this.initForgotPassForm();
-      this.stepOne = true;
+      this.stepOne$.next(true);
     }
   }
 
@@ -91,11 +92,11 @@ export class ForgotPasswordComponent implements OnInit {
   }
 
   setPassResetPin(): void {
-    this.loading = true;
-    this.passResetSubmitted = true;
+    this.loading$.next(true);
+    this.passResetSubmitted$.next(true);
 
     if (this.passwordResetForm.invalid) {
-      this.loading = false;
+      this.loading$.next(false);
       return;
     }
 
@@ -107,25 +108,25 @@ export class ForgotPasswordComponent implements OnInit {
   }
 
   completeSavePassword(): void {
-    this.passwordSubmitted = true;
+    this.passwordSubmitted$.next(true);
 
     if (this.passwordForm.invalid) {
-      this.savePassword = false;
+      this.savePassword$.next(false);
       return;
     }
 
-    if (this.savePassword) {
+    if (this.savePassword$.getValue()) {
       return;
     }
 
-    this.loading = true;
+    this.loading$.next(true);
 
     this.userAuthService
       .completeReset(
         this.spotbieResetPassword,
         this.spotbieResetPasswordC,
-        this.userEmail,
-        this.token
+        this.userEmail$.getValue(),
+        this.token$.getValue()
       )
       .subscribe(resp => {
         this.completeSavePasswordCb(resp);
@@ -140,11 +141,12 @@ export class ForgotPasswordComponent implements OnInit {
     if (settingsResponse.success) {
       switch (settingsResponse.status) {
         case 'passwords.reset':
-          this.newPasswordMsg =
-            'Your password was updated. You can now log-in.';
+          this.newPasswordMsg$.next(
+            'Your password was updated. You can now log-in.'
+          );
 
-          this.stepThree = false;
-          this.stepFour = true;
+          this.stepThree$.next(false);
+          this.stepFour$.next(true);
 
           setTimeout(() => {
             this.closeWindowX();
@@ -154,8 +156,9 @@ export class ForgotPasswordComponent implements OnInit {
 
         case 'passwords.token':
           //Expired Token
-          this.newPasswordMsg =
-            'The password reset link has expired, please try to reset your password again.';
+          this.newPasswordMsg$.next(
+            'The password reset link has expired, please try to reset your password again.'
+          );
           break;
 
         default:
@@ -165,8 +168,8 @@ export class ForgotPasswordComponent implements OnInit {
       console.log(settingsResponse);
     }
 
-    this.savePassword = false;
-    this.loading = false;
+    this.savePassword$.next(false);
+    this.loading$.next(false);
   }
 
   private initForgotPassForm(): void {
@@ -183,18 +186,19 @@ export class ForgotPasswordComponent implements OnInit {
   private startPassResetCb(httpResponse: any): void {
     if (httpResponse && httpResponse.success) {
       if (httpResponse.status === 'passwords.sent') {
-        this.stepOne = false;
+        this.stepOne$.next(false);
         this.showSuccess();
       } else if (httpResponse.status === 'passwords.throttled') {
-        this.emailOrPhError =
-          'You have sent too many password reset requests, please try again later.';
+        this.emailOrPhError$.next(
+          'You have sent too many password reset requests, please try again later.'
+        );
       } else if (httpResponse.status === 'social_account') {
-        this.emailOrPhError = 'You signed up with social media.';
+        this.emailOrPhError$.next('You signed up with social media.');
       } else {
-        this.emailOrPhError = 'E-mail address not found.';
+        this.emailOrPhError$.next('E-mail address not found.');
       }
     } else {
-      this.emailOrPhError = 'I e-mail address.';
+      this.emailOrPhError$.next('I e-mail address.');
     }
 
     this.getLinkMessage.nativeElement.style.display = 'none';
@@ -202,11 +206,11 @@ export class ForgotPasswordComponent implements OnInit {
       'spotbie-text-gradient spotbie-error spotbie-contact-me-info';
     this.getLinkMessage.nativeElement.style.display = 'block';
 
-    this.loading = false;
+    this.loading$.next(false);
   }
 
   private initPasswordForm(): void {
-    this.stepThree = true;
+    this.stepThree$.next(true);
 
     const passwordValidators = [Validators.required];
     const passwordConfirmValidators = [Validators.required];
@@ -226,6 +230,6 @@ export class ForgotPasswordComponent implements OnInit {
   }
 
   private showSuccess(): void {
-    this.stepTwo = true;
+    this.stepTwo$.next(true);
   }
 }

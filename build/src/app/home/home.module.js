@@ -14,6 +14,8 @@ const menu_logged_out_module_1 = require("../spotbie/spotbie-logged-out/menu-log
 const welcome_module_1 = require("../spotbie/welcome/welcome.module");
 const menu_logged_in_module_1 = require("../spotbie/spotbie-logged-in/menu-logged-in.module");
 const menu_logged_in_component_1 = require("../spotbie/spotbie-logged-in/menu-logged-in.component");
+// import {TestModeModule} from '../spotbie/test-mode/test-mode.module';
+const angular_1 = require("@ionic/angular");
 const routes = [{ path: '', component: home_component_1.HomeComponent }];
 let HomeModule = class HomeModule {
 };
@@ -29,6 +31,8 @@ HomeModule = tslib_1.__decorate([
             map_module_1.MapModule,
             helper_module_1.HelperModule,
             welcome_module_1.WelcomeModule,
+            // TestModeModule,
+            angular_1.IonicModule,
             router_1.RouterModule.forChild(routes),
         ],
         exports: [home_component_1.HomeComponent, menu_logged_in_component_1.MenuLoggedInComponent, menu_logged_out_module_1.MenuLoggedOutModule],

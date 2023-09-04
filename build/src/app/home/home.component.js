@@ -13,8 +13,7 @@ let HomeComponent = class HomeComponent {
         this.getStartedPrompt = false;
     }
     spawnCategories(category) {
-        const evt = { category };
-        this.appMap.spawnCategories(evt);
+        this.appMap.spawnCategories(category);
     }
     openHome() {
         this.appMap.openWelcome();

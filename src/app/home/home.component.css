@@ -5,10 +5,6 @@
 .spotbie-app-menu{
   z-index: 99;
 }
-.spotbie-menu-page-padding-top-not-logged{
-  padding-top: 76px;
-  margin-top: env(safe-area-inset-top);
-}
 
 @media (max-width: 560px) {
   .spotbie-menu-page-padding-top-not-logged{

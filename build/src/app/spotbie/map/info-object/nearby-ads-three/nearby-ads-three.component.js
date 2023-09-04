@@ -3,16 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NearbyAdsThreeComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
-const ad_1 = require("../../../../models/ad");
-const EDIT_MODE = false;
+const rxjs_1 = require("rxjs");
 let NearbyAdsThreeComponent = class NearbyAdsThreeComponent {
+    set accountType(accountType) {
+        this.accountType$.next(accountType);
+    }
     constructor() {
         this.lat = null;
         this.lng = null;
-        this.accountType = null;
         this.eventsClassification = null;
-        this.peditMode = EDIT_MODE;
-        this.padList = [new ad_1.Ad(), new ad_1.Ad(), new ad_1.Ad()];
+        this.accountType$ = new rxjs_1.BehaviorSubject(null);
     }
     ngOnInit() { }
 };
@@ -24,7 +24,7 @@ tslib_1.__decorate([
 ], NearbyAdsThreeComponent.prototype, "lng", void 0);
 tslib_1.__decorate([
     (0, core_1.Input)()
-], NearbyAdsThreeComponent.prototype, "accountType", void 0);
+], NearbyAdsThreeComponent.prototype, "accountType", null);
 tslib_1.__decorate([
     (0, core_1.Input)()
 ], NearbyAdsThreeComponent.prototype, "eventsClassification", void 0);

@@ -7,6 +7,7 @@
 html
 {
   -webkit-tap-highlight-color:transparent;
+  background-color: var(--ion-background-color);
 }
 div, table, i, td{
     user-select: none;
@@ -47,31 +48,27 @@ div, table, i, td{
 }
 
 html {
-
-    position: relative;
-    font-size: 19px;
-    cursor: default;
-    color: white;
-    height: unset !important;
-
+  position: relative;
+  font-size: 19px;
+  cursor: default;
+  color: white;
+  background-color: var(--ion-color-primary);
 }
 
 body {
-    position: relative;
-    max-width: 100%;
-    margin: 0 auto;
-    background-color: black !important;
-    color: white;
-    overflow-x : hidden;
-    overflow-y: hidden;
-    height: unset !important;
-    font-family: Gotham-Book !important;
+  position: relative;
+  max-width: 100%;
+  margin: 0 auto;
+  color: white;
+  overflow-x : hidden;
+  overflow-y: hidden;
+  font-family: Gotham-Book !important;
+  background-color: transparent !important;
 }
 a {
     color: #212529 !important;
 }
 textarea {
-
     position: relative;
     display: block;
     margin: 0 auto;
@@ -90,7 +87,6 @@ textarea {
     background-color: rgba(0,0,0,.23);
     font-size: 25px;
     border-radius: 15px;
-
 }
 textarea:active {
     outline: none;
@@ -113,7 +109,6 @@ textarea:active {
     font-size: 1.8rem !important;
 }
 .sb-mainWrapper {
-
     position: relative;
     margin: 0 auto;
     min-width: 1200px;
@@ -122,18 +117,12 @@ textarea:active {
     padding-bottom: 140px;
     padding-left: 20px;
     padding-right: 20px;
-
 }
 img.sb-loyalty-points{
     width: 25px;
     min-width: 25px;
     max-width: 25px;
     cursor: pointer;
-}
-img.sb-loyalty-points:hover{
-    width: 28px;
-    min-width: 28px;
-    max-width: 28px;
 }
 .sb-deleteMe{
     margin: 0 auto;
@@ -1105,5 +1094,3 @@ app-community-member{
         font-size: 11px;
     }
 }
-
-html, body { height: 100%; }

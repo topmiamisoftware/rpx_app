@@ -9,10 +9,12 @@ import {
 } from '@angular/core';
 import { LoyaltyPointsComponent } from '../loyalty-points/loyalty-points.component';
 import { QrComponent } from '../qr/qr.component';
-import { RedeemableComponent } from '../redeemable/redeemable.component';
+import { RedeemableComponent } from '../my-list/redeemable/redeemable.component';
 import { RewardMenuComponent } from '../reward-menu/reward-menu.component';
 import { Platform } from '@ionic/angular';
 import { BehaviorSubject } from "rxjs";
+import {BarcodeScanner} from "@capacitor-community/barcode-scanner";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-user-dashboard',
@@ -33,31 +35,14 @@ export class UserDashboardComponent {
 
   scannerStarted$ = new BehaviorSubject<boolean>(false);
   isMobile$ = new BehaviorSubject<boolean>(false);
-  getRedeemableItems$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private platform: Platform) {
+  constructor(private platform: Platform,
+              private router: Router) {
     this.isMobile$.next(this.platform.is('mobile'));
   }
 
   redeemedLp() {
-    this.getRedeemableItems$.next(true);
-  }
-
-  scrollToLpAppAnchor() {
-    this.lpAppAnchor.nativeElement.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  }
-
-  scrollToQrAppAnchor() {
-    if (this.qrCodeAppAnchor) {
-      this.qrCodeAppAnchor.nativeElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }
-    this.startQrScanner();
+    this.router.navigate(['/my-list/']);
   }
 
   scrollToRewardMenuAppAnchor() {
@@ -72,11 +57,7 @@ export class UserDashboardComponent {
   }
 
   closeQrScanner() {
-    this.scannerStarted$.next(false);
-  }
-
-  closeRedeemables() {
-    this.getRedeemableItems$.next(false);
+     BarcodeScanner.stopScan().then(_ => this.scannerStarted$.next(false));
   }
 
   spawnCategories(category: number) {

@@ -1,62 +1,70 @@
-<table class="spotbie-el-100
-              spotbie-menu
-              spotbie-menu-fixed"
-       id="spotbie-topMenu"
-       #spotbieMainMenu>
-  <tr>
-    <td class="sb-menu-nav" (click)="slideMenu()">
-      <i class="fa fa-bars" *ngIf="!menuActive"></i>
-      <i class="fa fa-times" *ngIf="menuActive"></i>
-    </td>
+<ion-menu contentId="main-content">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>It's on us.</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding" color="primary">
+    <ion-list>
+      <ion-item class="ion-padding-top ion-padding-bottom" color="primary" lines="full" (click)="home()">
+        <ion-icon name="home" slot="start"></ion-icon>
+        HOME
+      </ion-item>
 
-    <td [ngStyle]="getPointsWrapperStyle()">
-      <span class='sb-loyalty-points' (click)="toggleLoyaltyPoints()" >{{ (userLoyaltyPoints$ | async) | number:'1.0':'en-US' }}</span>
+      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="spawnCategories(1)">
+        <ion-icon name="pizza" slot="start"></ion-icon>
+        PLACES TO EAT
+      </ion-item>
 
-      <div class="sb-businessMenu">
-        <img class='sb-loyalty-points' src="assets/images/spotbie-loyalty-points.svg" />
-      </div>
+      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="spawnCategories(2)">
+        <ion-icon name="pricetags" slot="start"></ion-icon>
+        SHOPPING
+      </ion-item>
 
-      <img class='sb-qr' (click)="toggleQRScanner()"  src="assets/images/spotbie-qr.svg" />
-    </td>
-  </tr>
-</table>
+      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="spawnCategories(3)">
+        <ion-icon name="glasses" slot="start"></ion-icon>
+        EVENTS
+      </ion-item>
 
-<div class="spotbie-slider-menu-background" *ngIf="menuActive">
-  <table class="spotbie-slider-menu
-                animated slideInLeft" #spotbieMainMenu>
-    <tr>
-      <td>
-        <div (click)="home()">
-          HOME
-        </div>
+      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="openWindow(settingsWindow$)">
+        <ion-icon name="cog" slot="start"></ion-icon>
+        SETTINGS
+      </ion-item>
 
-        <div (click)="spawnCategories(1)">
-          PLACES TO EAT <i class="fa fa-angle-right"></i>
-        </div>
+      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="logOut()">
+        <ion-icon name="power" slot="start"></ion-icon>
+        LOG OUT
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-menu>
 
-        <div (click)="spawnCategories(1)">
-          SHOPPING <i class="fa fa-angle-right"></i>
-        </div>
+<div class="ion-page" id="main-content">
+  <ion-header>
+    <ion-toolbar class="p-2 pt-5 pb-1" color="tertiary">
+      <ion-buttons slot="start">
+        <ion-menu-button auto-hide="false"></ion-menu-button>
+      </ion-buttons>
+      <ion-buttons slot="end">
+        <ion-button (click)="toggleLoyaltyPoints()">
+          <span class='sb-loyalty-points'>{{ (userLoyaltyPoints$ | async) | number:'1.0':'en-US' }}</span>
+        </ion-button>
 
-        <div (click)="spawnCategories(3)">
-          EVENTS <i class="fa fa-angle-right"></i>
-        </div>
+        <ion-button (click)="toggleLoyaltyPoints()">
+          <img class='sb-loyalty-points' src="assets/images/spotbie-loyalty-points.svg" />
+        </ion-button>
 
-        <div (click)="openWindow(settingsWindow)">
-          SETTINGS
-        </div>
+        <ion-button (click)="toggleQRScanner()">
+          <img class='sb-qr' src="assets/images/spotbie-qr.svg" />
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <!-- we neeed the main-ion-content class so that we can sett he background to transparent for the scanner -->
+  <ion-content class="main-ion-content has-header">
+    <!--<app-event-menu *ngIf="eventMenuOpen"></app-event-menu>-->
+    <app-map #spotbieMap *ngIf="mapApp$ | async"></app-map>
 
-        <div (click)="logOut()">
-          LOG OUT
-        </div>
-      </td>
-    </tr>
-  </table>
+    <app-settings *ngIf="settingsWindow$ | async" #spotbieSettings (closeWindowEvt)="closeWindow(settingsWindow$)"></app-settings>
+  </ion-content>
 </div>
-
-<!--<app-event-menu *ngIf="eventMenuOpen"></app-event-menu>-->
-<ng-container *ngIf="mapApp.open">
-  <app-map #spotbieMap></app-map>
-</ng-container>
-
-<app-settings *ngIf="settingsWindow.open" #spotbieSettings (closeWindowEvt)="closeWindow(settingsWindow)"></app-settings>

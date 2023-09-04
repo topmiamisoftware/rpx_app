@@ -297,9 +297,9 @@ export class InfoObjectComponent implements OnInit {
   }
 
   getOverlayWindowStyling(): string {
-    let className = 'spotbie-overlay-window infoObjectWindow';
+    let className = 'spotbie-overlay-window infoObjectWindow has-header';
     if (this.infoObject$.getValue().is_community_member) {
-      className = 'spotbie-overlay-window communityMemberWindow';
+      className = 'spotbie-overlay-window communityMemberWindow has-header';
     }
     return className;
   }

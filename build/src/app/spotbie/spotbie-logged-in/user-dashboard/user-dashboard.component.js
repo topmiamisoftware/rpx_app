@@ -3,17 +3,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserDashboardComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
+const rxjs_1 = require("rxjs");
 let UserDashboardComponent = class UserDashboardComponent {
     constructor(platform) {
         this.platform = platform;
         this.spawnCategoriesEvt = new core_1.EventEmitter();
-        this.scannerStarted = false;
-        this.isMobile = false;
-        this.getRedeemableItems = false;
-        this.isMobile = this.platform.is('mobile');
+        this.scannerStarted$ = new rxjs_1.BehaviorSubject(false);
+        this.isMobile$ = new rxjs_1.BehaviorSubject(false);
+        this.getRedeemableItems$ = new rxjs_1.BehaviorSubject(false);
+        this.isMobile$.next(this.platform.is('mobile'));
     }
     redeemedLp() {
-        this.getRedeemableItems = true;
+        this.getRedeemableItems$.next(true);
     }
     scrollToLpAppAnchor() {
         this.lpAppAnchor.nativeElement.scrollIntoView({
@@ -37,19 +38,16 @@ let UserDashboardComponent = class UserDashboardComponent {
         });
     }
     startQrScanner() {
-        this.scannerStarted = true;
+        this.scannerStarted$.next(true);
     }
     closeQrScanner() {
-        this.scannerStarted = false;
+        this.scannerStarted$.next(false);
     }
     closeRedeemables() {
-        this.getRedeemableItems = false;
+        this.getRedeemableItems$.next(false);
     }
     spawnCategories(category) {
-        const obj = {
-            category,
-        };
-        this.spawnCategoriesEvt.emit(obj);
+        this.spawnCategoriesEvt.emit(category);
     }
     closeAll() {
         //Close all the windows in the dashboard

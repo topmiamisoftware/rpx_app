@@ -3,7 +3,7 @@ import {CommonModule} from '@angular/common';
 import {LoyaltyPointsComponent} from './loyalty-points.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {IConfig, NgxMaskDirective, NgxMaskPipe, provideNgxMask} from 'ngx-mask';
-import {HelperModule} from "../../../helpers/helper.module";
+import {HelperModule} from '../../../helpers/helper.module';
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 

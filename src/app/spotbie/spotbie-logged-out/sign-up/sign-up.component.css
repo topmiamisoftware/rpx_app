@@ -181,11 +181,6 @@ h2 strong.sep-two {
   }
 }
 @media (max-width: 768px) {
-  .spotbie-overlay-window {
-    width: 102%;
-    min-width: 102%;
-    max-width: 102%;
-  }
   .sb-signUpGeneralInstructions{
     margin-top: 40px!important;
   }

@@ -10,6 +10,7 @@ exports.environment = {
     versionCheckURL: baseUrl + 'version.json',
     googleMapsApiKey: 'AIzaSyC4Su0B2cBzsSpAF-Kphq_78uR8b5eA4_Q',
     googlePlacesApiAkey: 'AIzaSyChSn9IE6Dp0Jv8TS013np1b4X1rCsQt_E',
+    mapId: 'mapId',
     apiEndpoint,
     qrCodeLoyaltyPointsScanBaseUrl: baseUrl + 'loyalty-points',
     qrCodeRewardScanBaseUrl: baseUrl + 'reward',
