@@ -711,7 +711,7 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   getMapOptions(): any {
     return {
-      styles: this.mapStyles,
+      //styles: this.mapStyles,
       zoom: this.zoom,
       clickable: false,
       mapTypeControl: false,
@@ -738,6 +738,12 @@ export class MapComponent implements OnInit, AfterViewInit {
     return new SortOrderPipe().transform(sortingOrder);
   }
 
+  async setMap(coordinates) {
+    this.map$.next(true);
+    await this.initMap();
+    this.showPosition(coordinates);
+  }
+
   async spawnCategories(category: number) {
     this.infoObject$.next(null);
     this.showSearchBox$.next(true);
@@ -746,9 +752,11 @@ export class MapComponent implements OnInit, AfterViewInit {
       this.previousSearchCategory = this.searchCategory$.getValue();
     }
 
+    // If the category we picked is the same one as the
+    // previously opened one then we can skip some steps.
     if (category === this.previousSearchCategory) {
-      this.catsUp$.next(true);
-      this.loading$.next(false);
+      const coordinates = await Geolocation.getCurrentPosition();
+      await this.setMap(coordinates);
       return;
     }
 
@@ -762,19 +770,15 @@ export class MapComponent implements OnInit, AfterViewInit {
 
       if (hasPermissions) {
         const coordinates = await Geolocation.getCurrentPosition();
-
-        this.map$.next(true);
-        await this.initMap();
-        this.showPosition(coordinates);
+        await this.setMap(coordinates);
       } else {
         this.showMapError();
+        return;
       }
     } else if (!this.locationFound$.getValue()) {
       window.navigator.geolocation.getCurrentPosition(
         async position => {
-          this.map$.next(true);
-          await this.initMap();
-          this.showPosition(position);
+          await this.setMap(position);
         },
         err => {
           console.log(err);
@@ -782,7 +786,8 @@ export class MapComponent implements OnInit, AfterViewInit {
         }
       );
     } else if (this.locationFound$.getValue()) {
-      this.map$.next(true);
+      const coordinates = await Geolocation.getCurrentPosition();
+      await this.setMap(coordinates);
     }
 
     if (this.searchResults$.getValue().length === 0) {
@@ -842,6 +847,13 @@ export class MapComponent implements OnInit, AfterViewInit {
     );
 
     closeCategoryPicker.enable();
+
+    // I'm sure there's a better way to do this... but then again there's no time right now.
+    const topBar = document.getElementsByTagName('ion-header')[1].offsetHeight;
+    setTimeout(() => {
+      const spotbieCategories = document.getElementById('spotbieCategories');
+      spotbieCategories.style.paddingTop = topBar+'px';
+    }, 500);
   }
 
   cleanCategory() {
@@ -1453,7 +1465,6 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   showMapError() {
-
     // Check for location permission and prompt the user.
 
     this.displayLocationEnablingInstructions$.next(true);
@@ -1540,8 +1551,6 @@ export class MapComponent implements OnInit, AfterViewInit {
 
     this.searchResultsOriginal$.next(results);
 
-    console.log('this.maxDistance$.getValue()', this.maxDistance$.getValue());
-
     results = results.filter(
       searchResult => searchResult.distance < this.maxDistance$.getValue()
     );
@@ -1609,16 +1618,20 @@ export class MapComponent implements OnInit, AfterViewInit {
     // user has not been requested this permission before
     // it is advised to show the user some sort of prompt
     // this way you will not waste your only chance to ask for the permission
-    const c = confirm('We need your permission to use your camera to be able to scan barcodes');
+    const c = confirm(
+      'SpotBie uses your location to provide you with products, services, features, and events based on their location.'
+    );
     if (!c) {
       return false;
     }
 
-   const permissionGranted = await Geolocation.requestPermissions();
+    const permissionGranted = await Geolocation.requestPermissions();
 
     // user did not grant the permission, so he must have declined the request
     if (!permissionGranted) {
       return false;
+    } else {
+      return true;
     }
   }
 

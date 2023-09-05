@@ -281,7 +281,6 @@ export class SettingsComponent implements OnInit {
 
   closeWindow() {
     this.closeWindowEvt.emit();
-    this.router.navigate(['/home']);
   }
 
   private populateSettings(settingsResponse: any) {

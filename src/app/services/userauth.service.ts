@@ -1,16 +1,13 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Router} from '@angular/router';
 import {Observable} from 'rxjs';
 import {catchError, tap} from 'rxjs/operators';
 import {handleError} from '../helpers/error-helper';
 import {User} from '../models/user';
-import {AllowedAccountTypes} from '../helpers/enum/account-type.enum';
 
 import * as spotbieGlobals from '../globals';
 
 const USER_API = spotbieGlobals.API + 'user';
-const BUSINESS_API = spotbieGlobals.API + 'business';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +21,7 @@ export class UserauthService {
   route: string;
   userProfile: User;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient) {}
 
   async checkIfLoggedIn(): Promise<any> {
     const checkLoginObject = {};
@@ -39,10 +36,6 @@ export class UserauthService {
         }
       });
     });
-  }
-
-  private reRouteFromSpotBie() {
-    this.router.navigate(['/home']);
   }
 
   logOut(): Observable<any> {
@@ -194,72 +187,5 @@ export class UserauthService {
     return this.http
       .post<any>(resetPasswordApi, passResetObj)
       .pipe(catchError(handleError('deactivateAccount')));
-  }
-
-  verifyBusiness(businessInfo: any): Observable<any> {
-    let apiUrl;
-
-    switch (businessInfo.accountType) {
-      case AllowedAccountTypes.PlaceToEat:
-      case AllowedAccountTypes.Shopping:
-      case AllowedAccountTypes.Events:
-        apiUrl = `${BUSINESS_API}/verify`;
-        break;
-    }
-
-    const businessInfoObj = {
-      name: businessInfo.name,
-      description: businessInfo.description,
-      address: businessInfo.address,
-      photo: businessInfo.photo,
-      loc_x: businessInfo.loc_x,
-      loc_y: businessInfo.loc_y,
-      passkey: businessInfo.passkey,
-      categories: businessInfo.categories,
-      city: businessInfo.city,
-      country: businessInfo.country,
-      line1: businessInfo.line1,
-      line2: businessInfo.line2,
-      postal_code: businessInfo.postal_code,
-      state: businessInfo.state,
-      accountType: businessInfo.accountType,
-    };
-
-    return this.http
-      .post<any>(apiUrl, businessInfoObj)
-      .pipe(catchError(handleError('verifyBusiness')));
-  }
-
-  saveBusiness(businessInfo: any): Observable<any> {
-    let apiUrl;
-
-    switch (businessInfo.accountType) {
-      case AllowedAccountTypes.PlaceToEat:
-      case AllowedAccountTypes.Shopping:
-      case AllowedAccountTypes.Events:
-        apiUrl = `${BUSINESS_API}/save-business`;
-        break;
-    }
-
-    const businessInfoObj = {
-      name: businessInfo.name,
-      description: businessInfo.description,
-      address: businessInfo.address,
-      photo: businessInfo.photo,
-      loc_x: businessInfo.loc_x,
-      loc_y: businessInfo.loc_y,
-      categories: businessInfo.categories,
-      city: businessInfo.city,
-      country: businessInfo.country,
-      line1: businessInfo.line1,
-      line2: businessInfo.line2,
-      postal_code: businessInfo.postal_code,
-      state: businessInfo.state,
-      accountType: businessInfo.accountType,
-    };
-
-    return this.http
-      .post<any>(apiUrl, businessInfoObj)
-      .pipe(catchError(handleError('saveBusiness')));
   }
 }

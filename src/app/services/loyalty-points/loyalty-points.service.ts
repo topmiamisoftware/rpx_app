@@ -65,7 +65,6 @@ export class LoyaltyPointsService {
       .post<any>(apiUrl, null)
       .pipe(catchError(handleError('getLoyaltyPointBalance')))
       .subscribe(resp => {
-        console.log('getLoyaltyPointBalance', resp);
         if (resp.success) {
           const loyaltyPointBalance = resp.loyalty_points;
           this.store.dispatch(setValue({loyaltyPointBalance}));

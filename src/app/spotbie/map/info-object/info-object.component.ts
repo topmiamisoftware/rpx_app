@@ -1,25 +1,22 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { InfoObjectServiceService } from './info-object-service.service';
+import {Component, OnInit, Input, Output, EventEmitter, AfterViewInit} from '@angular/core';
+import {InfoObjectServiceService} from './info-object-service.service';
 // import {MyFavoritesService} from '../../my-favorites/my-favorites.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import {
-  DateFormatPipe,
-  TimeFormatPipe,
-} from '../../../pipes/date-format.pipe';
-import { SpotbieMetaService } from '../../../services/meta/spotbie-meta.service';
-import { setYelpRatingImage } from '../../../helpers/info-object-helper';
-import { shareNative } from '../../../helpers/cordova/sharesheet';
+import {ActivatedRoute, Router} from '@angular/router';
+import {DateFormatPipe, TimeFormatPipe} from '../../../pipes/date-format.pipe';
+import {SpotbieMetaService} from '../../../services/meta/spotbie-meta.service';
+import {setYelpRatingImage} from '../../../helpers/info-object-helper';
+import {shareNative} from '../../../helpers/cordova/sharesheet';
 import {
   spotbieMetaDescription,
   spotbieMetaTitle,
   spotbieMetaImage,
 } from '../../../constants/spotbie';
-import { InfoObject } from '../../../models/info-object';
-import { environment } from '../../../../environments/environment';
-import { Ad } from '../../../models/ad';
-import { InfoObjectType } from '../../../helpers/enum/info-object-type.enum';
-import { BehaviorSubject } from 'rxjs';
-import { AppLauncher } from '@capacitor/app-launcher';
+import {InfoObject} from '../../../models/info-object';
+import {environment} from '../../../../environments/environment';
+import {Ad} from '../../../models/ad';
+import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
+import {BehaviorSubject} from 'rxjs';
+import {AppLauncher} from '@capacitor/app-launcher';
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
@@ -32,7 +29,7 @@ const SPOTBIE_META_IMAGE = spotbieMetaImage;
   templateUrl: './info-object.component.html',
   styleUrls: ['./info-object.component.css'],
 })
-export class InfoObjectComponent implements OnInit {
+export class InfoObjectComponent implements OnInit, AfterViewInit {
   @Input() set info_object(infoObject: InfoObject) {
     this.accountType = infoObject.user_type;
     this.infoObject$.next(infoObject);
@@ -264,7 +261,7 @@ export class InfoObjectComponent implements OnInit {
 
     if (confirmNav) {
       await AppLauncher.openUrl({
-        url: `http://www.google.com/maps/place/${displayAddress}`,
+        url: `http://www.google.com/maps/place/${encodeURI(displayAddress)}`,
       });
     }
 
@@ -276,7 +273,7 @@ export class InfoObjectComponent implements OnInit {
   }
 
   async goToTicket() {
-    await AppLauncher.openUrl({ url: this.infoObject$.getValue().url });
+    await AppLauncher.openUrl({url: this.infoObject$.getValue().url});
     return;
   }
 
@@ -288,10 +285,10 @@ export class InfoObjectComponent implements OnInit {
     return className;
   }
 
-  getCloseButtonStyling(): { color: string } {
-    let style = { color: 'white' };
+  getCloseButtonStyling(): {color: string} {
+    let style = {color: 'white'};
     if (!this.infoObject$.getValue().is_community_member) {
-      style = { color: '#332f3e' };
+      style = {color: '#332f3e'};
     }
     return style;
   }
@@ -470,7 +467,7 @@ export class InfoObjectComponent implements OnInit {
   async visitInfoObjectPage() {
     const infoObject = this.infoObject$.getValue();
     if (infoObject.type_of_info_object === InfoObjectType.Yelp) {
-      await AppLauncher.openUrl({ url: `${infoObject.url}` });
+      await AppLauncher.openUrl({url: `${infoObject.url}`});
     } else if (infoObject.type_of_info_object === InfoObjectType.TicketMaster) {
       this.goToTicket();
     }
@@ -488,6 +485,16 @@ export class InfoObjectComponent implements OnInit {
   clickGoToSponsored(): void {
     window.open('/business', '_blank');
     return;
+  }
+
+  ngAfterViewInit() {
+
+    // I'm sure there's a better way to do this but I don't have time right now.
+    const closeButton = document.getElementById('sb-closeButtonInfoObject');
+    const ionToolBar = document.getElementsByTagName('ion-header');
+
+    const p = ionToolBar[1].offsetHeight;
+    closeButton.style.top = p+'px';
   }
 
   ngOnInit() {

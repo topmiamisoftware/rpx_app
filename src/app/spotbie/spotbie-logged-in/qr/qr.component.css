@@ -16,7 +16,7 @@
     background-repeat: no-repeat !important;   
     z-index: -1;      
 }
-.fa-hamburger, .fa-check{
+.fa-hamburger{
     background: unset !important;
     color: white;
     margin-left: 5px;
@@ -41,7 +41,6 @@ h5{
 }
 .sb-earnedPoints{
     position: fixed;
-    display: none;
     left: 0;
     right: 0;
     top: 50%;
@@ -49,6 +48,8 @@ h5{
     font-size: 7rem;
 }  
 .fa-check{
+    margin-top: 20px;
+    font-size: 45px;
     color: #2ddc5b;
 }
 .sb-v-wrapper{
@@ -79,10 +80,14 @@ h5{
     margin-right: 10px;
 }
 .scanner-middle {
-  position: relative;
-  min-height: 50vh;
-  height: 50vh;
-  max-height: 50vh;
+    position: relative;
+    min-height: 50vh;
+    height: 50vh;
+    max-height: 50vh;
+    text-align: center;
+}
+.success-msg{
+    font-size: 24px;
 }
 @media (max-width: 768px){
     .sb-readImage{

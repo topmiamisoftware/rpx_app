@@ -1,27 +1,24 @@
 import {
+  ChangeDetectionStrategy,
   Component,
-  OnInit,
-  ViewChild,
   ElementRef,
-  Output,
-  Input,
   EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
 } from '@angular/core';
 import {Router} from '@angular/router';
-import {Validators, UntypedFormGroup, UntypedFormBuilder} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
 import {ValidateUsername} from '../../../helpers/username.validator';
 import {ValidatePassword} from '../../../helpers/password.validator';
 import {SignUpService} from '../../../services/spotbie-logged-out/sign-up/sign-up.service';
-import {catchError} from 'rxjs/operators';
+import {catchError, filter} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
 import {BehaviorSubject, of} from 'rxjs';
 import {EmailConfirmationService} from '../../email-confirmation/email-confirmation.service';
 import {ValidateUniqueEmail} from '../../../validators/email-unique.validator';
-import {
-  faEye,
-  faEyeSlash,
-  faInfoCircle,
-} from '@fortawesome/free-solid-svg-icons';
+import {faEye, faEyeSlash, faInfoCircle,} from '@fortawesome/free-solid-svg-icons';
 import {UserauthService} from '../../../services/userauth.service';
 import {AppLauncher} from '@capacitor/app-launcher';
 
@@ -29,6 +26,7 @@ import {AppLauncher} from '@capacitor/app-launcher';
   selector: 'app-sign-up',
   templateUrl: './sign-up.component.html',
   styleUrls: ['../../menu.component.css', './sign-up.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SignUpComponent implements OnInit {
   @ViewChild('spotbieRegisterInfo') spotbieRegisterInfo;
@@ -148,7 +146,10 @@ export class SignUpComponent implements OnInit {
 
     this.signUpService
       .initRegister(signUpObj)
-      .pipe(catchError(this.signUpError()))
+      .pipe(
+        catchError(this.signUpError()),
+        filter(r => !!r)
+      )
       .subscribe(resp => {
         this.initSignUpCallback(resp);
       });
@@ -161,6 +162,8 @@ export class SignUpComponent implements OnInit {
     return (error: any): Observable<T> => {
       const signUpInstructions = this.spotbieSignUpIssues.nativeElement;
       signUpInstructions.style.display = 'none';
+
+      console.log('signUpError', error);
 
       const errorList = error.error.errors;
 
@@ -180,6 +183,7 @@ export class SignUpComponent implements OnInit {
       if (errorList.email) {
         const errors: {[k: string]: any} = {};
         errorList.email.forEach(err => {
+          console.log('ALSO EMAIL', err);
           errors[err] = true;
         });
 
@@ -265,6 +269,8 @@ export class SignUpComponent implements OnInit {
 
   private initSignUpCallback(resp: any) {
     const signUpInstructions = this.spotbieSignUpIssues.nativeElement;
+
+    console.log('signUpInstructions', resp);
 
     if (resp.message === 'success') {
       localStorage.setItem('spotbie_userLogin', resp.user.username);

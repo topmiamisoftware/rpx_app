@@ -16,7 +16,8 @@ import {AllowedAccountTypes} from '../../helpers/enum/account-type.enum';
 import {SettingsComponent} from './settings/settings.component';
 import {logOutCallback} from '../../helpers/logout-callback';
 import {Router} from '@angular/router';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, take} from 'rxjs';
+import {IonMenu} from "@ionic/angular";
 
 @Component({
   selector: 'app-menu-logged-in',
@@ -30,6 +31,7 @@ export class MenuLoggedInComponent implements AfterViewInit {
   @ViewChild('spotbieMainMenu') spotbieMainMenu: ElementRef;
   @ViewChild('spotbieMap') spotbieMap: MapComponent;
   @ViewChild('spotbieSettings') spotbieSettings: SettingsComponent;
+  @ViewChild('ionMenu') ionMenu: IonMenu;
 
   foodWindow = {open: false};
   mapApp$ = new BehaviorSubject<boolean>(false);
@@ -81,13 +83,10 @@ export class MenuLoggedInComponent implements AfterViewInit {
     this.spotbieMap.goToQrCode();
   }
 
-  toggleRewardMenu(ac: string) {
-    this.spotbieMap.goToRewardMenu();
-  }
-
   spawnCategories(category: number): void {
     this.slideMenu();
     this.spotbieMap.spawnCategories(category);
+    this.ionMenu.close(true);
   }
 
   home() {
@@ -97,6 +96,7 @@ export class MenuLoggedInComponent implements AfterViewInit {
 
     this.spotbieMap.openWelcome();
     this.spotbieMap.closeCategories();
+    this.ionMenu.close(true);
   }
 
   slideMenu() {
@@ -105,18 +105,18 @@ export class MenuLoggedInComponent implements AfterViewInit {
     }
   }
 
-  getMenuStyle() {
-    if (this.menuActive === false) {
-      return {'background-color': 'transparent'};
+  openSettings() {
+    if (this.settingsWindow$.getValue()) {
+      return;
     }
+    this.ionMenu.close(true);
+    this.settingsWindow$.next(true);
   }
 
-  openWindow(window): void {
-    window.next(true);
-  }
-
-  closeWindow(window): void {
-    window.next(false);
+  closeSettings(){
+    this.settingsWindow$.next(false);
+    // Refresh the settings.
+    this.userAuthService.getSettings().pipe(take(1)).subscribe();
   }
 
   logOut(): void {
@@ -126,20 +126,8 @@ export class MenuLoggedInComponent implements AfterViewInit {
     });
   }
 
-  usersAroundYou() {
-    this.spotbieMap.mobileStartLocation();
-  }
-
   async getLoyaltyPointBalance() {
     await this.loyaltyPointsService.getLoyaltyPointBalance();
-  }
-
-  getPointsWrapperStyle() {
-    if (this.isMobile) {
-      return {'width:': '85%', 'text-align': 'right'};
-    } else {
-      return {width: '45%'};
-    }
   }
 
   openEvents() {

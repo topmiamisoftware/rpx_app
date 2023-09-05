@@ -1,6 +1,7 @@
 <div *ngIf="(infoObject$ | async) as infoObject"
      [ngClass]="getOverlayWindowStyling()">
     <div class='sb-closeButton'
+         id="sb-closeButtonInfoObject"
          (click)="closeWindowX()"
          [ngStyle]="getCloseButtonStyling()"
          [ngClass]="getFullScreenModeClass()">

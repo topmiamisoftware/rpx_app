@@ -26,7 +26,7 @@
         EVENTS
       </ion-item>
 
-      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="openWindow(settingsWindow$)">
+      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="openSettings()">
         <ion-icon name="cog" slot="start"></ion-icon>
         SETTINGS
       </ion-item>
@@ -65,6 +65,6 @@
     <!--<app-event-menu *ngIf="eventMenuOpen"></app-event-menu>-->
     <app-map #spotbieMap *ngIf="mapApp$ | async"></app-map>
 
-    <app-settings *ngIf="settingsWindow$ | async" #spotbieSettings (closeWindowEvt)="closeWindow(settingsWindow$)"></app-settings>
+    <app-settings *ngIf="settingsWindow$ | async" #spotbieSettings (closeWindowEvt)="closeSettings()"></app-settings>
   </ion-content>
 </div>

@@ -11,9 +11,8 @@ const SIGN_UP_API = spotbieGlobals.API + 'user';
 export class SignUpService {
   constructor(private http: HttpClient) {}
 
-  public initRegister(register_object: any): Observable<any> {
+  initRegister(register_object: any): Observable<any> {
     const sign_up_api = SIGN_UP_API + '/sign-up';
-
     return this.http.post<any>(sign_up_api, register_object);
   }
 }

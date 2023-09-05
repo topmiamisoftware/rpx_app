@@ -13,8 +13,8 @@
 
     <div class='spotbie-text-gradient mt-2'>LOCATION DISABLED</div>
 
-    <p class="sb-locationList spotbie-text-gradient text-center mt-3" (click)="openAppSettings()">
-      <span>Open Device Settings</span>
+    <p class="sb-locationList text-center text-decoration-underline mt-3" (click)="openAppSettings()">
+      <span class="spotbie-text-gradient">OPEN SETTINGS</span>
     </p>
 
     <div class="spotbie-button" (click)="spawnCategories(1)">
@@ -22,7 +22,7 @@
     </div>
   </div>
 
-  <div id='map' #spotbieMap
+  <div id='map'
        *ngIf="map$ | async"
        [ngClass]="getMapClass()"></div>
 
@@ -377,14 +377,14 @@
 
 <!-- Show categories for shopping & food -->
 <div #categoryMenuSlide>
-  <div class='spotbie-categories animated slideInRight' *ngIf="(catsUp$ | async) && (searchCategory$ | async) !== 3">
+  <div class='spotbie-categories animated slideInRight' id="spotbieCategories" *ngIf="(catsUp$ | async) && (searchCategory$ | async) !== 3">
     <div *ngFor="let category of categories; let i = index" [ngClass]="getSingleCatClass(i)" (click)="apiSearch(category)">
       {{ category }}
     </div>
   </div>
 
   <!-- Show categories for events -->
-  <div class='spotbie-categories animated slideInRight' *ngIf="(catsUp$ | async) && (searchCategory$ | async) === 3">
+  <div class='spotbie-categories animated slideInRight' id="spotbieCategories" *ngIf="(catsUp$ | async) && (searchCategory$ | async) === 3">
     <div [ngClass]="getSingleCatClass(i)" *ngFor="let category of categories; let i = index" (click)="showEventSub(category)">
       {{ category.name }}
 
