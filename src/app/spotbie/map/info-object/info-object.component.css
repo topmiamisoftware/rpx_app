@@ -9,8 +9,9 @@
     background-repeat: no-repeat !important;
     background-attachment: fixed;
     z-index: 90 !important;
-    min-width: 103%;
-    width: 103%;
+    min-width: 100%;
+    width: 100%;
+    color: black;
 }
 .communityMemberWindow{
     background-color: #1b1822;

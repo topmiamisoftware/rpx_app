@@ -9,7 +9,8 @@ const ad_1 = require("../../../models/ad");
 const map_extras_1 = require("../../map/map_extras/map_extras");
 const account_type_enum_1 = require("../../../helpers/enum/account-type.enum");
 const info_object_type_enum_1 = require("../../../helpers/enum/info-object-type.enum");
-const web_intent_1 = require("../../../helpers/cordova/web-intent");
+const app_launcher_1 = require("@capacitor/app-launcher");
+const rxjs_1 = require("rxjs");
 const PLACE_TO_EAT_AD_IMAGE = 'assets/images/def/places-to-eat/header_banner_in_house.jpg';
 const PLACE_TO_EAT_AD_IMAGE_MOBILE = 'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
 const SHOPPING_AD_IMAGE = 'assets/images/def/shopping/header_banner_in_house.jpg';
@@ -28,7 +29,7 @@ let HeaderAdBannerComponent = class HeaderAdBannerComponent {
         this.eventsClassification = null;
         this.isMobile = false;
         this.isDesktop = false;
-        this.displayAd = false;
+        this.displayAd$ = new rxjs_1.BehaviorSubject(false);
         this.whiteIconSvg = 'assets/images/home_imgs/spotbie-white-icon.svg';
         this.distance = 0;
         this.totalRewards = 0;
@@ -78,7 +79,7 @@ let HeaderAdBannerComponent = class HeaderAdBannerComponent {
             }
         }
         else {
-            switch (parseInt(this.accountType, 10)) {
+            switch (this.accountType) {
                 case 1:
                     accountType = 1;
                     this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
@@ -104,7 +105,7 @@ let HeaderAdBannerComponent = class HeaderAdBannerComponent {
             id: adId,
             account_type: accountType,
         };
-        //Retrieve the SpotBie Ads
+        // Retrieve the SpotBie Ads
         this.adsService.getHeaderBanner(headerBannerReqObj).subscribe(resp => {
             this.getHeaderBannerAdCallback(resp);
         });
@@ -113,7 +114,7 @@ let HeaderAdBannerComponent = class HeaderAdBannerComponent {
         if (resp.success) {
             this.ad = resp.ad;
             this.business = resp.business;
-            if (!this.editMode && resp.business !== null) {
+            if (!this.editMode && resp.business) {
                 switch (this.business.user_type) {
                     case account_type_enum_1.AllowedAccountTypes.PlaceToEat:
                         this.currentCategoryList = map_extras_1.FOOD_CATEGORIES;
@@ -141,10 +142,8 @@ let HeaderAdBannerComponent = class HeaderAdBannerComponent {
                     this.distance = 5;
                 }
             }
-            this.displayAd = true;
+            this.displayAd$.next(true);
             this.totalRewards = resp.totalRewards;
-            if (!resp.business) {
-            }
         }
         else {
             console.log('getHeaderBannerAdCallback', resp);
@@ -177,22 +176,23 @@ let HeaderAdBannerComponent = class HeaderAdBannerComponent {
         this.categoryListForUi = null;
         this.getHeaderBanner();
     }
-    openAd() {
-        if (this.business !== null) {
+    async openAd() {
+        if (this.business) {
             this.communityMemberOpen = true;
         }
         else {
-            (0, web_intent_1.externalBrowserOpen)('/business', '_blank');
+            await app_launcher_1.AppLauncher.openUrl({ url: 'https://spotbie.com/business' });
         }
+        return;
     }
     updateAdImage(image = '') {
-        if (image !== '') {
+        if (image) {
             this.ad.images = image;
             this.genericAdImage = image;
         }
     }
     updateAdImageMobile(image_mobile) {
-        if (image_mobile !== '') {
+        if (image_mobile) {
             this.ad.images_mobile = image_mobile;
             this.genericAdImageMobile = image_mobile;
         }
@@ -210,7 +210,7 @@ let HeaderAdBannerComponent = class HeaderAdBannerComponent {
         //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
         //Add 'implements AfterViewInit' to the class.
         this.isDesktop = this.deviceDetectorService.isDesktop();
-        if (this.isMobile === false) {
+        if (!this.isMobile) {
             this.isMobile =
                 this.deviceDetectorService.isMobile() ||
                     this.deviceDetectorService.isTablet();

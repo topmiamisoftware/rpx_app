@@ -11,10 +11,10 @@ import {Router} from '@angular/router';
 import {MenuLoggedOutComponent} from '../menu-logged-out.component';
 import {faEye, faEyeSlash} from '@fortawesome/free-solid-svg-icons';
 import {logOutCallback} from '../../../helpers/logout-callback';
-import { BehaviorSubject } from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 
 @Component({
-  selector: 'app-log-in',
+  selector: ' app-log-in',
   templateUrl: './log-in.component.html',
   styleUrls: ['../../menu.component.css', './log-in.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

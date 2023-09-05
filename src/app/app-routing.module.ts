@@ -4,6 +4,7 @@ import {LoginGuardServiceService} from './services/route-services/login-guard-se
 import {InfoObjectComponent} from './spotbie/map/info-object/info-object.component';
 import {LoyaltyPointsComponent} from './spotbie/spotbie-logged-in/loyalty-points/loyalty-points.component';
 import {RewardMenuComponent} from './spotbie/spotbie-logged-in/reward-menu/reward-menu.component';
+import {MyList} from './spotbie/spotbie-logged-in/my-list/my-list.component';
 
 const routes: Routes = [
   {
@@ -39,6 +40,45 @@ const routes: Routes = [
   {path: 'place-to-eat/:name/:id', component: InfoObjectComponent},
   {path: 'shopping/:name/:id', component: InfoObjectComponent},
   {path: 'event/:name/:id', component: InfoObjectComponent},
+  {
+    path: 'my-list',
+    component: MyList,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'balance-list',
+      },
+      {
+        path: 'balance-list',
+        loadChildren: () =>
+          import(
+            './spotbie/spotbie-logged-in/my-list/balances/balances.module'
+          ).then(m => m.BalancesModule),
+      },
+      {
+        path: 'rewards',
+        loadChildren: () =>
+          import(
+            './spotbie/spotbie-logged-in/my-list/redeemable/redeemable.module'
+          ).then(m => m.RedeemableModule),
+      },
+      {
+        path: 'ledger',
+        loadChildren: () =>
+          import(
+            './spotbie/spotbie-logged-in/my-list/ledger/ledger.module'
+          ).then(m => m.LedgerModule),
+      },
+      {
+        path: 'redeemed',
+        loadChildren: () =>
+          import(
+            './spotbie/spotbie-logged-in/my-list/redeemed/redeemed.module'
+          ).then(m => m.RedeemedModule),
+      },
+    ],
+  },
   {path: 'login-success', redirectTo: '/user-home', pathMatch: 'full'},
   {path: '', redirectTo: '/home', pathMatch: 'full'},
 ];

@@ -9,7 +9,8 @@ const measure_units_helper_1 = require("../../../helpers/measure-units.helper");
 const ad_1 = require("../../../models/ad");
 const business_1 = require("../../../models/business");
 const map_extras_1 = require("../../map/map_extras/map_extras");
-const web_intent_1 = require("../../../helpers/cordova/web-intent");
+const app_launcher_1 = require("@capacitor/app-launcher");
+const numbers_helper_1 = require("../../../helpers/numbers.helper");
 const PLACE_TO_EAT_AD_IMAGE = 'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
 const SHOPPING_AD_IMAGE = 'assets/images/def/shopping/featured_banner_in_house.jpg';
 const EVENTS_AD_IMAGE = 'assets/images/def/events/featured_banner_in_house.jpg';
@@ -82,17 +83,15 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
             }
         }
         else {
+            accountType = (0, numbers_helper_1.getRandomInt)(1, 3).toString();
             switch (this.accountType) {
-                case '1':
-                    accountType = '1';
+                case 1:
                     this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
                     break;
-                case '2':
-                    accountType = '2';
+                case 2:
                     this.genericAdImage = SHOPPING_AD_IMAGE;
                     break;
-                case '3':
-                    accountType = '3';
+                case 3:
                     this.genericAdImage = EVENTS_AD_IMAGE;
                     this.categories = this.eventsClassification;
                     break;
@@ -172,13 +171,14 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
     switchAd() {
         this.getNearByFeatured();
     }
-    openAd() {
+    async openAd() {
         if (this.business !== null) {
             this.communityMemberOpen = true;
         }
         else {
-            (0, web_intent_1.externalBrowserOpen)('/business', '_blank');
+            await app_launcher_1.AppLauncher.openUrl({ url: 'https://spotbie.com/business' });
         }
+        return;
     }
     updateAdImage(image = '') {
         if (image !== '') {

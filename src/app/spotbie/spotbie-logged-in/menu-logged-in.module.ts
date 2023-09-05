@@ -8,14 +8,12 @@ import {RouterModule} from '@angular/router';
 import {HelperModule} from '../../helpers/helper.module';
 import {MapModule} from '../map/map.module';
 import {SettingsModule} from './settings/settings.module';
-import {RedeemableModule} from './redeemable/redeemable.module';
 import {IonicModule} from '@ionic/angular';
 //import { EventMenuModule } from './event-menu/event-menu.module';
 
 @NgModule({
   declarations: [MenuLoggedInComponent],
   imports: [
-    RedeemableModule,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

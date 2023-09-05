@@ -11,17 +11,19 @@ const sorterHelpers = require("../../helpers/results-sorter.helper");
 const sort_order_pipe_1 = require("../../pipes/sort-order.pipe");
 const environment_1 = require("../../../environments/environment");
 const rxjs_1 = require("rxjs");
+const operators_1 = require("rxjs/operators");
 const { Geolocation, Toast } = core_2.Plugins;
 const YELP_BUSINESS_SEARCH_API = 'https://api.yelp.com/v3/businesses/search';
 const BANNED_YELP_IDS = map_extras.BANNED_YELP_IDS;
 const SBCM_INTERVAL = 16000;
 let MapComponent = class MapComponent {
-    constructor(locationService, deviceService, mapIconPipe, httpClient, platform) {
+    constructor(locationService, deviceService, mapIconPipe, httpClient, platform, gestureCtrl) {
         this.locationService = locationService;
         this.deviceService = deviceService;
         this.mapIconPipe = mapIconPipe;
         this.httpClient = httpClient;
         this.platform = platform;
+        this.gestureCtrl = gestureCtrl;
         this.business = false;
         this.signUpEvt = new core_1.EventEmitter();
         this.openBusinessSettingsEvt = new core_1.EventEmitter();
@@ -32,7 +34,7 @@ let MapComponent = class MapComponent {
         this.n3_x = 7;
         this.rad_11 = null;
         this.rad_1 = null;
-        this.searchResultsOriginal = [];
+        this.searchResultsOriginal$ = new rxjs_1.BehaviorSubject([]);
         this.sortByTxt = 'Distance';
         this.sortingOrder = 'asc';
         this.sortAc = 0;
@@ -43,31 +45,48 @@ let MapComponent = class MapComponent {
         this.loadedTotalResults = 0;
         this.allPages = 0;
         this.maxDistanceCap = 45;
-        this.maxDistance = 10;
+        this.maxDistance$ = new rxjs_1.BehaviorSubject(10);
+        this.searchCategory$ = new rxjs_1.BehaviorSubject(null);
+        this.searchCategorySorter$ = new rxjs_1.BehaviorSubject(null);
+        this.searchKeyword$ = new rxjs_1.BehaviorSubject(null);
+        this.typeOfInfoObject$ = new rxjs_1.BehaviorSubject(null);
         this.sortEventDate = 'none';
         this.showingOpenedStatus = 'Showing Opened & Closed';
+        this.lat$ = new rxjs_1.BehaviorSubject(null);
+        this.lng$ = new rxjs_1.BehaviorSubject(null);
+        this.ogLat$ = new rxjs_1.BehaviorSubject(null);
+        this.ogLng$ = new rxjs_1.BehaviorSubject(null);
         this.fitBounds = false;
         this.zoom = 18;
-        this.map = false;
-        this.locationFound = false;
+        this.map$ = new rxjs_1.BehaviorSubject(false);
+        this.showSearchResults$ = new rxjs_1.BehaviorSubject(false);
+        this.showSearchBox$ = new rxjs_1.BehaviorSubject(false);
+        this.locationFound$ = new rxjs_1.BehaviorSubject(false);
         this.sliderRight = false;
-        this.catsUp = false;
+        this.catsUp$ = new rxjs_1.BehaviorSubject(false);
         this.toastHelper = false;
-        this.displaySurroundingObjectList = false;
-        this.showNoResultsBox = false;
-        this.showMobilePrompt = true;
-        this.showMobilePrompt2 = false;
+        this.showNoResultsBox$ = new rxjs_1.BehaviorSubject(false);
+        this.showMobilePrompt2$ = new rxjs_1.BehaviorSubject(false);
         this.firstTimeShowingMap = true;
-        this.showOpened = false;
+        this.showOpened$ = new rxjs_1.BehaviorSubject(false);
         this.noResults = false;
         this.currentSearchType = '0';
-        this.surroundingObjectList = [];
-        this.searchResults = [];
+        this.surroundingObjectList$ = new rxjs_1.BehaviorSubject([]);
+        // This will store the third-party API search results.
+        this.searchResults$ = new rxjs_1.BehaviorSubject([]);
+        // This will store the third-party API search resutls markers.
+        this.searchResultsMarkers = [];
+        // This will store the third-party API search results.
+        this.communityMemberList$ = new rxjs_1.BehaviorSubject([]);
+        // This will store the third-party API search resutls markers.
+        this.cmSearchResultsMarkers = [];
         this.eventClassifications = map_extras.EVENT_CATEGORIES;
         this.foodCategories = map_extras.FOOD_CATEGORIES;
         this.shoppingCategories = map_extras.SHOPPING_CATEGORIES;
+        this.numberCategories$ = new rxjs_1.BehaviorSubject(null);
+        this.bottomBannerCategories$ = new rxjs_1.BehaviorSubject(null);
         this.mapStyles = map_extras.MAP_STYLES;
-        this.infoObjectWindow = { open: false };
+        this.infoObject$ = new rxjs_1.BehaviorSubject(null);
         this.myFavoritesWindow = { open: false };
         this.subCategory = {
             food_sub: { open: false },
@@ -83,20 +102,81 @@ let MapComponent = class MapComponent {
         this.isTablet = false;
         this.isMobile = false;
         this.loadingText = null;
-        this.displayLocationEnablingInstructions = false;
+        this.displayLocationEnablingInstructions$ = new rxjs_1.BehaviorSubject(false);
         this.bannedYelpIDs = BANNED_YELP_IDS;
-        this.communityMemberList = [];
-        this.eventsClassification = null;
+        this.eventsClassification$ = new rxjs_1.BehaviorSubject(null);
         this.getSpotBieCommunityMemberListInterval = false;
         this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
         this.userDefaultImage = localStorage.getItem('spotbie_userDefaultImage');
         this.spotbieUsername = localStorage.getItem('spotbie_userLogin');
+        (0, rxjs_1.combineLatest)([this.lat$, this.lng$])
+            .pipe((0, operators_1.filter)(([lat, lng]) => !!lat && !!lng), (0, operators_1.tap)(([lat, lng]) => {
+            this.spotbieMap.setCenter({ lat, lng });
+            // Delete myMarker from the map if it exists
+            this.myMarker = new google.maps.Marker({
+                position: { lat, lng },
+                map: this.spotbieMap,
+            });
+        }))
+            .subscribe();
+        this.communityMemberList$
+            .pipe((0, operators_1.filter)(cmList => cmList.length > 0), (0, operators_1.tap)(async (cmList) => {
+            const { AdvancedMarkerElement } = (await google.maps.importLibrary('marker'));
+            this.hideMarkers(this.cmSearchResultsMarkers);
+            cmList.forEach(cm => {
+                const el = this.createCmMarker(cm);
+                const newMarker = new AdvancedMarkerElement({
+                    position: {
+                        lat: cm.loc_x,
+                        lng: cm.loc_y,
+                    },
+                    map: this.spotbieMap,
+                    content: el,
+                });
+                newMarker.addListener('click', ({ _domEvent, _latLng }) => {
+                    this.pullSearchMarker(cm);
+                });
+                this.cmSearchResultsMarkers.push(newMarker);
+            });
+        }))
+            .subscribe();
+        this.searchResults$
+            .pipe((0, operators_1.filter)(srList => srList.length > 0), (0, operators_1.tap)(async (srList) => {
+            const { AdvancedMarkerElement } = (await google.maps.importLibrary('marker'));
+            this.hideMarkers(this.searchResultsMarkers);
+            srList.forEach(sr => {
+                const el = this.createSrMarker(sr);
+                const newMarker = new AdvancedMarkerElement({
+                    position: {
+                        lat: sr.coordinates.latitude,
+                        lng: sr.coordinates.longitude,
+                    },
+                    map: this.spotbieMap,
+                    content: el,
+                });
+                newMarker.addListener('click', ({ _domEvent, _latLng }) => {
+                    this.pullSearchMarker(sr);
+                });
+                this.searchResultsMarkers.push(newMarker);
+            });
+        }))
+            .subscribe();
     }
-    get markerOptions() {
-        return {
-            icon: this.iconUrl,
-            draggable: false,
-        };
+    hideMarkers(markerList) {
+        markerList.forEach(marker => marker.setMap(null));
+        return;
+    }
+    createCmMarker(cm) {
+        const el = document.createElement('div');
+        el.className = 'spotbie-marker-bg sb-communityMember';
+        el.style.background = `url('${cm.photo}')`;
+        return el;
+    }
+    createSrMarker(sr) {
+        const el = document.createElement('div');
+        el.className = 'spotbie-marker-bg';
+        el.style.background = `url('${sr.image_url}')`;
+        return el;
     }
     ngOnInit() {
         this.isMobile = this.platform.is('mobile');
@@ -119,22 +199,28 @@ let MapComponent = class MapComponent {
     priceSortDesc(a, b) {
         a = a.price;
         b = b.price;
-        if (a === undefined) {
+        if (!a) {
             return 1;
         }
-        else if (b === undefined) {
+        else if (!b) {
             return -1;
         }
         return a.length > b.length ? -1 : b.length > a.length ? 1 : 0;
     }
     deliverySort() {
-        this.searchResults = this.searchResults.filter(searchResult => searchResult.transactions.indexOf('delivery') > -1);
+        this.searchResults$.next(this.searchResults$
+            .getValue()
+            .filter(searchResult => searchResult.transactions.indexOf('delivery') > -1));
     }
     pickUpSort() {
-        this.searchResults = this.searchResults.filter(searchResult => searchResult.transactions.indexOf('pickup') > -1);
+        this.searchResults$.next(this.searchResults$
+            .getValue()
+            .filter(searchResult => searchResult.transactions.indexOf('pickup') > -1));
     }
     reservationSort() {
-        this.searchResults = this.searchResults.filter(searchResult => searchResult.transactions.indexOf('restaurant_reservation') > -1);
+        this.searchResults$.next(this.searchResults$
+            .getValue()
+            .filter(searchResult => searchResult.transactions.indexOf('restaurant_reservation') > -1));
     }
     eventsToday() {
         this.sortEventDate = 'today';
@@ -145,7 +231,7 @@ let MapComponent = class MapComponent {
         let newEndTime = endTime.toISOString().slice(0, 11);
         newEndTime = `${newEndTime}00:00:00Z`;
         this.eventDateParam = `startEndDateTime=${startTime},${newEndTime}`;
-        this.apiSearch(this.searchKeyword);
+        this.apiSearch(this.searchKeyword$.getValue());
     }
     eventsThisWeekend() {
         this.sortEventDate = 'weekend';
@@ -156,7 +242,7 @@ let MapComponent = class MapComponent {
         let newEndTime = endTime.toISOString().slice(0, 11);
         newEndTime = `${newEndTime}00:00:00Z`;
         this.eventDateParam = `startEndDateTime=${newStartTime},${newEndTime}`;
-        this.apiSearch(this.searchKeyword);
+        this.apiSearch(this.searchKeyword$.getValue());
     }
     nextWeekdayDate(date, dayInWeek) {
         const ret = new Date(date || new Date());
@@ -164,8 +250,8 @@ let MapComponent = class MapComponent {
         return ret;
     }
     showOpen() {
-        this.showOpened = !this.showOpened;
-        if (!this.showOpened) {
+        this.showOpened$.next(!this.showOpened$.getValue());
+        if (!this.showOpened$.getValue()) {
             this.showingOpenedStatus = 'Show Opened and Closed';
             this.showOpenedParam = 'open_now=true';
         }
@@ -174,21 +260,13 @@ let MapComponent = class MapComponent {
             const unixTime = Math.floor(Date.now() / 1000);
             this.showOpenedParam = `open_at=${unixTime}`;
         }
-        this.apiSearch(this.searchKeyword);
+        this.apiSearch(this.searchKeyword$.getValue());
     }
-    updateDistance(evt) {
+    updateDistance(value) {
         clearTimeout(this.updateDistanceTimeout);
         this.updateDistanceTimeout = setTimeout(() => {
-            this.maxDistance = evt.value;
-            if (this.showNoResultsBox) {
-                this.apiSearch(this.searchKeyword);
-            }
-            else {
-                const results = this.searchResultsOriginal.filter(searchResult => searchResult.distance < this.maxDistance);
-                this.loadedTotalResults = results.length;
-                this.searchResults = results;
-                this.sortBy(this.sortAc);
-            }
+            this.maxDistance$.next(value);
+            this.apiSearch(this.searchKeyword$.getValue());
         }, 500);
     }
     sortBy(ac) {
@@ -230,41 +308,43 @@ let MapComponent = class MapComponent {
                 this.sortingOrder = 'desc';
             }
         }
+        const searchResults = this.searchResults$.getValue();
         switch (ac) {
             case 0:
                 //sort by distance
                 if (this.sortingOrder === 'desc') {
-                    this.searchResults = this.searchResults.sort(sorterHelpers.distanceSortDesc);
+                    this.searchResults$.next(searchResults.sort(sorterHelpers.distanceSortDesc));
                 }
                 else {
-                    this.searchResults = this.searchResults.sort(sorterHelpers.distanceSortAsc);
+                    this.searchResults$.next(searchResults.sort(sorterHelpers.distanceSortAsc));
                 }
                 break;
             case 1:
                 //sort by rating
                 if (this.sortingOrder === 'desc') {
-                    this.searchResults = this.searchResults.sort(sorterHelpers.ratingSortDesc);
+                    this.searchResults$.next(searchResults.sort(sorterHelpers.ratingSortDesc));
                 }
                 else {
-                    this.searchResults = this.searchResults.sort(sorterHelpers.ratingSortAsc);
+                    this.searchResults$.next(searchResults.sort(sorterHelpers.ratingSortAsc));
                 }
                 break;
             case 2:
                 //sort by reviews
+                console.log('REVIEW BY SORT', this.sortingOrder);
                 if (this.sortingOrder === 'desc') {
-                    this.searchResults = this.searchResults.sort(sorterHelpers.reviewsSortDesc);
+                    this.searchResults$.next(searchResults.sort(sorterHelpers.reviewsSortDesc));
                 }
                 else {
-                    this.searchResults = this.searchResults.sort(sorterHelpers.reviewsSortAsc);
+                    this.searchResults$.next(searchResults.sort(sorterHelpers.reviewsSortAsc));
                 }
                 break;
             case 3:
                 //sort by price
                 if (this.sortingOrder === 'desc') {
-                    this.searchResults = this.searchResults.sort(this.priceSortDesc);
+                    this.searchResults$.next(searchResults.sort(this.priceSortDesc));
                 }
                 else {
-                    this.searchResults = this.searchResults.sort(sorterHelpers.priceSortAsc);
+                    this.searchResults$.next(searchResults.sort(sorterHelpers.priceSortAsc));
                 }
                 break;
             case 4:
@@ -297,6 +377,7 @@ let MapComponent = class MapComponent {
     }
     classificationSearchCallback(httpResponse) {
         this.loading$.next(false);
+        console.log('classificationSearchCallback', httpResponse);
         if (httpResponse.success) {
             const classifications = httpResponse.data._embedded.classifications;
             classifications.forEach(classification => {
@@ -320,7 +401,7 @@ let MapComponent = class MapComponent {
                         }
                     });
                 }
-                if (classification.name !== undefined) {
+                if (classification.name) {
                     classification.show_sub = false;
                     if (classification.name !== 'Donation' &&
                         classification.name !== 'Parking' &&
@@ -336,7 +417,7 @@ let MapComponent = class MapComponent {
                 }
             });
             this.eventCategories = this.eventCategories.reverse();
-            this.catsUp = true;
+            this.catsUp$.next(true);
         }
         else {
             console.log('getClassifications Error ', httpResponse);
@@ -357,7 +438,7 @@ let MapComponent = class MapComponent {
         subCat.show_sub_sub = !subCat.show_sub_sub;
     }
     showEventSub(classification) {
-        this.eventsClassification = this.eventClassifications.indexOf(classification.name);
+        this.eventsClassification$.next(this.eventClassifications.indexOf(classification.name));
         classification.show_sub = !classification.show_sub;
     }
     newKeyWord() {
@@ -365,14 +446,14 @@ let MapComponent = class MapComponent {
         this.allPages = 0;
         this.currentOffset = 0;
         this.aroundMeSearchPage = 1;
-        this.searchResults = [];
+        this.searchResults$.next([]);
     }
     apiSearch(keyword, resetEventSorter = false) {
         this.loading$.next(true);
-        this.searchKeyword = keyword;
+        this.searchKeyword$.next(keyword);
         keyword = encodeURIComponent(keyword);
-        this.communityMemberList = [];
-        if (this.searchKeyword !== keyword) {
+        this.communityMemberList$.next([]);
+        if (this.searchKeyword$.getValue() !== keyword) {
             this.newKeyWord();
         }
         if (resetEventSorter) {
@@ -380,48 +461,50 @@ let MapComponent = class MapComponent {
             this.sortEventDate = 'none';
         }
         let apiUrl;
-        switch (this.searchCategory) {
-            case '1': // food
-                apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
-                this.numberCategories = this.foodCategories.indexOf(this.searchKeyword);
+        const lat = this.lat$.getValue();
+        const lng = this.lng$.getValue();
+        switch (this.searchCategory$.getValue()) {
+            case 1: // food
+                apiUrl = `${this.searchApiUrl}?latitude=${lat}&longitude=${lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
+                this.numberCategories$.next(this.foodCategories.indexOf(this.searchKeyword$.getValue()));
                 break;
-            case '2': // shopping
-                apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
-                this.numberCategories = this.shoppingCategories.indexOf(this.searchKeyword);
+            case 2: // shopping
+                apiUrl = `${this.searchApiUrl}?latitude=${lat}&longitude=${lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
+                this.numberCategories$.next(this.shoppingCategories.indexOf(this.searchKeyword$.getValue()));
                 break;
-            case '3': // events
-                apiUrl = `size=2&latlong=${this.lat},${this.lng}&classificationName=${keyword}&radius=45&${this.eventDateParam}`;
-                this.numberCategories = this.eventCategories.indexOf(this.searchKeyword);
+            case 3: // events
+                apiUrl = `size=2&latlong=${lat},${lng}&classificationName=${keyword}&radius=45&${this.eventDateParam}`;
+                this.numberCategories$.next(this.eventCategories.indexOf(this.searchKeyword$.getValue()));
                 break;
         }
         const searchObj = {
             config_url: apiUrl,
         };
         const searchObjSb = {
-            loc_x: this.lat,
-            loc_y: this.lng,
-            categories: JSON.stringify(this.numberCategories),
+            loc_x: this.lat$.getValue(),
+            loc_y: this.lng$.getValue(),
+            categories: JSON.stringify(this.numberCategories$.getValue()),
         };
-        switch (this.searchCategory) {
-            case '1':
-            case '2':
-                //Retrieve the thirst party API Yelp Results
+        switch (this.searchCategory$.getValue()) {
+            case 1:
+            case 2:
+                // Retrieve the third party API Yelp Results
                 this.locationService.getBusinesses(searchObj).subscribe(resp => {
                     this.getBusinessesSearchCallback(resp);
                 });
-                //Retrieve the SpotBie Community Member Results
+                // Retrieve the SpotBie Community Member Results
                 this.locationService
                     .getSpotBieCommunityMemberList(searchObjSb)
                     .subscribe(resp => {
                     this.getSpotBieCommunityMemberListCb(resp);
                 });
                 break;
-            case '3':
-                //Retrieve the SpotBie Community Member Results
+            case 3:
+                // Retrieve the SpotBie Community Member Results
                 this.locationService.getEvents(searchObj).subscribe(resp => {
                     this.getEventsSearchCallback(resp);
                 });
-                //Retrieve the SpotBie Community Member Results
+                // Retrieve the SpotBie Community Member Results
                 this.locationService
                     .getSpotBieCommunityMemberList(searchObjSb)
                     .subscribe(resp => {
@@ -434,7 +517,10 @@ let MapComponent = class MapComponent {
         return {
             styles: this.mapStyles,
             zoom: this.zoom,
-            gestureHandling: 'cooperative',
+            clickable: false,
+            mapTypeControl: false,
+            streetViewControl: false,
+            mapId: environment_1.environment.mapId,
         };
     }
     openWelcome() {
@@ -442,100 +528,100 @@ let MapComponent = class MapComponent {
             behavior: 'smooth',
             block: 'start',
         });
-        this.catsUp = false;
-        this.map = false;
-        this.showSearchBox = false;
-        this.showSearchResults = false;
-        this.infoObject = null;
-        this.searchResults = [];
-        this.infoObjectWindow.open = false;
+        this.catsUp$.next(false);
+        this.map$.next(false);
+        this.showSearchBox$.next(false);
+        this.showSearchResults$.next(false);
+        this.infoObject$.next(null);
+        this.searchResults$.next([]);
     }
     sortingOrderClass(sortingOrder) {
         return new sort_order_pipe_1.SortOrderPipe().transform(sortingOrder);
     }
-    async spawnCategories(obj) {
+    async spawnCategories(category) {
+        this.infoObject$.next(null);
+        this.showSearchBox$.next(true);
+        if (this.searchCategory$.getValue() !== category) {
+            this.previousSearchCategory = this.searchCategory$.getValue();
+        }
+        if (category === this.previousSearchCategory) {
+            this.catsUp$.next(true);
+            this.loading$.next(false);
+            return;
+        }
         this.loading$.next(true);
         this.scrollMapAppAnchor.nativeElement.scrollIntoView();
         this.zoom = 18;
         this.fitBounds = false;
-        if (!this.locationFound && !this.isDesktop) {
-            Geolocation.getCurrentPosition(position => {
-                console.log('your position', position);
-                this.map = true;
+        if (!this.locationFound$.getValue() && core_2.Capacitor.isNativePlatform()) {
+            Geolocation.getCurrentPosition(async (position) => {
+                this.map$.next(true);
+                await this.initMap();
                 this.showPosition(position);
             }, err => {
                 console.log(err);
                 this.showMapError();
             });
         }
-        else if (!this.locationFound && this.isDesktop) {
-            window.navigator.geolocation.getCurrentPosition(position => {
-                console.log('your position isDesktop', position);
+        else if (!this.locationFound$.getValue()) {
+            window.navigator.geolocation.getCurrentPosition(async (position) => {
+                this.map$.next(true);
+                await this.initMap();
                 this.showPosition(position);
             }, err => {
                 console.log(err);
                 this.showMapError();
             });
         }
-        if (this.showMobilePrompt) {
-            this.showMobilePrompt = false;
+        if (this.searchResults$.getValue().length === 0) {
+            this.showSearchResults$.next(false);
         }
-        let category;
-        if (!obj.category) {
-            category = obj.toString();
-        }
-        else {
-            category = obj.category;
-        }
-        this.showSearchBox = true;
-        if (this.searchResults.length === 0) {
-            this.showSearchResults = false;
-        }
-        if (category === this.searchCategory) {
-            this.catsUp = true;
-            return;
-        }
-        if (this.searchCategory) {
-            this.previousSearchCategory = this.searchCategory;
-        }
-        this.searchCategory = category.toString();
-        switch (this.searchCategory) {
-            case '1':
+        this.searchCategory$.next(category);
+        switch (this.searchCategory$.getValue()) {
+            case 1:
                 // food
                 this.searchApiUrl = YELP_BUSINESS_SEARCH_API;
                 this.searchCategoriesPlaceHolder = 'Search Places to Eat...';
                 this.categories = this.foodCategories;
-                this.bottomBannerCategories = this.categories.indexOf(this.categories[Math.floor(Math.random() * this.categories.length)]);
+                this.bottomBannerCategories$.next(this.categories.indexOf(this.categories[Math.floor(Math.random() * this.categories.length)]));
                 break;
-            case '2':
+            case 2:
                 // shopping
                 this.searchApiUrl = YELP_BUSINESS_SEARCH_API;
                 this.searchCategoriesPlaceHolder = 'Search Shopping...';
                 this.categories = this.shoppingCategories;
-                this.bottomBannerCategories = this.categories.indexOf(this.categories[Math.floor(Math.random() * this.categories.length)]);
+                this.bottomBannerCategories$.next(this.categories.indexOf(this.categories[Math.floor(Math.random() * this.categories.length)]));
                 break;
-            case '3':
+            case 3:
                 // events
                 this.eventCategories = [];
                 this.searchCategoriesPlaceHolder = 'Search Events...';
                 this.categories = this.eventCategories;
-                this.bottomBannerCategories = this.categories.indexOf(this.categories[Math.floor(Math.random() * this.categories.length)]);
+                this.bottomBannerCategories$.next(this.categories.indexOf(this.categories[Math.floor(Math.random() * this.categories.length)]));
                 this.classificationSearch();
                 return;
         }
-        this.catsUp = true;
+        this.catsUp$.next(true);
+        this.loading$.next(false);
+        const closeCategoryPicker = this.gestureCtrl.create({
+            el: this.categoryMenuSlide.nativeElement,
+            threshold: 15,
+            gestureName: 'closeCategoryPicker',
+            onMove: ev => this.catsUp$.next(false),
+        }, true);
+        closeCategoryPicker.enable();
     }
     cleanCategory() {
-        if (this.searchCategory !== this.previousSearchCategory) {
-            this.searchResults = [];
-            switch (this.searchCategory) {
-                case '1': // food
-                case '2': // shopping
-                    this.typeOfInfoObject = 'yelp_business';
+        if (this.searchCategory$.getValue() !== this.previousSearchCategory) {
+            this.searchResults$.next([]);
+            switch (this.searchCategory$.getValue()) {
+                case 1: // food
+                case 2: // shopping
+                    this.typeOfInfoObject$.next('yelp_business');
                     this.maxDistanceCap = 25;
                     break;
-                case '3': // events
-                    this.typeOfInfoObject = 'ticketmaster_events';
+                case 3: // events
+                    this.typeOfInfoObject$.next('ticketmaster_events');
                     this.maxDistanceCap = 45;
                     return;
             }
@@ -560,18 +646,18 @@ let MapComponent = class MapComponent {
         this.homeDashboard.scrollToRewardMenuAppAnchor();
     }
     closeCategories() {
-        this.catsUp = false;
+        this.catsUp$.next(false);
     }
     searchSpotBie(evt) {
-        this.searchKeyword = evt.target.value;
+        this.searchKeyword$.next(evt.target.value);
         const searchTerm = encodeURIComponent(evt.target.value);
         clearTimeout(this.finderSearchTimeout);
         this.finderSearchTimeout = setTimeout(() => {
             this.loading$.next(true);
             let apiUrl;
-            if (this.searchCategory === '3') {
+            if (this.searchCategory$.getValue() === 3) {
                 // Used for loading events from ticketmaster API
-                apiUrl = `size=20&latlong=${this.lat},${this.lng}&keyword=${searchTerm}&radius=45`;
+                apiUrl = `size=20&latlong=${this.lat$.getValue()},${this.lng$.getValue()}&keyword=${searchTerm}&radius=45`;
                 const searchObj = {
                     config_url: apiUrl,
                 };
@@ -581,7 +667,7 @@ let MapComponent = class MapComponent {
             }
             else {
                 //Used for loading places to eat and shopping from yelp
-                apiUrl = `${this.searchApiUrl}?latitude=${this.lat}&longitude=${this.lng}&term=${searchTerm}&${this.showOpenedParam}&radius=40000&sort_by=best_match&limit=20&offset=${this.currentOffset}`;
+                apiUrl = `${this.searchApiUrl}?latitude=${this.lat$.getValue()}&longitude=${this.lng$.getValue()}&term=${searchTerm}&${this.showOpenedParam}&radius=40000&sort_by=best_match&limit=20&offset=${this.currentOffset}`;
                 const searchObj = {
                     config_url: apiUrl,
                 };
@@ -589,9 +675,9 @@ let MapComponent = class MapComponent {
                     this.getBusinessesSearchCallback(resp);
                 });
                 const searchObjSb = {
-                    loc_x: this.lat,
-                    loc_y: this.lng,
-                    categories: this.searchKeyword,
+                    loc_x: this.lat$.getValue(),
+                    loc_y: this.lng$.getValue(),
+                    categories: this.searchKeyword$.getValue(),
                 };
                 //Retrieve the SpotBie Community Member Results
                 this.locationService
@@ -622,7 +708,7 @@ let MapComponent = class MapComponent {
         this.aroundMeSearchPage = page;
         this.currentOffset =
             this.aroundMeSearchPage * this.itemsPerPage - this.itemsPerPage;
-        this.apiSearch(this.searchKeyword);
+        this.apiSearch(this.searchKeyword$.getValue());
         this.scrollMapAppAnchor.nativeElement.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
@@ -653,14 +739,14 @@ let MapComponent = class MapComponent {
         }
         this.currentOffset =
             this.aroundMeSearchPage * this.itemsPerPage - this.itemsPerPage;
-        this.apiSearch(this.searchKeyword);
+        this.apiSearch(this.searchKeyword$.getValue());
         this.scrollMapAppAnchor.nativeElement.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
         });
     }
     hideSearchResults() {
-        this.showSearchResults = !this.showSearchResults;
+        this.showSearchResults$.next(!this.showSearchResults$.getValue());
     }
     formatPhoneNumber(phoneNumberString) {
         const cleaned = ('' + phoneNumberString).replace(/\D/g, '');
@@ -672,7 +758,7 @@ let MapComponent = class MapComponent {
         return null;
     }
     getMapWrapperClass() {
-        if (this.showSearchResults) {
+        if (this.showSearchResults$.getValue()) {
             return 'spotbie-map sb-map-results-open';
         }
         else {
@@ -680,7 +766,7 @@ let MapComponent = class MapComponent {
         }
     }
     getMapClass() {
-        if (this.showSearchResults) {
+        if (this.showSearchResults$.getValue()) {
             return 'spotbie-agm-map sb-map-results-open';
         }
         else {
@@ -696,19 +782,19 @@ let MapComponent = class MapComponent {
             this.totalResults = httpResponse.data.page.totalElements;
             const eventObject = httpResponse.data;
             if (this.totalResults === 0 || !!eventObject._embedded) {
-                this.showNoResultsBox = true;
+                this.showNoResultsBox$.next(true);
                 this.loading$.next(false);
-                this.searchResults = [];
+                this.searchResults$.next([]);
                 return;
             }
             else {
-                this.showNoResultsBox = false;
+                this.showNoResultsBox$.next(false);
                 this.sortEventDate = 'none';
             }
             this.cleanCategory();
             window.scrollTo(0, 0);
-            this.showSearchResults = true;
-            this.catsUp = false;
+            this.showSearchResults$.next(true);
+            this.catsUp$.next(false);
             this.loading$.next(false);
             const eventObjectList = eventObject._embedded.events;
             this.totalResults = eventObjectList.length;
@@ -716,6 +802,7 @@ let MapComponent = class MapComponent {
             if (this.allPages === 0) {
                 this.allPages = 1;
             }
+            const searchResults = [];
             for (let i = 0; i < eventObjectList.length; i++) {
                 eventObjectList[i].coordinates = {
                     latitude: '',
@@ -731,18 +818,18 @@ let MapComponent = class MapComponent {
                 const timeHr = new date_format_pipe_1.TimeFormatPipe().transform(eventObjectList[i].dates.start.localTime);
                 eventObjectList[i].dates.start.spotbieDate = timeDate;
                 eventObjectList[i].dates.start.spotbieHour = timeHr;
-                this.searchResults.push(eventObjectList[i]);
+                searchResults.push(eventObjectList[i]);
             }
+            this.searchResults$.next(searchResults);
             this.sortingOrder = 'desc';
             this.sortBy(0);
-            this.searchCategorySorter = this.searchCategory;
+            this.searchCategorySorter$.next(this.searchCategory$.getValue());
             this.searchResultsSubtitle = 'Events';
-            this.searchResultsOriginal = this.searchResults;
-            this.showSearchResults = true;
-            this.displaySurroundingObjectList = false;
-            this.showSearchBox = true;
-            this.loadedTotalResults = this.searchResults.length;
-            this.maxDistance = 45;
+            this.searchResultsOriginal$.next(this.searchResults$.getValue());
+            this.showSearchResults$.next(true);
+            this.showSearchBox$.next(true);
+            this.loadedTotalResults = this.searchResults$.getValue().length;
+            this.maxDistance$.next(45);
         }
         else {
             console.log('getEventsSearchCallback Error: ', httpResponse);
@@ -760,22 +847,22 @@ let MapComponent = class MapComponent {
             communityMemberList.forEach((business) => {
                 business.type_of_info_object = 'spotbie_community';
                 business.is_community_member = true;
-                switch (this.searchCategory) {
-                    case '1':
-                        if (business.photo === '') {
+                switch (this.searchCategory$.getValue()) {
+                    case 1:
+                        if (!business.photo) {
                             business.photo = 'assets/images/home_imgs/find-places-to-eat.svg';
                         }
                         this.currentCategoryList = this.foodCategories;
                         break;
-                    case '2':
-                        if (business.photo === '') {
+                    case 2:
+                        if (!business.photo) {
                             business.photo =
                                 'assets/images/home_imgs/find-places-for-shopping.svg';
                         }
                         this.currentCategoryList = this.shoppingCategories;
                         break;
-                    case '3':
-                        if (business.photo === '') {
+                    case 3:
+                        if (!business.photo) {
                             business.photo = 'assets/images/home_imgs/find-events.svg';
                         }
                         this.currentCategoryList = this.eventClassifications;
@@ -790,15 +877,15 @@ let MapComponent = class MapComponent {
                 business.cleanCategories = cleanCategories.toString();
                 business.rewardRate = business.loyalty_point_dollar_percent_value / 100;
             });
-            this.communityMemberList = communityMemberList;
+            this.communityMemberList$.next(communityMemberList);
             if (this.getSpotBieCommunityMemberListInterval) {
                 this.getSpotBieCommunityMemberListInterval = setInterval(() => {
                     const searchObjSb = {
-                        loc_x: this.lat,
-                        loc_y: this.lng,
-                        categories: JSON.stringify(this.numberCategories),
+                        loc_x: this.lat$.getValue(),
+                        loc_y: this.lng$.getValue(),
+                        categories: JSON.stringify(this.numberCategories$.getValue()),
                     };
-                    //Retrieve the SpotBie Community Member Results
+                    // Retrieve the SpotBie Community Member Results
                     this.locationService
                         .getSpotBieCommunityMemberList(searchObjSb)
                         .subscribe(resp => {
@@ -815,32 +902,37 @@ let MapComponent = class MapComponent {
         if (httpResponse.success) {
             this.totalResults = httpResponse.data.total;
             if (this.totalResults === 0) {
-                this.showNoResultsBox = true;
+                this.showNoResultsBox$.next(true);
                 return;
             }
             else {
-                this.showNoResultsBox = false;
+                this.showNoResultsBox$.next(false);
             }
             window.scrollTo(0, 0);
             this.cleanCategory();
-            this.showSearchResults = true;
-            this.catsUp = false;
+            this.showSearchResults$.next(true);
+            this.catsUp$.next(false);
             const placesResults = httpResponse.data;
             this.populateYelpResults(placesResults);
-            this.searchCategorySorter = this.searchCategory;
-            this.displaySurroundingObjectList = false;
-            this.showSearchBox = true;
+            this.searchCategorySorter$.next(this.searchCategory$.getValue());
+            this.showSearchBox$.next(true);
         }
         else {
             console.log('Place Search Error: ', httpResponse);
         }
     }
     pullSearchMarker(infoObject) {
-        this.infoObjectWindow.open = true;
-        this.infoObject = infoObject;
+        console.log('the marker', infoObject);
+        this.infoObject$.next(infoObject);
+    }
+    async initMap() {
+        const { Map } = (await google.maps.importLibrary('maps'));
+        const mapOptions = this.getMapOptions();
+        this.spotbieMap = new Map(document.getElementById('map'), mapOptions);
     }
     checkSearchResultsFitBounds() {
-        if (this.communityMemberList.length < 3 && this.searchResults.length > 0) {
+        if (this.communityMemberList$.getValue().length < 3 &&
+            this.searchResults$.getValue().length > 0) {
             return true;
         }
         else {
@@ -848,7 +940,8 @@ let MapComponent = class MapComponent {
         }
     }
     checkCommunityMemberFitBounds() {
-        if (this.searchResults.length < 3 || this.communityMemberList.length >= 3) {
+        if (this.searchResults$.getValue().length < 3 ||
+            this.communityMemberList$.getValue().length >= 3) {
             return true;
         }
         else {
@@ -861,41 +954,32 @@ let MapComponent = class MapComponent {
      * @param position
      */
     async showPosition(position) {
-        this.locationFound = true;
-        this.displayLocationEnablingInstructions = false;
+        this.locationFound$.next(true);
+        this.displayLocationEnablingInstructions$.next(false);
         if (environment_1.environment.fakeLocation) {
-            this.lat = environment_1.environment.myLocX;
-            this.lng = environment_1.environment.myLocY;
-            this.ogLat = environment_1.environment.myLocX;
-            this.ogLng = environment_1.environment.myLocY;
+            this.lat$.next(environment_1.environment.myLocX);
+            this.lng$.next(environment_1.environment.myLocY);
+            this.ogLat$.next(environment_1.environment.myLocX);
+            this.ogLng$.next(environment_1.environment.myLocY);
         }
         else {
-            this.lat = position.coords.latitude;
-            this.lng = position.coords.longitude;
-            this.ogLat = position.coords.latitude;
-            this.ogLng = position.coords.longitude;
+            this.lat$.next(position.coords.latitude);
+            this.lng$.next(position.coords.longitude);
+            this.ogLat$.next(position.coords.latitude);
+            this.ogLng$.next(position.coords.longitude);
         }
         this.center = {
-            lat: this.lat,
-            lng: this.lng,
+            lat: this.lat$.getValue(),
+            lng: this.lng$.getValue(),
         };
         this.width = '100%';
-        this.map = true;
+        this.map$.next(true);
         if (this.firstTimeShowingMap) {
             this.firstTimeShowingMap = false;
             this.saveUserLocation();
         }
-        this.showMobilePrompt2 = false;
+        this.showMobilePrompt2$.next(false);
         this.loading$.next(false);
-    }
-    initMap() {
-        // this.spotbieMap.options = this.getMapOptions();
-    }
-    drawPosition() {
-        // this.iconUrl = {
-        //   url: this.userDefaultImage,
-        //   scaledSize: new google.maps.Size(50, 50),
-        // };
     }
     pullMarker(mapObject) {
         this.currentMarker = mapObject;
@@ -911,8 +995,8 @@ let MapComponent = class MapComponent {
     }
     saveUserLocation() {
         const saveLocationObj = {
-            loc_x: this.lat,
-            loc_y: this.lng,
+            loc_x: this.lat$.getValue(),
+            loc_y: this.lng$.getValue(),
         };
         if (this.isLoggedIn === '1') {
             this.locationService.saveCurrentLocation(saveLocationObj).subscribe(resp => {
@@ -932,8 +1016,8 @@ let MapComponent = class MapComponent {
     }
     retrieveSurroudings() {
         const retrieveSurroundingsObj = {
-            loc_x: this.lat,
-            loc_y: this.lng,
+            loc_x: this.lat$.getValue(),
+            loc_y: this.lng$.getValue(),
             search_type: this.currentSearchType,
         };
         this.locationService.retrieveSurroudings(retrieveSurroundingsObj).subscribe(resp => this.retrieveSurroudingsCallback(resp), error => console.log('saveAndRetrieve Error', error));
@@ -963,7 +1047,7 @@ let MapComponent = class MapComponent {
             surroundingObjectList[k].map_icon = this.mapIconPipe.transform(surroundingObjectList[k].default_picture);
         }
         this.loading$.next(false);
-        this.showMobilePrompt2 = false;
+        this.showMobilePrompt2$.next(false);
         this.createObjectMarker(surroundingObjectList);
     }
     getMapPromptMobileClass() {
@@ -980,7 +1064,7 @@ let MapComponent = class MapComponent {
         }
     }
     createObjectMarker(surroundingObjectList) {
-        this.surroundingObjectList = surroundingObjectList;
+        this.surroundingObjectList$.next(surroundingObjectList);
     }
     getNewCoords(x, y, i, f) {
         // Gives the current position an alternate coordinates
@@ -998,35 +1082,34 @@ let MapComponent = class MapComponent {
         }
         this.n2_x = this.n2_x + 1;
         const angle = (i / this.n3_x) * Math.PI * 2;
-        x = this.lat + Math.cos(angle) * radius;
-        y = this.lng + Math.sin(angle) * radius;
+        x = this.lat$.getValue() + Math.cos(angle) * radius;
+        y = this.lng$.getValue() + Math.sin(angle) * radius;
         const p = { lat: x, lng: y };
         return p;
     }
     closeSearchResults() {
         this.closeCategories();
-        this.showSearchResults = false;
-        this.displaySurroundingObjectList = true;
-        this.showSearchBox = false;
-        this.map = false;
+        this.showSearchResults$.next(false);
+        this.showSearchBox$.next(false);
+        this.map$.next(false);
     }
     myFavorites() {
         this.myFavoritesWindow.open = true;
     }
     showMapError() {
-        this.displayLocationEnablingInstructions = true;
-        this.map = false;
+        this.displayLocationEnablingInstructions$.next(true);
+        this.map$.next(false);
         this.loading$.next(false);
         this.closeCategories();
         this.cleanCategory();
     }
     mobileStartLocation() {
         this.loading$.next(true);
-        this.spawnCategories({ category: 'food' });
-        this.showMobilePrompt = false;
-        this.showMobilePrompt2 = true;
+        this.spawnCategories(1);
+        this.showMobilePrompt2$.next(true);
     }
     async populateYelpResults(data) {
+        console.log('populateYelpResults', data);
         let results = data.businesses;
         let i = 0;
         const resultsToRemove = [];
@@ -1036,8 +1119,8 @@ let MapComponent = class MapComponent {
                 resultsToRemove.push(i);
             }
             business.rating_image = (0, info_object_helper_1.setYelpRatingImage)(business.rating);
-            business.type_of_info_object = this.typeOfInfoObject;
-            business.type_of_info_object_category = this.searchCategory;
+            business.type_of_info_object = this.typeOfInfoObject$.getValue();
+            business.type_of_info_object_category = this.searchCategory$.getValue();
             business.is_community_member = false;
             if (business.is_closed) {
                 business.is_closed_msg = 'Closed';
@@ -1078,9 +1161,20 @@ let MapComponent = class MapComponent {
         for (let y = 0; y < resultsToRemove.length; y++) {
             results.splice(resultsToRemove[y], 1);
         }
-        this.searchResultsOriginal = results;
-        results = results.filter(searchResult => searchResult.distance < this.maxDistance);
-        this.searchResults = results;
+        this.searchResultsOriginal$.next(results);
+        console.log('this.maxDistance$.getValue()', this.maxDistance$.getValue());
+        results = results.filter(searchResult => searchResult.distance < this.maxDistance$.getValue());
+        this.searchResults$.next(results);
+        // Create a merge observable that also takes in the community members array.
+        const markers = this.searchResults$.getValue();
+        const bounds = new google.maps.LatLngBounds();
+        for (let i = 0; i < markers.length; i++) {
+            bounds.extend({
+                lat: markers[i].coordinates.latitude,
+                lng: markers[i].coordinates.longitude,
+            });
+        }
+        this.spotbieMap.fitBounds(bounds);
         if (this.sortingOrder === 'desc') {
             this.sortingOrder = 'asc';
         }
@@ -1088,15 +1182,15 @@ let MapComponent = class MapComponent {
             this.sortingOrder = 'desc';
         }
         this.sortBy(this.sortAc);
-        switch (this.searchCategory) {
-            case '1':
+        switch (this.searchCategory$.getValue()) {
+            case 1:
                 this.searchResultsSubtitle = 'Spots';
                 break;
-            case '2':
-                this.searchResultsSubtitle = 'cShopping Spots';
+            case 2:
+                this.searchResultsSubtitle = 'Shopping Spots';
                 break;
         }
-        this.loadedTotalResults = this.searchResults.length;
+        this.loadedTotalResults = this.searchResults$.getValue().length;
         this.allPages = Math.ceil(this.totalResults / this.itemsPerPage);
         if (this.allPages === 0) {
             this.allPages = 1;
@@ -1139,6 +1233,9 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, core_1.ViewChild)('singleAdApp')
 ], MapComponent.prototype, "singleAdApp", void 0);
+tslib_1.__decorate([
+    (0, core_1.ViewChild)('categoryMenuSlide')
+], MapComponent.prototype, "categoryMenuSlide", void 0);
 MapComponent = tslib_1.__decorate([
     (0, core_1.Component)({
         selector: 'app-map',

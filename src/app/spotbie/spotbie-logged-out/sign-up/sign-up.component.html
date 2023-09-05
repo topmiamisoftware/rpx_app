@@ -1,13 +1,11 @@
-<app-loading-screen *ngIf="loading"></app-loading-screen>
-
 <div class="spotbie-overlay-window d-flex container">
-  <div>
-    <p class='sb-signUpGeneralInstructions text-uppercase text-center' id="sign_up_general_instructions" #spotbieSignUpIssues>
+    <p class='sb-signUpGeneralInstructions text-uppercase text-center'
+       id="sign_up_general_instructions" #spotbieSignUpIssues>
       <span class='spotbie-text-gradient'>Sign up to earn rewards</span>
     </p>
 
-    <form [formGroup]="signUpFormx" (ngSubmit)="initSignUp()">
-      <div *ngIf="submitted && f.spotbieUsername.errors" class="spotbie-invalid-feedback spotbie-text-gradient spotbie-error text-uppercase">
+    <form [formGroup]="signUpFormx">
+      <div *ngIf="(submitted$ | async) && f.spotbieUsername.errors" class="spotbie-invalid-feedback spotbie-text-gradient spotbie-error text-uppercase">
         <div *ngIf="f.spotbieUsername.errors.required || f.spotbieUsername.errors.emptyUsername">
           Username required.
         </div>
@@ -42,7 +40,7 @@
         </tr>
       </table>
 
-      <div *ngIf="submitted && f.spotbieEmail.errors" class="spotbie-invalid-feedback spotbie-text-gradient spotbie-error text-uppercase">
+      <div *ngIf="(submitted$ | async) && f.spotbieEmail.errors" class="spotbie-invalid-feedback spotbie-text-gradient spotbie-error text-uppercase">
         <div *ngIf="f.spotbieEmail.errors.required">
           Please enter your email.
         </div>
@@ -92,7 +90,7 @@
         </td>
       </table>
 
-      <div *ngIf="submitted && f.spotbiePassword.errors" class="spotbie-invalid-feedback spotbie-text-gradient spotbie-error text-uppercase">
+      <div *ngIf="(submitted$ | async) && f.spotbiePassword.errors" class="spotbie-invalid-feedback spotbie-text-gradient spotbie-error text-uppercase">
         <div *ngIf="f.spotbiePassword.errors.required">
           Please provide a password.
         </div>
@@ -120,26 +118,27 @@
         </td>
         <td>
           <input class='sb-input'
-                 [type]="!passwordShow ? 'password' : 'text'"
+                 [type]="(passwordShow$ | async) === false ? 'password' : 'text'"
                  formControlName="spotbiePassword"
                  id='user_pass'
                  autocomplete="new-password"
                  placeholder='PASSWORD'/>
-          <fa-icon class='fa-eye' [icon]="faEye" (click)="togglePassword()" *ngIf="!passwordShow"></fa-icon>
-          <fa-icon class='fa-eye' [icon]="faEyeSlash" (click)="togglePassword()" *ngIf="passwordShow"></fa-icon>
+          <fa-icon class='fa-eye' [icon]="faEye" (click)="togglePassword()" *ngIf="(passwordShow$ | async) === false"></fa-icon>
+          <fa-icon class='fa-eye' [icon]="faEyeSlash" (click)="togglePassword()" *ngIf="(passwordShow$ | async)"></fa-icon>
         </td>
       </table>
-
-      <p class='spotbie-rel-div
-                        spotbie-padding
-                        spotbie-login-terms
-                        spotbie-text-link
-                        text-uppercase'>
-        By Signing Up, you are agreeing to <span (click)="openTerms()">OUR TERMS & PRIVACY POLICY.</span>
-      </p>
-
-      <button class='btn spotbie-button spotbie-padding'>SIGN UP</button>
     </form>
+
+    <p class='ion-padding
+                  spotbie-login-terms
+                  spotbie-text-link
+                  text-uppercase'>
+      By Signing Up, you are agreeing to <span (click)="openTerms()">OUR TERMS & PRIVACY POLICY.</span>
+    </p>
+
+    <button class='btn spotbie-button spotbie-padding' (click)="initSignUp()">
+      SIGN UP
+    </button>
 
     <div class="spotbie-rel-div
                     spotbie-padding
@@ -150,5 +149,6 @@
 
     <div class="sb-logo mt-3 mb-5"></div>
     <div class="mt-4"></div>
-  </div>
 </div>
+
+<app-loading-screen *ngIf="loading$ | async"></app-loading-screen>

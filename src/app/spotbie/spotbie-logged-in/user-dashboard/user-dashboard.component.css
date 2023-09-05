@@ -2,12 +2,13 @@ h3{
     line-height: 60px;
 }
 .sb-dashboardWrapper{
-    background-color: #27242e;
+    background-color: var(--ion-color-primary-shade);
     position: relative;
     display: block;
-    border-bottom: 8px solid #332f3e;
+    border-bottom: 8px solid var(--ion-color-primary);
     padding-top: 100px;
     padding-bottom: 100px;
+    text-align: center;
 }
 .sb-qrImage{
     position: relative;

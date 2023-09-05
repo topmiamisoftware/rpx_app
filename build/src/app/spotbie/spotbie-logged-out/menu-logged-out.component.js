@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MenuLoggedOutComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
-const web_intent_1 = require("../../helpers/cordova/web-intent");
+const app_launcher_1 = require("@capacitor/app-launcher");
 let MenuLoggedOutComponent = class MenuLoggedOutComponent {
     constructor(location, platform, router) {
         this.location = location;
@@ -47,8 +47,9 @@ let MenuLoggedOutComponent = class MenuLoggedOutComponent {
         }
         this.spawnCategoriesOut.emit(type);
     }
-    goToBlog() {
-        (0, web_intent_1.externalBrowserOpen)('https://blog.spotbie.com/');
+    async goToBlog() {
+        await app_launcher_1.AppLauncher.openUrl({ url: 'https://blog.spotbie.com/' });
+        return;
     }
     openWindow(window) {
         window.open = !window.open;

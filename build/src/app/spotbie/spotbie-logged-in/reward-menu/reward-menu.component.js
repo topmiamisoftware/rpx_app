@@ -6,6 +6,7 @@ const core_1 = require("@angular/core");
 const account_type_enum_1 = require("../../../helpers/enum/account-type.enum");
 const business_1 = require("../../../models/business");
 const environment_1 = require("../../../../environments/environment");
+const rxjs_1 = require("rxjs");
 let RewardMenuComponent = class RewardMenuComponent {
     constructor(loyaltyPointsService, businessMenuService, router, route) {
         this.loyaltyPointsService = loyaltyPointsService;
@@ -18,8 +19,9 @@ let RewardMenuComponent = class RewardMenuComponent {
         this.notEnoughLpEvt = new core_1.EventEmitter();
         this.eAllowedAccountTypes = account_type_enum_1.AllowedAccountTypes;
         this.itemCreator = false;
-        this.rewardApp = false;
-        this.rewards = null;
+        this.rewardApp$ = new rxjs_1.BehaviorSubject(false);
+        this.rewards$ = new rxjs_1.BehaviorSubject(null);
+        this.reward$ = new rxjs_1.BehaviorSubject(null);
         this.userType = null;
         this.business = new business_1.Business();
         this.isLoggedIn = null;
@@ -46,7 +48,8 @@ let RewardMenuComponent = class RewardMenuComponent {
     }
     async fetchRewardsCb(resp) {
         if (resp.success) {
-            this.rewards = resp.rewards;
+            console.log('RWARDS', resp.rewards);
+            this.rewards$.next(resp.rewards);
             if (this.userType === this.eAllowedAccountTypes.Personal ||
                 this.isLoggedIn !== '1') {
                 this.userPointToDollarRatio = resp.loyalty_point_dollar_percent_value;
@@ -67,20 +70,20 @@ let RewardMenuComponent = class RewardMenuComponent {
     }
     openReward(reward) {
         console.log('reward', reward);
-        this.reward = reward;
-        this.reward.link = `${environment_1.environment.baseUrl}business-menu/${this.qrCodeLink}/${this.reward.uuid}`;
-        this.rewardApp = true;
+        reward.link = `${environment_1.environment.baseUrl}business-menu/${this.qrCodeLink}/${reward.uuid}`;
+        this.reward$.next(reward);
+        this.rewardApp$.next(true);
     }
     closeReward() {
-        this.reward = null;
-        this.rewardApp = false;
+        this.reward$.next(null);
+        this.rewardApp$.next(false);
     }
     editReward(reward) {
-        this.reward = reward;
+        this.reward$.next(reward);
         this.itemCreator = true;
     }
     closeRewardCreator() {
-        this.reward = null;
+        this.reward$.next(null);
         this.itemCreator = false;
     }
     closeRewardCreatorAndRefetchRewardList() {
@@ -88,7 +91,7 @@ let RewardMenuComponent = class RewardMenuComponent {
         this.fetchRewards();
     }
     rewardTileStyling(reward) {
-        if (reward.type === '0') {
+        if (reward.type === 0) {
             return { background: 'url(' + reward.images + ')' };
         }
         else {

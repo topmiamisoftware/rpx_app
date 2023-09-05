@@ -1,12 +1,3 @@
-.spotbie-overlay-window{
-    z-index: 94;
-    overflow-x: hidden;
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
-    left: 0%;
-    padding-top: 0px;
-}
 .sb-miniLogoIconM{
     position: relative;
     margin-top: -6px;
@@ -31,36 +22,19 @@
 .spotbie-map{
     position: relative;
     margin: 0 auto;
-    margin-top: 70px;
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-    background-color: #27242e;
 }
-.spotbie-agm-map{
-    position: relative;
-    margin: 0 auto;
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
-    height: 100vh;
-    min-height: 100vh;
-    background-color: #181818;
-}
-
 .spotbie-map.sb-map-results-open{
     height: 60vh;
     max-height: 60vh;
     min-height: 60vh;
-    margin-top: 50px;
 }
 .spotbie-agm-map.sb-map-results-open{
     height: 60vh;
     max-height: 60vh;
     min-height: 60vh;
-}
-.agm-map-container-inner{
-    margin: 0 auto !important;
 }
 .spotbie-profile-pop{
     position: fixed;
@@ -128,6 +102,7 @@
     width: 90%;
     min-width: 90%;
     max-width: 90%;
+    text-align: center;
 }
 .spotbie-close-categories{
     position: absolute;
@@ -168,7 +143,7 @@
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
     background-color: white;
-    padding-top: 7Z0px;
+    padding-top: 70px;
     padding-bottom: 20px;
 }
 .search-spotbie-categories{
@@ -213,6 +188,7 @@
     text-align: left;
     background-color: transparent;
     font-size: .8rem;
+    color: black;
 }
 .spotbie-sorting{
     font-size: 14px;
@@ -344,6 +320,7 @@
     text-align: left;
 }
 .spotbie-search-result{
+    color: black;
     background-color: rgb(28 25 36 / 14%);
 }
 .no-results{
@@ -697,7 +674,6 @@ span.spotbie-button{
     left: 0px;
     width: 100%;
     min-width: 100%;
-    background-color: #332f3e;
 }
 
 .map-prompt-mobile p{
@@ -791,12 +767,13 @@ swiper{
     margin-right: 10px;
 }
 .sb-dashboardWrapper{
-    background-color: #27242e;
-    position: relative;
-    display: block;
-    border-bottom: 8px solid #332f3e;
-    padding-top: 100px;
-    padding-bottom: 100px;
+  background-color: #27242e;
+  position: relative;
+  display: block;
+  border-bottom: 8px solid #332f3e;
+  padding-top: 100px;
+  padding-bottom: 100px;
+  text-align: center;
 }
 .sb-locationList{
     display: block;
@@ -1064,8 +1041,8 @@ map-marker > img{
 }
 @media (max-width: 600px) {
     .map-prompt-mobile{
-        width: 103%;
-        min-width: 103%;
+        width: 100%;
+        min-width: 100%;
     }
     .spotbie-overlay-window{
         width: 100%;

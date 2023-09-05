@@ -32,7 +32,6 @@ export class UserauthService {
 
     return new Promise((resolve, reject) => {
       this.http.post<any>(loginApi, checkLoginObject).subscribe(resp => {
-        console.log('checkIfLoggedIn', resp);
         if (resp.message === '1') {
           resolve(resp);
         } else {

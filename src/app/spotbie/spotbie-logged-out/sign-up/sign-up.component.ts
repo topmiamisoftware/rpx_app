@@ -7,27 +7,23 @@ import {
   Input,
   EventEmitter,
 } from '@angular/core';
-import { Router } from '@angular/router';
-import {
-  Validators,
-  UntypedFormGroup,
-  UntypedFormBuilder,
-} from '@angular/forms';
-import { ValidateUsername } from '../../../helpers/username.validator';
-import { ValidatePassword } from '../../../helpers/password.validator';
-import { SignUpService } from '../../../services/spotbie-logged-out/sign-up/sign-up.service';
-import { catchError } from 'rxjs/operators';
-import { Observable } from 'rxjs/internal/Observable';
-import { of } from 'rxjs';
-import { EmailConfirmationService } from '../../email-confirmation/email-confirmation.service';
-import { ValidateUniqueEmail } from '../../../validators/email-unique.validator';
+import {Router} from '@angular/router';
+import {Validators, UntypedFormGroup, UntypedFormBuilder} from '@angular/forms';
+import {ValidateUsername} from '../../../helpers/username.validator';
+import {ValidatePassword} from '../../../helpers/password.validator';
+import {SignUpService} from '../../../services/spotbie-logged-out/sign-up/sign-up.service';
+import {catchError} from 'rxjs/operators';
+import {Observable} from 'rxjs/internal/Observable';
+import {BehaviorSubject, of} from 'rxjs';
+import {EmailConfirmationService} from '../../email-confirmation/email-confirmation.service';
+import {ValidateUniqueEmail} from '../../../validators/email-unique.validator';
 import {
   faEye,
   faEyeSlash,
   faInfoCircle,
 } from '@fortawesome/free-solid-svg-icons';
-import { UserauthService } from '../../../services/userauth.service';
-import { AppLauncher } from '@capacitor/app-launcher';
+import {UserauthService} from '../../../services/userauth.service';
+import {AppLauncher} from '@capacitor/app-launcher';
 
 @Component({
   selector: 'app-sign-up',
@@ -45,17 +41,18 @@ export class SignUpComponent implements OnInit {
   faEye = faEye;
   faInfo = faInfoCircle;
   faEyeSlash = faEyeSlash;
+
   signUpFormx: UntypedFormGroup;
-  signingUp = false;
-  signUpBox = false;
-  submitted = false;
-  loading = false;
-  alreadyConfirmedEmail = '';
-  emailIsConfirmed = false;
-  emailConfirmation: boolean;
-  passwordShow = false;
-  rememberMeToken: string;
-  business = false;
+  signingUp$ = new BehaviorSubject<boolean>(false);
+  signUpBox$ = new BehaviorSubject<boolean>(false);
+  submitted$ = new BehaviorSubject<boolean>(false);
+  loading$ = new BehaviorSubject<boolean>(false);
+  alreadyConfirmedEmail$ = new BehaviorSubject<string>('');
+  emailIsConfirmed$ = new BehaviorSubject<boolean>(false);
+  emailConfirmation$ = new BehaviorSubject<boolean>(false);
+  passwordShow$ = new BehaviorSubject<boolean>(false);
+  rememberMeToken$ = new BehaviorSubject<string>(null);
+  business$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private router: Router,
@@ -80,19 +77,19 @@ export class SignUpComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loading = true;
+    this.loading$.next(true);
 
     if (this.router.url === '/business') {
-      this.business = true;
+      this.business$.next(true);
     } else {
-      this.business = false;
+      this.business$.next(false);
     }
 
     this.initSignUpForm();
   }
 
   scrollTo(el: ElementRef): void {
-    $('html, body').animate({ scrollTop: $(el).offset().top }, 'slow');
+    $('html, body').animate({scrollTop: $(el).offset().top}, 'slow');
   }
 
   closeWindowX(): void {
@@ -104,18 +101,18 @@ export class SignUpComponent implements OnInit {
   }
 
   togglePassword() {
-    this.passwordShow = !this.passwordShow;
+    this.passwordShow$.next(!this.passwordShow$.getValue());
   }
 
   initSignUp(): void {
-    this.submitted = true;
-    this.loading = true;
+    this.submitted$.next(true);
+    this.loading$.next(true);
     this.spotbieSignUpIssues.nativeElement.scrollTo(0, 0);
     this.signUpFormx.updateValueAndValidity();
 
     // stop here if form is invalid
     if (this.signUpFormx.invalid) {
-      this.signingUp = false;
+      this.signingUp$.next(false);
 
       if (this.signUpFormx.get('spotbieEmail').invalid) {
         document.getElementById('user_email').style.border = '1px solid red';
@@ -129,7 +126,7 @@ export class SignUpComponent implements OnInit {
         document.getElementById('user_pass').style.border = 'unset';
       }
 
-      this.loading = false;
+      this.loading$.next(false);
 
       return;
     } else {
@@ -158,8 +155,8 @@ export class SignUpComponent implements OnInit {
   }
 
   signUpError<T>(operation = 'operation', result?: T) {
-    this.signingUp = false;
-    this.loading = false;
+    this.signingUp$.next(false);
+    this.loading$.next(false);
 
     return (error: any): Observable<T> => {
       const signUpInstructions = this.spotbieSignUpIssues.nativeElement;
@@ -168,7 +165,7 @@ export class SignUpComponent implements OnInit {
       const errorList = error.error.errors;
 
       if (errorList.username) {
-        const errors: { [k: string]: any } = {};
+        const errors: {[k: string]: any} = {};
         errorList.username.forEach(err => {
           errors[err] = true;
         });
@@ -181,7 +178,7 @@ export class SignUpComponent implements OnInit {
       }
 
       if (errorList.email) {
-        const errors: { [k: string]: any } = {};
+        const errors: {[k: string]: any} = {};
         errorList.email.forEach(err => {
           errors[err] = true;
         });
@@ -193,7 +190,7 @@ export class SignUpComponent implements OnInit {
       }
 
       if (errorList.password) {
-        const errors: { [k: string]: any } = {};
+        const errors: {[k: string]: any} = {};
         errorList.username.forEach(err => {
           errors[err] = true;
         });
@@ -204,7 +201,7 @@ export class SignUpComponent implements OnInit {
         document.getElementById('user_pass').style.border = 'unset';
       }
 
-      this.signingUp = false;
+      this.signingUp$.next(false);
 
       setTimeout(() => {
         signUpInstructions.style.display = 'block';
@@ -242,7 +239,7 @@ export class SignUpComponent implements OnInit {
       ValidateUniqueEmail.valid(this.emailUniqueCheckService, this.spotbieEmail)
     );
 
-    this.loading = false;
+    this.loading$.next(false);
   }
 
   usersHome() {
@@ -253,9 +250,8 @@ export class SignUpComponent implements OnInit {
     this.router.navigate(['/business']);
   }
 
-
   getCurrentWindowBg() {
-    if (this.business) {
+    if (this.business$.getValue()) {
       return 'sb-businessBg';
     } else {
       return 'sb-regularBg';
@@ -263,7 +259,7 @@ export class SignUpComponent implements OnInit {
   }
 
   async openTerms() {
-    await AppLauncher.openUrl({ url: 'https://spotbie.com/terms' });
+    await AppLauncher.openUrl({url: 'https://spotbie.com/terms'});
     return;
   }
 
@@ -294,7 +290,7 @@ export class SignUpComponent implements OnInit {
         "<span class='spotbie-text-gradient spotbie-error'>There has been an error signing up.</span>";
     }
 
-    this.loading = false;
-    this.signingUp = false;
+    this.loading$.next(false);
+    this.signingUp$.next(false);
   }
 }

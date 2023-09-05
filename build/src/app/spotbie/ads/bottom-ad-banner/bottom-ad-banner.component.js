@@ -9,6 +9,8 @@ const measure_units_helper_1 = require("../../../helpers/measure-units.helper");
 const ad_1 = require("../../../models/ad");
 const business_1 = require("../../../models/business");
 const map_extras_1 = require("../../map/map_extras/map_extras");
+const numbers_helper_1 = require("../../../helpers/numbers.helper");
+const rxjs_1 = require("rxjs");
 const PLACE_TO_EAT_AD_IMAGE = 'assets/images/def/places-to-eat/footer_banner_in_house.jpg';
 const PLACE_TO_EAT_AD_IMAGE_MOBILE = 'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
 const SHOPPING_AD_IMAGE = 'assets/images/def/shopping/footer_banner_in_house.jpg';
@@ -28,7 +30,7 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
         this.eventsClassification = null;
         this.isMobile = false;
         this.isDesktop = false;
-        this.displayAd = false;
+        this.displayAd$ = new rxjs_1.BehaviorSubject(false);
         this.distance = 0;
         this.totalRewards = 0;
         this.categoriesListFriendly = [];
@@ -79,7 +81,9 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
             }
         }
         else {
-            switch (this.accountType) {
+            accountType = this.accountType ? this.accountType : (0, numbers_helper_1.getRandomInt)(1, 3);
+            console.log('account type', accountType);
+            switch (accountType) {
                 case 'food':
                     accountType = 1;
                     this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
@@ -105,6 +109,7 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
             id: adId,
             account_type: accountType,
         };
+        console.log('the search object', searchObjSb);
         // Retrieve the SpotBie Ads
         this.adsService.getBottomHeader(searchObjSb).subscribe(resp => {
             this.getBottomHeaderCb(resp);
@@ -129,7 +134,7 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
         if (resp.success) {
             this.ad = resp.ad;
             this.business = resp.business;
-            if (!this.editMode && resp.business !== null) {
+            if (!this.editMode && resp.business) {
                 switch (this.business.user_type) {
                     case account_type_enum_1.AllowedAccountTypes.PlaceToEat:
                         this.currentCategoryList = map_extras_1.FOOD_CATEGORIES;
@@ -149,13 +154,15 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
                 });
                 this.business.is_community_member = true;
                 this.business.type_of_info_object = info_object_type_enum_1.InfoObjectType.SpotBieCommunity;
-                if (!this.editMode)
+                if (!this.editMode) {
                     this.distance = (0, measure_units_helper_1.getDistanceFromLatLngInMiles)(this.business.loc_x, this.business.loc_y, this.lat, this.lng);
-                else
+                }
+                else {
                     this.distance = 5;
+                }
             }
             this.totalRewards = resp.totalRewards;
-            this.displayAd = true;
+            this.displayAd$.next(true);
         }
         else {
             console.log('getSingleAdListCb', resp);
@@ -192,20 +199,20 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
         window.open('/business', '_blank');
     }
     updateAdImage(image = '') {
-        if (image !== '') {
+        if (image) {
             this.ad.images = image;
             this.genericAdImage = image;
         }
     }
     updateAdImageMobile(image) {
-        if (image !== '') {
+        if (image) {
             this.ad.images_mobile = image;
             this.genericAdImageMobile = image;
         }
     }
     ngOnInit() {
         this.isDesktop = this.deviceDetectorService.isDesktop();
-        if (this.isMobile === false) {
+        if (!this.isMobile) {
             this.isMobile =
                 this.deviceDetectorService.isMobile() ||
                     this.deviceDetectorService.isTablet();

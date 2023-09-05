@@ -5,8 +5,9 @@ const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
 const forms_1 = require("@angular/forms");
 const environment_1 = require("../../../../environments/environment");
-const redeemable_1 = require("../../../models/redeemable");
 const business_1 = require("../../../models/business");
+const rxjs_1 = require("rxjs");
+const barcode_scanner_1 = require("@capacitor-community/barcode-scanner");
 const QR_CODE_LOYALTY_POINTS_SCAN_BASE_URL = environment_1.environment.qrCodeLoyaltyPointsScanBaseUrl;
 const QR_CODE_CALIM_REWARD_SCAN_BASE_URL = environment_1.environment.qrCodeRewardScanBaseUrl;
 let QrComponent = class QrComponent {
@@ -21,22 +22,28 @@ let QrComponent = class QrComponent {
         this.openUserLPBalanceEvt = new core_1.EventEmitter();
         this.closeQrUserEvt = new core_1.EventEmitter();
         this.notEnoughLpEvt = new core_1.EventEmitter();
-        this.business = new business_1.Business();
-        this.redeemable = new redeemable_1.Redeemable();
+        this.business$ = new rxjs_1.BehaviorSubject(null);
+        this.redeemable$ = new rxjs_1.BehaviorSubject(null);
+        this.userHash$ = new rxjs_1.BehaviorSubject(null);
+        this.isBusiness$ = false;
+        this.userLoyaltyPoints$ = new rxjs_1.BehaviorSubject(0);
+        this.loyaltyPointWorth$ = new rxjs_1.BehaviorSubject(0);
+        this.businessLoyaltyPointsFormUp$ = new rxjs_1.BehaviorSubject(false);
+        this.rewardPrompted$ = new rxjs_1.BehaviorSubject(false);
+        this.rewardPrompt$ = new rxjs_1.BehaviorSubject(false);
+        this.loyaltyPointReward$ = new rxjs_1.BehaviorSubject(null);
+        this.loyaltyPointRewardDollarValue$ = new rxjs_1.BehaviorSubject(null);
+        this.qrCodeLink$ = new rxjs_1.BehaviorSubject(null);
+        this.businessLoyaltyPointsSubmitted$ = new rxjs_1.BehaviorSubject(false);
+        this.qrWidth$ = new rxjs_1.BehaviorSubject(0);
+        this.scanSuccess$ = new rxjs_1.BehaviorSubject(false);
+        this.awarded$ = new rxjs_1.BehaviorSubject(false);
+        this.reward$ = new rxjs_1.BehaviorSubject(null);
+        this.rewarded$ = new rxjs_1.BehaviorSubject(false);
+        this.pointsCharged$ = new rxjs_1.BehaviorSubject(0);
         this.qrType = 'url';
-        this.isBusiness = false;
-        this.userLoyaltyPoints = 0;
-        this.loyaltyPointWorth = 0;
-        this.businessLoyaltyPointsFormUp = false;
-        this.rewardPrompted = false;
-        this.rewardPrompt = false;
         this.qrCodeLoyaltyPointsBaseUrl = QR_CODE_LOYALTY_POINTS_SCAN_BASE_URL;
         this.qrCodeRewardBaseUrl = QR_CODE_CALIM_REWARD_SCAN_BASE_URL;
-        this.businessLoyaltyPointsSubmitted = false;
-        this.qrWidth = 0;
-        this.scanSuccess = false;
-        this.awarded = false;
-        this.rewarded = false;
     }
     get totalSpent() {
         return this.businessLoyaltyPointsForm.get('totalSpent').value;
@@ -64,21 +71,65 @@ let QrComponent = class QrComponent {
     }
     claimRewardCb(resp) {
         if (resp.success) {
-            this.rewarded = true;
-            this.reward = resp.reward;
-            this.pointsCharged = this.reward.point_cost;
+            this.rewarded$.next(true);
+            this.reward$.next(resp.reward);
+            this.pointsCharged$.next(this.reward$.getValue().point_cost);
             this.sbEarnedPoints.nativeElement.style.display = 'block';
         }
         else {
             alert(resp.message);
         }
-        this.scanSuccess = false;
+        this.scanSuccess$.next(false);
+    }
+    async checkPermission() {
+        // check if user already granted permission
+        const status = await barcode_scanner_1.BarcodeScanner.checkPermission({ force: false });
+        if (status.granted) {
+            // user granted permission
+            return true;
+        }
+        if (status.denied) {
+            // user denied permission
+            return false;
+        }
+        if (status.asked) {
+            // system requested the user for permission during this call
+            // only possible when force set to true
+        }
+        if (status.neverAsked) {
+            // user has not been requested this permission before
+            // it is advised to show the user some sort of prompt
+            // this way you will not waste your only chance to ask for the permission
+            const c = confirm('We need your permission to use your camera to be able to scan barcodes');
+            if (!c) {
+                return false;
+            }
+        }
+        if (status.restricted || status.unknown) {
+            // ios only
+            // probably means the permission has been denied
+            return false;
+        }
+        // user has not denied permission
+        // but the user also has not yet granted the permission
+        // so request it
+        const statusRequest = await barcode_scanner_1.BarcodeScanner.checkPermission({ force: true });
+        if (statusRequest.asked) {
+            // system requested the user for permission during this call
+            // only possible when force set to true
+        }
+        if (statusRequest.granted) {
+            // the user did grant the permission now
+            return true;
+        }
+        // user did not grant the permission, so he must have declined the request
+        return false;
     }
     scanSuccessHandler(urlString) {
-        if (this.scanSuccess) {
+        if (this.scanSuccess$.getValue()) {
             return;
         }
-        this.scanSuccess = true;
+        this.scanSuccess$.next(true);
         const url = new URL(urlString);
         const urlParams = new URLSearchParams(url.search);
         const redeemableType = urlParams.get('t');
@@ -97,14 +148,14 @@ let QrComponent = class QrComponent {
     }
     scanSuccessHandlerCb(resp) {
         if (resp.success) {
-            this.awarded = true;
-            this.userLoyaltyPoints = resp.redeemable.amount;
+            this.awarded$.next(true);
+            this.userLoyaltyPoints$.next(resp.redeemable.amount);
             this.sbEarnedPoints.nativeElement.style.display = 'block';
         }
         else {
             alert(resp.message);
         }
-        this.scanSuccess = false;
+        this.scanSuccess$.next(false);
     }
     scanErrorHandler(event) { }
     scanFailureHandler(event) {
@@ -113,33 +164,41 @@ let QrComponent = class QrComponent {
     getQrCode() {
         this.loyaltyPointsService.getLoyaltyPointBalance();
         this.userAuthService.getSettings().subscribe(resp => {
-            this.userHash = resp.user.hash;
-            this.business.address = resp.business.address;
-            this.business.name = resp.business.name;
-            this.business.qr_code_link = resp.business.qr_code_link;
-            this.business.trial_ends_at = resp.business.trial_ends_at;
+            this.userHash$.next(resp.user.hash);
+            this.business$.next({
+                ...new business_1.Business(),
+                address: resp.business.address,
+                name: resp.business.name,
+                qr_code_link: resp.business.qr_code_link,
+                trial_ends_at: resp.business.trial_ends_at,
+            });
         });
         const totalSpentValidators = [forms_1.Validators.required];
         this.businessLoyaltyPointsForm = this.formBuilder.group({
             totalSpent: ['', totalSpentValidators],
         });
-        this.businessLoyaltyPointsFormUp = true;
+        this.businessLoyaltyPointsFormUp$.next(true);
     }
-    startQrCodeScanner() {
+    async startQrCodeScanner() {
         this.loyaltyPointsService.getLoyaltyPointBalance();
+        barcode_scanner_1.BarcodeScanner.hideBackground();
+        const result = await barcode_scanner_1.BarcodeScanner.startScan();
+        if (result.hasContent) {
+            console.log(result.content);
+        }
     }
     closeQr() {
-        this.rewardPrompted = false;
+        this.rewardPrompted$.next(false);
     }
     closeQrUser() {
         this.closeQrUserEvt.emit(null);
     }
     ngOnInit() {
         if (this.deviceDetectorService.isMobile()) {
-            this.qrWidth = 250;
+            this.qrWidth$.next(250);
         }
         else {
-            this.qrWidth = 450;
+            this.qrWidth$.next(450);
         }
         this.startQrCodeScanner();
     }

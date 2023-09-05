@@ -49,10 +49,7 @@ let MenuLoggedInComponent = class MenuLoggedInComponent {
     }
     spawnCategories(category) {
         this.slideMenu();
-        const obj = {
-            category,
-        };
-        this.spotbieMap.spawnCategories(obj);
+        this.spotbieMap.spawnCategories(category);
     }
     home() {
         this.settingsWindow.open = false;

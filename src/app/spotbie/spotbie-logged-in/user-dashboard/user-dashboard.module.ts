@@ -5,7 +5,6 @@ import { RewardMenuModule } from '../reward-menu/reward-menu.module';
 import { RouterModule } from '@angular/router';
 import { QrModule } from '../qr/qr.module';
 import { UserDashboardComponent } from './user-dashboard.component';
-import { RedeemableModule } from '../redeemable/redeemable.module';
 
 @NgModule({
   declarations: [
@@ -17,7 +16,6 @@ import { RedeemableModule } from '../redeemable/redeemable.module';
     RewardMenuModule,
     RouterModule,
     QrModule,
-    RedeemableModule
   ],
   exports: [
     UserDashboardComponent

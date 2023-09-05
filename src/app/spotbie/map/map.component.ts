@@ -7,39 +7,36 @@ import {
   OnInit,
   Output,
   ViewChild,
-  ViewChildren,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { MatSliderChange } from '@angular/material/slider';
 import {
   metersToMiles,
   setYelpRatingImage,
 } from '../../helpers/info-object-helper';
-import { Gesture, GestureController } from '@ionic/angular';
-import { Capacitor, Plugins } from '@capacitor/core';
-import { DateFormatPipe, TimeFormatPipe } from '../../pipes/date-format.pipe';
-import { MapObjectIconPipe } from '../../pipes/map-object-icon.pipe';
-import { LocationService } from '../../services/location-service/location.service';
+import {Gesture, GestureController} from '@ionic/angular';
+import {Capacitor} from '@capacitor/core';
+import {DateFormatPipe, TimeFormatPipe} from '../../pipes/date-format.pipe';
+import {MapObjectIconPipe} from '../../pipes/map-object-icon.pipe';
+import {LocationService} from '../../services/location-service/location.service';
 import * as map_extras from './map_extras/map_extras';
-import { FOOD_CATEGORIES, SHOPPING_CATEGORIES } from './map_extras/map_extras';
 import * as sorterHelpers from '../../helpers/results-sorter.helper';
-import { UserDashboardComponent } from '../spotbie-logged-in/user-dashboard/user-dashboard.component';
-import { SortOrderPipe } from '../../pipes/sort-order.pipe';
-import { Business } from '../../models/business';
-import { BottomAdBannerComponent } from '../ads/bottom-ad-banner/bottom-ad-banner.component';
-import { HeaderAdBannerComponent } from '../ads/header-ad-banner/header-ad-banner.component';
-import { environment } from '../../../environments/environment';
-import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
-import { GoogleMap, MapMarker } from '@angular/google-maps';
-import { DeviceDetectorService } from 'ngx-device-detector';
-import MapOptions = google.maps.MapOptions;
-import MarkerOptions = google.maps.MarkerOptions;
-import MapTypeStyle = google.maps.MapTypeStyle;
-import { Platform } from '@ionic/angular';
-import { InfoObject } from '../../models/info-object';
-import { filter, tap } from 'rxjs/operators';
-const { Geolocation, Toast } = Plugins;
+import {UserDashboardComponent} from '../spotbie-logged-in/user-dashboard/user-dashboard.component';
+import {SortOrderPipe} from '../../pipes/sort-order.pipe';
+import {Business} from '../../models/business';
+import {BottomAdBannerComponent} from '../ads/bottom-ad-banner/bottom-ad-banner.component';
+import {HeaderAdBannerComponent} from '../ads/header-ad-banner/header-ad-banner.component';
+import {environment} from '../../../environments/environment';
+import {BehaviorSubject, combineLatest} from 'rxjs';
+import {HttpClient} from '@angular/common/http';
+import {DeviceDetectorService} from 'ngx-device-detector';
+import {Platform} from '@ionic/angular';
+import {filter, tap} from 'rxjs/operators';
+import {Geolocation} from '@capacitor/geolocation';
+import {
+  NativeSettings,
+  AndroidSettings,
+  IOSSettings,
+} from 'capacitor-native-settings';
 
 const YELP_BUSINESS_SEARCH_API = 'https://api.yelp.com/v3/businesses/search';
 const BANNED_YELP_IDS = map_extras.BANNED_YELP_IDS;
@@ -154,13 +151,13 @@ export class MapComponent implements OnInit, AfterViewInit {
   infoObject$: any = new BehaviorSubject(null);
   currentMarker: any;
   categories: any;
-  myFavoritesWindow = { open: false };
+  myFavoritesWindow = {open: false};
   updateDistanceTimeout: any;
   subCategory: any = {
-    food_sub: { open: false },
-    media_sub: { open: false },
-    artist_sub: { open: false },
-    place_sub: { open: false },
+    food_sub: {open: false},
+    media_sub: {open: false},
+    artist_sub: {open: false},
+    place_sub: {open: false},
   };
   placesToEat: boolean = false;
   eventsNearYou: boolean = false;
@@ -192,11 +189,11 @@ export class MapComponent implements OnInit, AfterViewInit {
       .pipe(
         filter(([lat, lng]) => !!lat && !!lng),
         tap(([lat, lng]) => {
-          this.spotbieMap.setCenter({ lat, lng });
+          this.spotbieMap.setCenter({lat, lng});
 
           // Delete myMarker from the map if it exists
           this.myMarker = new google.maps.Marker({
-            position: { lat, lng },
+            position: {lat, lng},
             map: this.spotbieMap,
           });
         })
@@ -207,7 +204,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       .pipe(
         filter(cmList => cmList.length > 0),
         tap(async cmList => {
-          const { AdvancedMarkerElement } = (await google.maps.importLibrary(
+          const {AdvancedMarkerElement} = (await google.maps.importLibrary(
             'marker'
           )) as google.maps.MarkerLibrary;
           this.hideMarkers(this.cmSearchResultsMarkers);
@@ -221,7 +218,7 @@ export class MapComponent implements OnInit, AfterViewInit {
               map: this.spotbieMap,
               content: el,
             });
-            newMarker.addListener('click', ({ _domEvent, _latLng }) => {
+            newMarker.addListener('click', ({_domEvent, _latLng}) => {
               this.pullSearchMarker(cm);
             });
             this.cmSearchResultsMarkers.push(newMarker);
@@ -234,7 +231,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       .pipe(
         filter(srList => srList.length > 0),
         tap(async srList => {
-          const { AdvancedMarkerElement } = (await google.maps.importLibrary(
+          const {AdvancedMarkerElement} = (await google.maps.importLibrary(
             'marker'
           )) as google.maps.MarkerLibrary;
           this.hideMarkers(this.searchResultsMarkers);
@@ -248,7 +245,7 @@ export class MapComponent implements OnInit, AfterViewInit {
               map: this.spotbieMap,
               content: el,
             });
-            newMarker.addListener('click', ({ _domEvent, _latLng }) => {
+            newMarker.addListener('click', ({_domEvent, _latLng}) => {
               this.pullSearchMarker(sr);
             });
 
@@ -761,17 +758,17 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.fitBounds = false;
 
     if (!this.locationFound$.getValue() && Capacitor.isNativePlatform()) {
-      Geolocation.getCurrentPosition(
-        async position => {
-          this.map$.next(true);
-          await this.initMap();
-          this.showPosition(position);
-        },
-        err => {
-          console.log(err);
-          this.showMapError();
-        }
-      );
+      const hasPermissions = await this.checkPermission();
+
+      if (hasPermissions) {
+        const coordinates = await Geolocation.getCurrentPosition();
+
+        this.map$.next(true);
+        await this.initMap();
+        this.showPosition(coordinates);
+      } else {
+        this.showMapError();
+      }
     } else if (!this.locationFound$.getValue()) {
       window.navigator.geolocation.getCurrentPosition(
         async position => {
@@ -784,6 +781,8 @@ export class MapComponent implements OnInit, AfterViewInit {
           this.showMapError();
         }
       );
+    } else if (this.locationFound$.getValue()) {
+      this.map$.next(true);
     }
 
     if (this.searchResults$.getValue().length === 0) {
@@ -864,19 +863,17 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   goToQrCode() {
-    //scroll to qr Code
     this.closeCategories();
     this.openWelcome();
 
-    setTimeout(() => {
-      this.homeDashboard.scrollToQrAppAnchor();
-    }, 750);
+    this.homeDashboard.startQrScanner();
   }
 
   goToLp() {
-    //scroll to loyalty points
     this.closeCategories();
-    this.homeDashboard.scrollToLpAppAnchor();
+    this.openWelcome();
+
+    this.homeDashboard.redeemedLp();
   }
 
   goToRewardMenu() {
@@ -950,7 +947,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     if (page < this.allPages) {
       return {};
     } else {
-      return { display: 'none' };
+      return {display: 'none'};
     }
   }
 
@@ -958,7 +955,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     if (page > 0) {
       return {};
     } else {
-      return { display: 'none' };
+      return {display: 'none'};
     }
   }
 
@@ -1246,12 +1243,11 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   pullSearchMarker(infoObject: any): void {
-    console.log('the marker', infoObject);
     this.infoObject$.next(infoObject);
   }
 
   async initMap(): Promise<void> {
-    const { Map } = (await google.maps.importLibrary(
+    const {Map} = (await google.maps.importLibrary(
       'maps'
     )) as google.maps.MapsLibrary;
 
@@ -1416,20 +1412,6 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.createObjectMarker(surroundingObjectList);
   }
 
-  getMapPromptMobileClass() {
-    if (this.isMobile) {
-      return 'map-prompt-mobile align-items-center justify-content-center';
-    } else {
-      return 'map-prompt-mobile align-items-center';
-    }
-  }
-
-  getMapPromptMobileInnerWrapperClassOne() {
-    if (this.isMobile) {
-      return 'map-prompt-v-align mt-2';
-    }
-  }
-
   createObjectMarker(surroundingObjectList): void {
     this.surroundingObjectList$.next(surroundingObjectList);
   }
@@ -1455,7 +1437,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     x = this.lat$.getValue() + Math.cos(angle) * radius;
     y = this.lng$.getValue() + Math.sin(angle) * radius;
 
-    const p = { lat: x, lng: y };
+    const p = {lat: x, lng: y};
     return p;
   }
 
@@ -1471,6 +1453,9 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   showMapError() {
+
+    // Check for location permission and prompt the user.
+
     this.displayLocationEnablingInstructions$.next(true);
     this.map$.next(false);
     this.loading$.next(false);
@@ -1605,6 +1590,43 @@ export class MapComponent implements OnInit, AfterViewInit {
       this.loadedTotalResults = 1000;
       this.allPages = 20;
     }
+  }
+
+  async checkPermission() {
+    // check if user already granted permission
+    const status = await Geolocation.checkPermissions();
+
+    if (status.location === 'granted') {
+      // user granted permission
+      return true;
+    }
+
+    if (status.location === 'denied') {
+      // user denied permission
+      return false;
+    }
+
+    // user has not been requested this permission before
+    // it is advised to show the user some sort of prompt
+    // this way you will not waste your only chance to ask for the permission
+    const c = confirm('We need your permission to use your camera to be able to scan barcodes');
+    if (!c) {
+      return false;
+    }
+
+   const permissionGranted = await Geolocation.requestPermissions();
+
+    // user did not grant the permission, so he must have declined the request
+    if (!permissionGranted) {
+      return false;
+    }
+  }
+
+  openAppSettings() {
+    NativeSettings.open({
+      optionAndroid: AndroidSettings.ApplicationDetails,
+      optionIOS: IOSSettings.App,
+    });
   }
 
   openTerms() {}

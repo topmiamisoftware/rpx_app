@@ -1,44 +1,48 @@
-<table class="spotbie-el-100
-              spotbie-menu
-              spotbie-menu-fixed"
-       #spotbieMainMenu>
-  <tr>
-    <td class="sb-menu-nav" (click)="slideMenu()" *ngIf="!isDesktop">
-      <i class="fa fa-bars" *ngIf="!menuActive"></i>
-      <i class="fa fa-times" *ngIf="menuActive"></i>
-    </td>
+<ion-menu contentId="main-content">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>It's on us.</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding" color="primary">
+      <ion-list>
+        <ion-item class="ion-padding-top ion-padding-bottom" color="primary" lines="full" (click)="home()">
+          <ion-icon name="home" slot="start"></ion-icon>
+          HOME
+        </ion-item>
 
-    <td style="width: 35%;">
-      <img class="spotbie-header-mini-logo" (click)="home()" src="assets/images/spotbie_logo_header.svg" />
-    </td>
-  </tr>
-</table>
+        <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="spawnCategories(1)">
+          <ion-icon name="pizza" slot="start"></ion-icon>
+          PLACES TO EAT
+        </ion-item>
 
-<div class="spotbie-slider-menu-background" *ngIf="menuActive">
-  <table class="spotbie-slider-menu
-                animated slideInLeft">
-    <tr>
-      <td>
-        <div (click)="home()">
-          HOME <i class="fa fa-angle-right"></i>
-        </div>
+        <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="spawnCategories(2)">
+          <ion-icon name="pricetags" slot="start"></ion-icon>
+          SHOPPING
+        </ion-item>
 
-        <div (click)="spawnCategories(1)">
-          PLACES TO EAT <i class="fa fa-angle-right"></i>
-        </div>
+        <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="spawnCategories(3)">
+          <ion-icon name="glasses" slot="start"></ion-icon>
+          EVENTS
+        </ion-item>
+      </ion-list>
+  </ion-content>
+</ion-menu>
 
-        <div (click)="spawnCategories(2)">
-          SHOPPING <i class="fa fa-angle-right"></i>
-        </div>
+<div class="ion-page" id="main-content">
+  <ion-header class="ion-padding-bottom">
+    <ion-toolbar class="p-2 pt-5 pb-1" color="tertiary">
+      <ion-buttons slot="start">
+        <ion-menu-button auto-hide="false"></ion-menu-button>
+      </ion-buttons>
+      <ion-buttons slot="end">
+        <img class="spotbie-header-mini-logo" (click)="home()" src="assets/images/spotbie_logo_header.svg" />
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
 
-        <div (click)="spawnCategories(3)">
-          EVENTS <i class="fa fa-angle-right"></i>
-        </div>
-      </td>
-    </tr>
-  </table>
+  <ion-content class="ion-padding has-header">
+    <app-sign-up *ngIf="signUpWindow.open" [windowObj]="signUpWindow" (closeWindow)="closeWindow($event)" (logInEvent)="logIn()"></app-sign-up>
+    <app-log-in *ngIf="logInWindow.open"></app-log-in>
+  </ion-content>
 </div>
-
-<app-log-in *ngIf="logInWindow.open"></app-log-in>
-
-<app-sign-up *ngIf="signUpWindow.open" [windowObj]="signUpWindow" (closeWindow)="closeWindow($event)" (logInEvent)="logIn()"></app-sign-up>

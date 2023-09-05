@@ -145,8 +145,6 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
       account_type: accountType,
     };
 
-    console.log('the search object', searchObjSb);
-
     // Retrieve the SpotBie Ads
     this.adsService.getBottomHeader(searchObjSb).subscribe(resp => {
       this.getBottomHeaderCb(resp);

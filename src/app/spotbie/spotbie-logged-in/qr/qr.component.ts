@@ -239,7 +239,7 @@ export class QrComponent implements OnInit {
     this.businessLoyaltyPointsFormUp$.next(true);
   }
 
-  startQrCodeScanner() {
+  async startQrCodeScanner() {
     this.loyaltyPointsService.getLoyaltyPointBalance();
 
     BarcodeScanner.hideBackground();

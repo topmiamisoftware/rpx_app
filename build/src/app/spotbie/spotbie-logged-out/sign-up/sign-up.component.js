@@ -10,7 +10,7 @@ const operators_1 = require("rxjs/operators");
 const rxjs_1 = require("rxjs");
 const email_unique_validator_1 = require("../../../validators/email-unique.validator");
 const free_solid_svg_icons_1 = require("@fortawesome/free-solid-svg-icons");
-const web_intent_1 = require("../../../helpers/cordova/web-intent");
+const app_launcher_1 = require("@capacitor/app-launcher");
 let SignUpComponent = class SignUpComponent {
     constructor(router, signUpService, formBuilder, emailUniqueCheckService, userAuthService) {
         this.router = router;
@@ -193,8 +193,9 @@ let SignUpComponent = class SignUpComponent {
             return 'sb-regularBg';
         }
     }
-    openTerms() {
-        (0, web_intent_1.externalBrowserOpen)('https://spotbie.com/terms');
+    async openTerms() {
+        await app_launcher_1.AppLauncher.openUrl({ url: 'https://spotbie.com/terms' });
+        return;
     }
     initSignUpCallback(resp) {
         const signUpInstructions = this.spotbieSignUpIssues.nativeElement;

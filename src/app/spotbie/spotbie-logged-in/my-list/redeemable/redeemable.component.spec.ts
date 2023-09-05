@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RedeemableComponent } from './redeemable.component';
+import {RedeemableComponent} from './redeemable.component';
 
 describe('RedeemableComponent', () => {
   let component: RedeemableComponent;

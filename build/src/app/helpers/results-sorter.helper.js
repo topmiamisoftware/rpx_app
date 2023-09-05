@@ -26,14 +26,14 @@ function ratingSortDesc(a, b) {
 }
 exports.ratingSortDesc = ratingSortDesc;
 function reviewsSortAsc(a, b) {
-    a = a.reviewCount;
-    b = b.reviewCount;
+    a = a.review_count;
+    b = b.review_count;
     return a > b ? 1 : b > a ? -1 : 0;
 }
 exports.reviewsSortAsc = reviewsSortAsc;
 function reviewsSortDesc(a, b) {
-    a = a.reviewCount;
-    b = b.reviewCount;
+    a = a.review_count;
+    b = b.review_count;
     return a > b ? -1 : b > a ? 1 : 0;
 }
 exports.reviewsSortDesc = reviewsSortDesc;

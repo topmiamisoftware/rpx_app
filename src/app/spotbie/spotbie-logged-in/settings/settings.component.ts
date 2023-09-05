@@ -14,6 +14,7 @@ import {ValidateUsername} from '../../../helpers/username.validator';
 import {ValidatePersonName} from '../../../helpers/name.validator';
 import {UserauthService} from '../../../services/userauth.service';
 import {Router} from '@angular/router';
+import {BehaviorSubject} from "rxjs";
 
 @Component({
   selector: 'app-settings',
@@ -30,25 +31,25 @@ export class SettingsComponent implements OnInit {
 
   @Output() closeWindowEvt = new EventEmitter();
 
-  personalAccount = true;
+  personalAccount$ = new BehaviorSubject<boolean>(true);
   settingsForm: FormGroup;
   passwordForm: FormGroup;
-  savePasswordBool = false;
+  savePasswordBool$ = new BehaviorSubject<boolean>(false);
   deactivationForm: FormGroup;
-  accountDeactivation = false;
-  deactivationSubmitted = false;
-  loading = false;
-  helpText = '';
-  user: User;
-  submitted = false;
-  placeFormSubmitted = false;
-  adSettingsWindow = {open: false};
-  passwordSubmitted = false;
-  settingsFormInitiated = false;
-  showNoResultsBox = false;
-  showMobilePrompt = false;
-  showMobilePrompt2 = false;
-  isSocialAccount = false;
+  accountDeactivation$ = new BehaviorSubject<boolean>(false);
+  deactivationSubmitted$ = new BehaviorSubject<boolean>(false);
+  loading$ = new BehaviorSubject<boolean>(false);
+  helpText$ = new BehaviorSubject<string>('');
+  user$ = new BehaviorSubject<User>(new User());
+  submitted$ = new BehaviorSubject<boolean>(false);
+  placeFormSubmitted$ = new BehaviorSubject<boolean>(false);
+  adSettingsWindow$ = new BehaviorSubject<boolean>(false);
+  passwordSubmitted$ = new BehaviorSubject<boolean>(false);
+  settingsFormInitiated$ = new BehaviorSubject<boolean>(false);
+  showNoResultsBox$ = new BehaviorSubject<boolean>(false);
+  showMobilePrompt$ = new BehaviorSubject<boolean>(false);
+  showMobilePrompt2$ = new BehaviorSubject<boolean>(false);
+  isSocialAccount$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private formBuilder: FormBuilder,
@@ -97,12 +98,12 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
-    this.loading = true;
+    this.loading$.next(true);
     this.initSettingsForm('personal');
   }
 
   openWindow(window: any) {
-    window.open = true;
+    window.open$.next(true);
   }
 
   savePassword(): void {
@@ -128,7 +129,7 @@ export class SettingsComponent implements OnInit {
     this.spotbiePasswordInfoText.nativeElement.innerHTML =
       'Great, your passwords match!';
 
-    this.savePasswordBool = true;
+    this.savePasswordBool$.next(true);
 
     const currentPasswordValidators = [Validators.required];
 
@@ -141,11 +142,11 @@ export class SettingsComponent implements OnInit {
   }
 
   completeSavePassword(): void {
-    if (this.loading) {
+    if (this.loading$.getValue()) {
       return;
     }
 
-    this.loading = true;
+    this.loading$.next(true);
 
     if (this.passwordForm.invalid) {
       return;
@@ -168,29 +169,34 @@ export class SettingsComponent implements OnInit {
   }
 
   cancelPasswordSet() {
-    this.passwordSubmitted = false;
-    this.savePasswordBool = false;
+    this.passwordSubmitted$.next(false);
+    this.savePasswordBool$.next(false);
   }
 
   saveSettings() {
-    this.loading = true;
-    this.submitted = true;
+    this.loading$.next(true);
+    this.submitted$.next(true);
 
     if (this.settingsForm.invalid) {
-      this.loading = false;
+      this.loading$.next(false);
       this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
       return;
     }
 
-    this.user.username = this.username;
-    this.user.email = this.email;
+    this.user$.next({
+      ...this.user$.getValue(),
+      username: this.username,
+      email: this.email,
+      spotbie_user: {
+        ...this.user$.getValue().spotbie_user,
+        first_name: this.firstName,
+        last_name: this.lastName,
+        phone_number: this.spotbiePhoneNumber,
+      },
+    });
 
-    this.user.spotbie_user.first_name = this.firstName;
-    this.user.spotbie_user.last_name = this.lastName;
-    this.user.spotbie_user.phone_number = this.spotbiePhoneNumber;
-
-    this.userAuthService.saveSettings(this.user).subscribe({
+    this.userAuthService.saveSettings(this.user$.getValue()).subscribe({
       next: resp => {
         this.saveSettingsCallback(resp);
       },
@@ -207,26 +213,26 @@ export class SettingsComponent implements OnInit {
 
         this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
-        this.loading = false;
+        this.loading$.next(false);
       },
     });
   }
 
   cancelDeactivateAccount() {
-    this.accountDeactivation = false;
+    this.accountDeactivation$.next(false);
   }
 
   startDeactivateAccount(): void {
-    this.accountDeactivation = true;
+    this.accountDeactivation$.next(true);
 
     const socialId = localStorage.getItem('spotbiecom_social_id');
     if (socialId && socialId.length > 0) {
-      this.isSocialAccount = true;
+      this.isSocialAccount$.next(true);
     } else {
-      this.isSocialAccount = false;
+      this.isSocialAccount$.next(false);
     }
 
-    if (!this.isSocialAccount) {
+    if (!this.isSocialAccount$.getValue()) {
       const deactivationPasswordValidator = [Validators.required];
 
       this.deactivationForm = this.formBuilder.group({
@@ -246,15 +252,15 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    if (this.loading) {
+    if (this.loading$.getValue()) {
       return;
     }
 
-    this.loading = true;
+    this.loading$.next(true);
 
     let deactivationPassword = null;
 
-    if (!this.isSocialAccount) {
+    if (!this.isSocialAccount$.getValue()) {
       if (this.deactivationForm.invalid) {
         this.spotbieAccountDeactivationInfo.nativeElement.scrollIntoView({
           behavior: 'smooth',
@@ -267,43 +273,45 @@ export class SettingsComponent implements OnInit {
     }
 
     this.userAuthService
-      .deactivateAccount(deactivationPassword, this.isSocialAccount)
+      .deactivateAccount(deactivationPassword, this.isSocialAccount$.getValue())
       .subscribe(resp => {
         this.deactivateCallback(resp);
       });
   }
 
   closeWindow() {
+    this.closeWindowEvt.emit();
     this.router.navigate(['/home']);
   }
 
   private populateSettings(settingsResponse: any) {
     if (settingsResponse.success) {
-      this.user = settingsResponse.user;
+      this.user$.next({
+        ...settingsResponse.user,
+        spotbie_user: settingsResponse.spotbie_user,
+        uuid: settingsResponse.user.hash,
+      });
 
-      this.user.spotbie_user = settingsResponse.spotbie_user;
-      this.user.uuid = settingsResponse.user.hash;
+      this.settingsFormInitiated$.next(true);
 
-      this.settingsFormInitiated = true;
-
-      this.settingsForm.get('spotbieUsername').setValue(this.user.username);
+      this.settingsForm.get('spotbieUsername').setValue(this.user$.getValue().username);
       this.settingsForm
         .get('spotbieFirstName')
-        .setValue(this.user.spotbie_user.first_name);
+        .setValue(this.user$.getValue().spotbie_user.first_name);
       this.settingsForm
         .get('spotbieLastName')
-        .setValue(this.user.spotbie_user.last_name);
-      this.settingsForm.get('spotbieEmail').setValue(this.user.email);
+        .setValue(this.user$.getValue().spotbie_user.last_name);
+      this.settingsForm.get('spotbieEmail').setValue(this.user$.getValue().email);
       this.settingsForm
         .get('spotbiePhoneNumber')
-        .setValue(this.user.spotbie_user.phone_number);
+        .setValue(this.user$.getValue().spotbie_user.phone_number);
       this.passwordForm.get('spotbiePassword').setValue('userpassword');
       this.passwordForm.get('spotbieConfirmPassword').setValue('123456789');
     } else {
       console.log('Settings Error: ', settingsResponse);
     }
 
-    this.loading = false;
+    this.loading$.next(false);
   }
 
   private passwordChangeCallback(resp: any) {
@@ -322,15 +330,15 @@ export class SettingsComponent implements OnInit {
             'Would you like to change your password?';
 
           setTimeout(() => {
-            this.passwordSubmitted = false;
-            this.savePasswordBool = false;
+            this.passwordSubmitted$.next(false);
+            this.savePasswordBool$.next(false);
           }, 2000);
           break;
 
         case 'SB-E-000':
           // server error
-          this.savePasswordBool = false;
-          this.passwordSubmitted = false;
+          this.savePasswordBool$.next(false);
+          this.passwordSubmitted$.next(false);
           this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
           this.spotbiePasswordInfoText.nativeElement.innerHTML =
             'There was an error with the server. Try again.';
@@ -342,7 +350,7 @@ export class SettingsComponent implements OnInit {
       console.log(resp);
     }
 
-    this.loading = false;
+    this.loading$.next(false);
   }
 
   private async initSettingsForm(action: string) {
@@ -407,7 +415,7 @@ export class SettingsComponent implements OnInit {
   }
 
   private saveSettingsCallback(resp: any) {
-    this.loading = false;
+    this.loading$.next(false);
 
     if (resp.success) {
       this.spotbieSettingsInfoText.nativeElement.innerHTML = `
@@ -434,7 +442,7 @@ export class SettingsComponent implements OnInit {
   }
 
   private deactivateCallback(resp: any) {
-    this.loading = false;
+    this.loading$.next(false);
     if (resp.success) {
     } else {
       console.log('deactivateCallback', resp);

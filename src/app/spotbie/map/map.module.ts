@@ -15,24 +15,26 @@ import { InfoObjectModule } from './info-object/info-object.module';
 import { AdsModule } from '../ads/ads.module';
 import { StopClickPropagationDirective } from '../../directives/stop-click-propagation.directive';
 import { GoogleMapsModule } from '@angular/google-maps';
+import {IonicModule} from "@ionic/angular";
 
 @NgModule({
   declarations: [MapComponent, UserInfoObjectComponent],
-  imports: [
-    CommonModule,
-    MatSliderModule,
-    MatInputModule,
-    SpotbiePipesModule,
-    ReactiveFormsModule,
-    FormsModule,
-    ShareIconsModule,
-    InfoObjectModule,
-    RouterModule,
-    HelperModule,
-    UserDashboardModule,
-    AdsModule,
-    GoogleMapsModule,
-  ],
+    imports: [
+        CommonModule,
+        MatSliderModule,
+        MatInputModule,
+        SpotbiePipesModule,
+        ReactiveFormsModule,
+        FormsModule,
+        ShareIconsModule,
+        InfoObjectModule,
+        RouterModule,
+        HelperModule,
+        UserDashboardModule,
+        AdsModule,
+        GoogleMapsModule,
+        IonicModule,
+    ],
   providers: [MapObjectIconPipe, StopClickPropagationDirective],
   exports: [MapComponent],
 })

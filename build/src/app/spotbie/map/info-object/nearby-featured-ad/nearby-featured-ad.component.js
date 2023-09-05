@@ -7,22 +7,32 @@ const account_type_enum_1 = require("../../../../helpers/enum/account-type.enum"
 const info_object_type_enum_1 = require("../../../../helpers/enum/info-object-type.enum");
 const measure_units_helper_1 = require("../../../../helpers/measure-units.helper");
 const ad_1 = require("../../../../models/ad");
-const business_1 = require("../../../../models/business");
 const map_extras_1 = require("../../map_extras/map_extras");
+const numbers_helper_1 = require("../../../../helpers/numbers.helper");
+const rxjs_1 = require("rxjs");
 const PLACE_TO_EAT_AD_IMAGE = 'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
 const SHOPPING_AD_IMAGE = 'assets/images/def/shopping/featured_banner_in_house.jpg';
 const EVENTS_AD_IMAGE = 'assets/images/def/events/featured_banner_in_house.jpg';
 const FEATURED_BANNER_TIMER_INTERVAL = 16000;
 let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
-    constructor(adsService, deviceDetectorService, router) {
+    set business(business) {
+        this.business$.next(business);
+    }
+    set ad(ad) {
+        this.ad$.next(ad);
+    }
+    set accountType(accType) {
+        this.accountType$.next(accType);
+    }
+    constructor(adsService, deviceDetectorService, router, businessService) {
         this.adsService = adsService;
         this.deviceDetectorService = deviceDetectorService;
         this.router = router;
-        this.business = new business_1.Business();
-        this.ad = null;
-        this.accountType = null;
+        this.businessService = businessService;
         this.editMode = false;
         this.eventsClassification = null;
+        this.accountType$ = new rxjs_1.BehaviorSubject(null);
+        this.ad$ = new rxjs_1.BehaviorSubject(null);
         this.displayAd = false;
         this.whiteIconSvg = 'assets/images/home_imgs/spotbie-white-icon.svg';
         this.distance = 0;
@@ -36,7 +46,8 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
         this.adTypeWithId = false;
         this.adList = [];
         this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
-        this.businessReady = false;
+        this.business$ = new rxjs_1.BehaviorSubject(null);
+        this.businessReady$ = new rxjs_1.BehaviorSubject(false);
         this.switchAdInterval = false;
     }
     getNearByFeatured() {
@@ -47,13 +58,14 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
             return;
         }
         if (this.editMode) {
-            if (!this.ad) {
-                this.ad = new ad_1.Ad();
-                this.ad.id = 2;
-                adId = this.ad.id;
+            if (!this.ad$.getValue()) {
+                const ad = new ad_1.Ad();
+                ad.id = 2;
+                this.ad$.next(ad);
+                adId = ad.id;
             }
             else {
-                adId = this.ad.id;
+                adId = this.ad$.getValue().id;
             }
             accountType = localStorage.getItem('spotbie_userType');
             switch (accountType) {
@@ -70,17 +82,15 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
             }
         }
         else {
-            switch (this.accountType) {
-                case 'food':
-                    accountType = 1;
+            accountType = (0, numbers_helper_1.getRandomInt)(1, 3).toString();
+            switch (this.accountType$.getValue()) {
+                case 1:
                     this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
                     break;
-                case 'shopping':
-                    accountType = 2;
+                case 2:
                     this.genericAdImage = SHOPPING_AD_IMAGE;
                     break;
-                case 'events':
-                    accountType = 3;
+                case 3:
                     this.genericAdImage = EVENTS_AD_IMAGE;
                     this.categories = this.eventsClassification;
                     break;
@@ -99,11 +109,10 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
     }
     async getNearByFeaturedCallback(resp) {
         if (resp.success) {
-            this.ad = resp.ad;
-            this.business = resp.business;
-            this.businessReady = true;
-            if (!this.editMode && this.business !== null) {
-                switch (this.business.user_type) {
+            this.ad$.next(resp.ad);
+            const business = resp.business;
+            if (!this.editMode && business) {
+                switch (business.user_type) {
                     case account_type_enum_1.AllowedAccountTypes.PlaceToEat:
                         this.currentCategoryList = map_extras_1.FOOD_CATEGORIES;
                         break;
@@ -121,51 +130,31 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
                     }
                     return currentValue;
                 });
-                this.business.is_community_member = true;
-                this.business.type_of_info_object = info_object_type_enum_1.InfoObjectType.SpotBieCommunity;
-                this.distance = (0, measure_units_helper_1.getDistanceFromLatLngInMiles)(this.business.loc_x, this.business.loc_y, this.lat, this.lng);
+                business.is_community_member = true;
+                business.type_of_info_object = info_object_type_enum_1.InfoObjectType.SpotBieCommunity;
+                this.distance = (0, measure_units_helper_1.getDistanceFromLatLngInMiles)(business.loc_x, business.loc_y, this.lat, this.lng);
             }
             else {
                 this.distance = 5;
             }
             this.displayAd = true;
             this.totalRewards = resp.totalRewards;
+            this.businessReady$.next(true);
+            this.business$.next(business);
             if (!this.switchAdInterval) {
                 this.switchAdInterval = setInterval(() => {
-                    if (!this.editMode)
+                    if (!this.editMode) {
                         this.getNearByFeatured();
+                    }
                 }, FEATURED_BANNER_TIMER_INTERVAL);
             }
         }
-        else
+        else {
             console.log('getNearByFeaturedCallback', resp);
-    }
-    getAdStyle() {
-        if (this.adTypeWithId) {
-            return {
-                position: 'relative',
-                margin: '0 auto',
-                right: '0',
-            };
         }
-    }
-    closeRewardMenu() {
-        this.rewardMenuOpen = false;
-    }
-    clickGoToSponsored() {
-        window.open('/business', '_blank');
-    }
-    switchAd() {
-        this.getNearByFeatured();
     }
     openAd() {
-        window.open(`/business-menu/${this.business.qr_code_link}`, '_blank');
-    }
-    updateAdImage(image = '') {
-        if (image !== '') {
-            this.ad.images = image;
-            this.genericAdImage = image;
-        }
+        window.open(`/business-menu/${this.business$.getValue().qr_code_link}`, '_blank');
     }
     ngOnInit() {
         this.isMobile = this.deviceDetectorService.isMobile();
@@ -184,13 +173,13 @@ tslib_1.__decorate([
 ], NearbyFeaturedAdComponent.prototype, "lng", void 0);
 tslib_1.__decorate([
     (0, core_1.Input)()
-], NearbyFeaturedAdComponent.prototype, "business", void 0);
+], NearbyFeaturedAdComponent.prototype, "business", null);
 tslib_1.__decorate([
     (0, core_1.Input)()
-], NearbyFeaturedAdComponent.prototype, "ad", void 0);
+], NearbyFeaturedAdComponent.prototype, "ad", null);
 tslib_1.__decorate([
     (0, core_1.Input)()
-], NearbyFeaturedAdComponent.prototype, "accountType", void 0);
+], NearbyFeaturedAdComponent.prototype, "accountType", null);
 tslib_1.__decorate([
     (0, core_1.Input)()
 ], NearbyFeaturedAdComponent.prototype, "editMode", void 0);

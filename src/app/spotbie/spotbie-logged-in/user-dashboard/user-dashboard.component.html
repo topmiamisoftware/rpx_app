@@ -1,42 +1,42 @@
-<div class="wrapper">
-  <!-- Check if user has any pending steps to start using their account -->
-  <div class="sb-dashboardWrapper">
-    <h6 class='sb-text-light-green-gradient mb-3'>GET WHAT YOU WANT</h6>
+<ng-container *ngIf="(scannerStarted$ | async) === false">
+  <div class="wrapper mt-2">
+    <!-- Check if user has any pending steps to start using their account -->
+    <div class="sb-dashboardWrapper">
+      <h6 class='sb-text-light-green-gradient mb-3'>GET WHAT YOU WANT</h6>
 
-    <div class='sb-optionGet' (click)="spawnCategories(1)">
-      <img src="assets/images/home_imgs/find-places-to-eat.svg" /><br/>
-      <span class='spotbie-text-gradient'>FOOD</span>
+      <div class='sb-optionGet' (click)="spawnCategories(1)">
+        <img src="assets/images/home_imgs/find-places-to-eat.svg" /><br/>
+        <span class='spotbie-text-gradient'>FOOD</span>
+      </div>
+
+      <div class='sb-optionGet' (click)="spawnCategories(3)">
+        <img src="assets/images/home_imgs/find-events.svg" /><br/>
+        <span class='spotbie-text-gradient'>EVENTS</span>
+      </div>
+
+      <div class='sb-optionGet' (click)="spawnCategories(1)">
+        <img src="assets/images/home_imgs/find-places-for-shopping.svg" /><br/>
+        <span class='spotbie-text-gradient'>RETAIL</span>
+      </div>
     </div>
 
-    <div class='sb-optionGet' (click)="spawnCategories(3)">
-      <img src="assets/images/home_imgs/find-events.svg" /><br/>
-      <span class='spotbie-text-gradient'>EVENTS</span>
+    <div class="sb-dashboardWrapper" #qrCodeAppAnchor>
+      <img src="assets/images/spotbie-qr.svg" class="sb-qrImage" (click)="startQrScanner()" />
+
+      <div class="spotbie-button" (click)="startQrScanner()">
+        <i class="fas fa-qrcode" style="margin-right: 5px;"></i>
+        <span class="spotbie-text-gradient">SCAN NOW</span>
+      </div>
     </div>
 
-    <div class='sb-optionGet' (click)="spawnCategories(1)">
-      <img src="assets/images/home_imgs/find-places-for-shopping.svg" /><br/>
-      <span class='spotbie-text-gradient'>RETAIL</span>
+    <div class="sb-dashboardWrapper" #lpAppAnchor>
+      <app-loyalty-points [fullScreenWindow]="false" (openRedeemed)="redeemedLp()" #loyaltyPointsApp></app-loyalty-points>
     </div>
   </div>
+</ng-container>
 
-  <div class="sb-dashboardWrapper" #qrCodeAppAnchor>
-    <img src="assets/images/spotbie-qr.svg" class="sb-qrImage" (click)="startQrScanner()" />
-
-    <div class="spotbie-button" (click)="startQrScanner()">
-      <i class="fas fa-qrcode" style="margin-right: 5px;"></i>
-      <span class="spotbie-text-gradient">SCAN NOW</span>
-    </div>
-
-    <app-qr [fullScreenWindow]="false"
-            *ngIf="scannerStarted$ | async"
-            (closeQrUserEvt)="closeQrScanner()"
-            #qrApp>
-    </app-qr>
-  </div>
-
-  <div class="sb-dashboardWrapper" #lpAppAnchor>
-    <app-loyalty-points [fullScreenWindow]="false" (openRedeemed)="redeemedLp()" #loyaltyPointsApp></app-loyalty-points>
-  </div>
-
-  <app-redeemable *ngIf="getRedeemableItems$ | async" (closeWindowEvt)="closeRedeemables()"></app-redeemable>
-</div>
+<app-qr [fullScreenWindow]="false"
+        *ngIf="scannerStarted$ | async"
+        (closeQrUserEvt)="closeQrScanner()"
+        #qrApp>
+</app-qr>

@@ -13,16 +13,16 @@ export class RewardComponent implements OnInit {
   @Input() reward: Reward;
   @Input() userPointToDollarRatio: number;
 
-  public loading = false;
-  public infoObjectImageUrl = 'assets/images/home_imgs/spotbie-white-icon.svg';
-  public successful_url_copy = false;
-  public rewardLink: string = null;
+  loading = false;
+  infoObjectImageUrl = 'assets/images/home_imgs/spotbie-white-icon.svg';
+  successful_url_copy = false;
+  rewardLink: string = null;
 
   constructor() {}
 
   ngOnInit(): void {}
 
-  public getFullScreenModeClass() {
+  getFullScreenModeClass() {
     if (this.fullScreenMode) {
       return 'fullScreenMode';
     } else {
@@ -30,11 +30,11 @@ export class RewardComponent implements OnInit {
     }
   }
 
-  public closeThis() {
+  closeThis() {
     this.closeWindowEvt.emit();
   }
 
-  public linkCopy(inputElement) {
+  linkCopy(inputElement) {
     inputElement.select();
     document.execCommand('copy');
     inputElement.setSelectionRange(0, inputElement.value.length);

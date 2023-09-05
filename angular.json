@@ -76,7 +76,7 @@
                 "input": "node_modules/@ionic/angular/css/flex-utils.css"
               },
               {
-                "input": "src/theme/variables.css"
+                "input": "src/theme/variables.scss"
               }
             ],
             "scripts": []
@@ -215,7 +215,8 @@
   "cli": {
     "schematicCollections": [
       "@ionic/angular-toolkit"
-    ]
+    ],
+    "analytics": "a62a165d-088d-42fb-9f61-a5a5f473dd34"
   },
   "schematics": {
     "@ionic/angular-toolkit:component": {
