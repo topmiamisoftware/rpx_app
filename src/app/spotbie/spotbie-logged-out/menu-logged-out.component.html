@@ -1,4 +1,4 @@
-<ion-menu contentId="main-content">
+<ion-menu menuId="main-menu" contentId="main-content">
   <ion-header>
     <ion-toolbar>
       <ion-title>It's on us.</ion-title>
@@ -41,8 +41,9 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-content class="ion-padding has-header">
-    <app-sign-up *ngIf="signUpWindow.open" [windowObj]="signUpWindow" (closeWindow)="closeWindow($event)" (logInEvent)="logIn()"></app-sign-up>
-    <app-log-in *ngIf="logInWindow.open"></app-log-in>
+  <ion-content class="ion-padding has-header text-center">
+    <app-sign-up *ngIf="signUpWindow$ | async" (closeWindow)="closeSignUp($event)" (logInEvent)="logIn()"></app-sign-up>
+    <app-log-in *ngIf="logInWindow$ | async" #appLogin></app-log-in>
+    <app-map #appMap></app-map>
   </ion-content>
 </div>

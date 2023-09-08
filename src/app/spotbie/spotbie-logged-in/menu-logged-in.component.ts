@@ -1,6 +1,5 @@
 import {
   Component,
-  OnInit,
   ViewChild,
   EventEmitter,
   Output,
@@ -15,9 +14,9 @@ import {LoyaltyPointsService} from '../../services/loyalty-points/loyalty-points
 import {AllowedAccountTypes} from '../../helpers/enum/account-type.enum';
 import {SettingsComponent} from './settings/settings.component';
 import {logOutCallback} from '../../helpers/logout-callback';
-import {Router} from '@angular/router';
 import {BehaviorSubject, take} from 'rxjs';
-import {IonMenu} from "@ionic/angular";
+import {MenuController} from '@ionic/angular';
+import {Preferences} from '@capacitor/preferences';
 
 @Component({
   selector: 'app-menu-logged-in',
@@ -31,12 +30,10 @@ export class MenuLoggedInComponent implements AfterViewInit {
   @ViewChild('spotbieMainMenu') spotbieMainMenu: ElementRef;
   @ViewChild('spotbieMap') spotbieMap: MapComponent;
   @ViewChild('spotbieSettings') spotbieSettings: SettingsComponent;
-  @ViewChild('ionMenu') ionMenu: IonMenu;
 
   foodWindow = {open: false};
   mapApp$ = new BehaviorSubject<boolean>(false);
   settingsWindow$ = new BehaviorSubject<boolean>(false);
-  menuActive = false;
   isMobile: boolean;
   isDesktop: boolean;
   isTablet: boolean;
@@ -51,13 +48,19 @@ export class MenuLoggedInComponent implements AfterViewInit {
     private userAuthService: UserauthService,
     private deviceService: DeviceDetectorService,
     private loyaltyPointsService: LoyaltyPointsService,
-    private router: Router
+    private menuCtrl: MenuController
   ) {
     this.isMobile = this.deviceService.isMobile();
     this.isDesktop = this.deviceService.isDesktop();
     this.isTablet = this.deviceService.isTablet();
 
-    this.userType = parseInt(localStorage.getItem('spotbie_userType'));
+    this.init();
+  }
+
+  async init() {
+    const retAccType = await Preferences.get({key: 'spotbie_userType'});
+
+    this.userType = parseInt(retAccType.value);
 
     if (this.userType === AllowedAccountTypes.Personal) {
       this.business = false;
@@ -65,14 +68,10 @@ export class MenuLoggedInComponent implements AfterViewInit {
       this.business = true;
     }
 
-    this.userName = localStorage.getItem('spotbie_userLogin');
+    const retAccLogin = await Preferences.get({key: 'spotbie_userLogin'});
+    this.userName = retAccLogin.value;
 
     this.getLoyaltyPointBalance();
-  }
-
-  myFavorites() {
-    this.menuActive = false;
-    this.spotbieMap.myFavorites();
   }
 
   toggleLoyaltyPoints() {
@@ -84,19 +83,21 @@ export class MenuLoggedInComponent implements AfterViewInit {
   }
 
   spawnCategories(category: number): void {
+    this.menuCtrl.close('main-menu');
+
     this.slideMenu();
     this.spotbieMap.spawnCategories(category);
-    this.ionMenu.close(true);
   }
 
   home() {
+    this.menuCtrl.close('main-menu');
+
     this.settingsWindow$.next(false);
     this.foodWindow.open = false;
     this.eventMenuOpen = false;
 
     this.spotbieMap.openWelcome();
     this.spotbieMap.closeCategories();
-    this.ionMenu.close(true);
   }
 
   slideMenu() {
@@ -106,14 +107,15 @@ export class MenuLoggedInComponent implements AfterViewInit {
   }
 
   openSettings() {
+    this.menuCtrl.close('main-menu');
+
     if (this.settingsWindow$.getValue()) {
       return;
     }
-    this.ionMenu.close(true);
     this.settingsWindow$.next(true);
   }
 
-  closeSettings(){
+  closeSettings() {
     this.settingsWindow$.next(false);
     // Refresh the settings.
     this.userAuthService.getSettings().pipe(take(1)).subscribe();
@@ -121,21 +123,12 @@ export class MenuLoggedInComponent implements AfterViewInit {
 
   logOut(): void {
     this.userAuthService.logOut().subscribe(resp => {
-      logOutCallback(resp, false);
-      this.router.navigate(['/home']);
+      logOutCallback(resp);
     });
   }
 
   async getLoyaltyPointBalance() {
     await this.loyaltyPointsService.getLoyaltyPointBalance();
-  }
-
-  openEvents() {
-    this.eventMenuOpen = true;
-  }
-
-  closeEvents() {
-    this.eventMenuOpen = false;
   }
 
   ngAfterViewInit() {

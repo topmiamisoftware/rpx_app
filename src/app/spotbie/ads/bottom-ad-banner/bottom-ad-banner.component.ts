@@ -14,6 +14,7 @@ import {
 import {AdsService} from '../ads.service';
 import {getRandomInt} from '../../../helpers/numbers.helper';
 import {BehaviorSubject} from 'rxjs';
+import {Preferences} from '@capacitor/preferences';
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/footer_banner_in_house.jpg';
@@ -73,7 +74,7 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
     );
   }
 
-  getBottomHeader() {
+  async getBottomHeader() {
     let adId = null;
     let accountType;
 
@@ -95,7 +96,10 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
         adId = this.ad.id;
       }
 
-      accountType = parseInt(localStorage.getItem('spotbie_userType'), 10);
+      const retAccType = await Preferences.get({key: 'spotbie_userType'});
+      const accType = retAccType.value;
+
+      accountType = parseInt(accType, 10);
 
       switch (accountType) {
         case 1:
@@ -114,8 +118,6 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
       }
     } else {
       accountType = this.accountType ? this.accountType : getRandomInt(1, 3);
-
-      console.log('account type', accountType);
 
       switch (accountType) {
         case 'food':

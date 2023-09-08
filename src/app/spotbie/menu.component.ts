@@ -1,4 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
+import {Preferences} from '@capacitor/preferences';
 
 @Component({
   selector: 'app-menu',
@@ -14,6 +15,9 @@ export class MenuComponent implements OnInit {
   ngOnInit() {
     // save timezone
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    localStorage.setItem('spotbie_userTimeZone', userTimezone);
+    Preferences.set({
+      key: 'spotbie_userTimeZone',
+      value: userTimezone,
+    });
   }
 }

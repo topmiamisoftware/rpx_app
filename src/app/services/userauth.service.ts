@@ -43,18 +43,17 @@ export class UserauthService {
     return this.http.post<any>(logOutApi, null);
   }
 
-  closeBrowser(): Observable<any> {
-    const logOutApi = `${USER_API}/close-browser`;
-    return this.http.post<any>(logOutApi, null);
-  }
-
-  initLogin(): Observable<any> {
+  initLogin(
+    userLogin: string,
+    userPassword: string,
+    userRememberMe: string
+  ): Observable<any> {
     this.userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     const params = {
-      login: this.userLogin,
-      password: this.userPassword,
-      remember_me_opt: this.userRememberMe,
+      login: userLogin,
+      password: userPassword,
+      remember_me_opt: userRememberMe,
       timezone: this.userTimezone,
       route: this.route,
     };

@@ -27,8 +27,6 @@ import {BottomAdBannerComponent} from '../ads/bottom-ad-banner/bottom-ad-banner.
 import {HeaderAdBannerComponent} from '../ads/header-ad-banner/header-ad-banner.component';
 import {environment} from '../../../environments/environment';
 import {BehaviorSubject, combineLatest} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
-import {DeviceDetectorService} from 'ngx-device-detector';
 import {Platform} from '@ionic/angular';
 import {filter, tap} from 'rxjs/operators';
 import {Geolocation} from '@capacitor/geolocation';
@@ -37,6 +35,7 @@ import {
   AndroidSettings,
   IOSSettings,
 } from 'capacitor-native-settings';
+import {Preferences} from '@capacitor/preferences';
 
 const YELP_BUSINESS_SEARCH_API = 'https://api.yelp.com/v3/businesses/search';
 const BANNED_YELP_IDS = map_extras.BANNED_YELP_IDS;
@@ -79,10 +78,8 @@ export class MapComponent implements OnInit, AfterViewInit {
   // The marker for the logged-in user.
   myMarker: google.maps.Marker;
 
-  isLoggedIn: string;
-  iconUrl: string;
+  isLoggedIn$ = new BehaviorSubject<string>(null);
   spotbieUsername: string;
-  bgColor: string;
   userDefaultImage: string;
   searchResultsSubtitle: string;
   searchCategoriesPlaceHolder: string;
@@ -120,12 +117,10 @@ export class MapComponent implements OnInit, AfterViewInit {
   locationFound$ = new BehaviorSubject<boolean>(false);
   sliderRight: boolean = false;
   catsUp$ = new BehaviorSubject<boolean>(false);
-  toastHelper: boolean = false;
   showNoResultsBox$ = new BehaviorSubject<boolean>(false);
   showMobilePrompt2$ = new BehaviorSubject<boolean>(false);
   firstTimeShowingMap: boolean = true;
   showOpened$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  noResults: boolean = false;
   currentSearchType = '0';
   surroundingObjectList$ = new BehaviorSubject<Array<any>>([]);
 
@@ -147,26 +142,14 @@ export class MapComponent implements OnInit, AfterViewInit {
   shoppingCategories = map_extras.SHOPPING_CATEGORIES;
   numberCategories$ = new BehaviorSubject<number>(null);
   bottomBannerCategories$ = new BehaviorSubject<number>(null);
-  mapStyles = map_extras.MAP_STYLES;
   infoObject$: any = new BehaviorSubject(null);
   currentMarker: any;
   categories: any;
   myFavoritesWindow = {open: false};
   updateDistanceTimeout: any;
-  subCategory: any = {
-    food_sub: {open: false},
-    media_sub: {open: false},
-    artist_sub: {open: false},
-    place_sub: {open: false},
-  };
-  placesToEat: boolean = false;
-  eventsNearYou: boolean = false;
-  reatailShop: boolean = false;
-  usersAroundYou: boolean = false;
   isDesktop: boolean = false;
   isTablet: boolean = false;
   isMobile: boolean = false;
-  loadingText: string = null;
   displayLocationEnablingInstructions$ = new BehaviorSubject<boolean>(false);
   bannedYelpIDs = BANNED_YELP_IDS;
   eventsClassification$ = new BehaviorSubject<number>(null);
@@ -175,15 +158,11 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   constructor(
     private locationService: LocationService,
-    private deviceService: DeviceDetectorService,
     private mapIconPipe: MapObjectIconPipe,
-    private httpClient: HttpClient,
     private platform: Platform,
     private gestureCtrl: GestureController
   ) {
-    this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
-    this.userDefaultImage = localStorage.getItem('spotbie_userDefaultImage');
-    this.spotbieUsername = localStorage.getItem('spotbie_userLogin');
+    this.init();
 
     combineLatest([this.lat$, this.lng$])
       .pipe(
@@ -256,6 +235,16 @@ export class MapComponent implements OnInit, AfterViewInit {
       .subscribe();
   }
 
+  async init() {
+    const retIsLoggedIn = await Preferences.get({key: 'spotbie_loggedIn'});
+    const retSpotbieUsername = await Preferences.get({
+      key: 'spotbie_userLogin',
+    });
+
+    this.isLoggedIn$.next(retIsLoggedIn.value);
+    this.spotbieUsername = retSpotbieUsername.value;
+  }
+
   hideMarkers(markerList: google.maps.Marker[]): void {
     markerList.forEach(marker => marker.setMap(null));
     return;
@@ -290,7 +279,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this.isLoggedIn !== '1') {
+    if (this.isLoggedIn$.getValue() !== '1') {
       this.userDefaultImage = 'assets/images/guest-spotbie-user-01.svg';
       this.spotbieUsername = 'Guest';
     }
@@ -526,8 +515,6 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   classificationSearchCallback(httpResponse: any) {
     this.loading$.next(false);
-
-    console.log('classificationSearchCallback', httpResponse);
 
     if (httpResponse.success) {
       const classifications: Array<any> =
@@ -852,7 +839,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     const topBar = document.getElementsByTagName('ion-header')[1].offsetHeight;
     setTimeout(() => {
       const spotbieCategories = document.getElementById('spotbieCategories');
-      spotbieCategories.style.paddingTop = topBar+'px';
+      spotbieCategories.style.paddingTop = topBar + 'px';
     }, 500);
   }
 
@@ -1350,7 +1337,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       loc_y: this.lng$.getValue(),
     };
 
-    if (this.isLoggedIn === '1') {
+    if (this.isLoggedIn$.getValue() === '1') {
       this.locationService.saveCurrentLocation(saveLocationObj).subscribe(
         resp => {
           this.saveCurrentLocationCallback(resp);

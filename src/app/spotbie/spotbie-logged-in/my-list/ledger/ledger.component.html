@@ -33,11 +33,11 @@
     LOAD MORE
   </ion-button>
 
-  <div class='spotbie-no-notis-box' *ngIf="((lpLedgerList$ | async).length === 0 && ledger$ | async)">
+  <div class='spotbie-no-notis-box' *ngIf="((lpLedgerList$ | async).length === 0 && ledger$ | async) && ((loading$ | async) === false)">
     <i class="fas fa-exclamation-triangle"></i>
     <br/><br/>
     <p class="spotbie-text-gradient">
-      <span *ngIf="(lpLedgerList$ | async).length === 0 && ledger$ | async">You have no transaction history.</span>
+      <span>You have no transaction history.</span>
     </p>
     <br/><br/>
   </div>

@@ -361,13 +361,13 @@
     </div>
   </div>
 
-  <div class="sb-footer pt-5 pb-5" *ngIf="(showSearchResults$ | async) || ((showSearchResults$ | async) && isLoggedIn !== '1' )">
+  <div class="sb-footer pt-5 pb-5" *ngIf="(showSearchResults$ | async) || ((showSearchResults$ | async) && (isLoggedIn$ | async) !== '1' )">
     <p (click)="openTerms()">Terms & Privacy Policy</p>
     <img class="mt-3 mb-3" src="assets/images/logo_spotbie_green.svg" />
-    <p (click)="openTerms()">SpotBie, LLC.&copy; Copyright 2022</p>
+    <p (click)="openTerms()">SpotBie, LLC.&copy; Copyright 2023</p>
   </div>
 
-  <ng-container *ngIf="isLoggedIn === '1' && !(showSearchResults$ | async) && !(map$ | async)">
+  <ng-container *ngIf="(isLoggedIn$ | async) === '1' && !(showSearchResults$ | async) && !(map$ | async)">
     <div class='map-prompt-mobile align-items-center justify-content-center' #featureWrapper>
       <app-user-dashboard (spawnCategoriesEvt)="spawnCategories($event)" #homeDashboard
       ></app-user-dashboard>

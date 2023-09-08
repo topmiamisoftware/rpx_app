@@ -14,6 +14,7 @@ import { InfoObjectType } from '../../../helpers/enum/info-object-type.enum';
 import { LoyaltyPointBalance } from '../../../models/loyalty-point-balance';
 import { AppLauncher } from '@capacitor/app-launcher';
 import { BehaviorSubject } from 'rxjs';
+import {Preferences} from "@capacitor/preferences";
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/header_banner_in_house.jpg';
@@ -66,15 +67,15 @@ export class HeaderAdBannerComponent implements OnInit {
     private deviceDetectorService: DeviceDetectorService
   ) {}
 
-  getHeaderBanner() {
+  async getHeaderBanner() {
     let adId = null;
     let accountType;
 
-    //Stop the service if there's a window on top of the ad component.
+    // Stop the service if there's a window on top of the ad component.
     const needleElement = document.getElementsByClassName('sb-closeButton');
 
     if (needleElement.length > 0) {
-      //There's a componenet on top of the bottom header.
+      // There's a componenet on top of the bottom header.
       return; //bounce this request
     }
 
@@ -87,7 +88,8 @@ export class HeaderAdBannerComponent implements OnInit {
         adId = this.ad.id;
       }
 
-      accountType = parseInt(localStorage.getItem('spotbie_userType'));
+      const retAccType = await Preferences.get({key: 'spotbie_userType'});
+      const accountType = parseInt(retAccType.value);
 
       switch (accountType) {
         case 1:

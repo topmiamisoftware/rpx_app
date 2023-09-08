@@ -1,20 +1,10 @@
-import {
-  Component,
-  EventEmitter,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {UntypedFormGroup, UntypedFormBuilder, Validators} from '@angular/forms';
-import {ValidatePassword} from '../../../helpers/password.validator';
-import {MustMatch} from '../../../helpers/must-match.validator';
 import {UserauthService} from '../../../services/userauth.service';
-import {ActivatedRoute, Router} from '@angular/router';
 import {BehaviorSubject} from 'rxjs';
 
-const DEF_INC_PASS_OR_EM_MSG = 'Please enter your e-mail address.';
+const DEF_INC_PASS_OR_EM_MSG = 'Enter your e-mail address.';
 const DEF_PIN_PASS_OR_EM_MSG = 'Check your e-mail for a reset link.';
-const NEW_PASS_MSG = 'Enter Your New Password.';
 
 @Component({
   selector: 'app-forgot-password',
@@ -22,34 +12,22 @@ const NEW_PASS_MSG = 'Enter Your New Password.';
   styleUrls: ['./forgot-password.component.css'],
 })
 export class ForgotPasswordComponent implements OnInit {
-  @Output() closeWindow = new EventEmitter();
-
   @ViewChild('getLinkMessage') getLinkMessage;
 
   passwordResetForm: UntypedFormGroup;
   passwordForm: UntypedFormGroup;
   passResetSubmitted$ = new BehaviorSubject<boolean>(false);
   loading$ = new BehaviorSubject<boolean>(false);
-  passwordSubmitted$ = new BehaviorSubject<boolean>(false);
-  savePassword$ = new BehaviorSubject<boolean>(false);
+
   stepOne$ = new BehaviorSubject<boolean>(false);
   stepTwo$ = new BehaviorSubject<boolean>(false);
-  stepThree$ = new BehaviorSubject<boolean>(false);
-  stepFour$ = new BehaviorSubject<boolean>(false);
-  pinResetSubmitted$ = new BehaviorSubject<boolean>(false);
-  attemptsRemaining$ = new BehaviorSubject<number>(3);
-  resetPin: string;
+
   pinReadyMsg$ = new BehaviorSubject<string>(DEF_PIN_PASS_OR_EM_MSG);
   emailOrPhError$ = new BehaviorSubject<string>(DEF_INC_PASS_OR_EM_MSG);
-  newPasswordMsg$ = new BehaviorSubject<string>(NEW_PASS_MSG);
-  token$ = new BehaviorSubject<string>(null);
-  userEmail$ = new BehaviorSubject<string>(null);
 
   constructor(
-    private activatedRoute: ActivatedRoute,
     private formBuilder: UntypedFormBuilder,
-    private userAuthService: UserauthService,
-    private router: Router
+    private userAuthService: UserauthService
   ) {}
 
   get spotbieEmailOrPh() {
@@ -60,35 +38,13 @@ export class ForgotPasswordComponent implements OnInit {
     return this.passwordResetForm.controls;
   }
 
-  get spotbieResetPassword() {
-    return this.passwordForm.get('spotbieResetPassword').value;
-  }
-  get spotbieResetPasswordC() {
-    return this.passwordForm.get('spotbieResetPasswordC').value;
-  }
-
   get h() {
     return this.passwordForm.controls;
   }
 
   ngOnInit() {
-    this.token$.next(this.activatedRoute.snapshot.paramMap.get('token'));
-
-    if (this.token$.getValue() !== null) {
-      const urlParams = new URLSearchParams(window.location.search);
-
-      this.userEmail$.next(urlParams.get('email'));
-      this.initPasswordForm();
-
-      this.stepThree$.next(true);
-    } else {
-      this.initForgotPassForm();
-      this.stepOne$.next(true);
-    }
-  }
-
-  closeWindowX(): void {
-    this.closeWindow.emit(null);
+    this.initForgotPassForm();
+    this.stepOne$.next(true);
   }
 
   setPassResetPin(): void {
@@ -100,76 +56,11 @@ export class ForgotPasswordComponent implements OnInit {
       return;
     }
 
-    const emailOrPhone = this.spotbieEmailOrPh;
-
-    this.userAuthService.setPassResetPin(emailOrPhone).subscribe(resp => {
-      this.startPassResetCb(resp);
-    });
-  }
-
-  completeSavePassword(): void {
-    this.passwordSubmitted$.next(true);
-
-    if (this.passwordForm.invalid) {
-      this.savePassword$.next(false);
-      return;
-    }
-
-    if (this.savePassword$.getValue()) {
-      return;
-    }
-
-    this.loading$.next(true);
-
     this.userAuthService
-      .completeReset(
-        this.spotbieResetPassword,
-        this.spotbieResetPasswordC,
-        this.userEmail$.getValue(),
-        this.token$.getValue()
-      )
+      .setPassResetPin(this.spotbieEmailOrPh)
       .subscribe(resp => {
-        this.completeSavePasswordCb(resp);
+        this.startPassResetCb(resp);
       });
-  }
-
-  goHome() {
-    this.router.navigate(['/home']);
-  }
-
-  private completeSavePasswordCb(settingsResponse: any): void {
-    if (settingsResponse.success) {
-      switch (settingsResponse.status) {
-        case 'passwords.reset':
-          this.newPasswordMsg$.next(
-            'Your password was updated. You can now log-in.'
-          );
-
-          this.stepThree$.next(false);
-          this.stepFour$.next(true);
-
-          setTimeout(() => {
-            this.closeWindowX();
-          }, 3000);
-
-          break;
-
-        case 'passwords.token':
-          //Expired Token
-          this.newPasswordMsg$.next(
-            'The password reset link has expired, please try to reset your password again.'
-          );
-          break;
-
-        default:
-          this.closeWindowX();
-      }
-    } else {
-      console.log(settingsResponse);
-    }
-
-    this.savePassword$.next(false);
-    this.loading$.next(false);
   }
 
   private initForgotPassForm(): void {
@@ -207,26 +98,6 @@ export class ForgotPasswordComponent implements OnInit {
     this.getLinkMessage.nativeElement.style.display = 'block';
 
     this.loading$.next(false);
-  }
-
-  private initPasswordForm(): void {
-    this.stepThree$.next(true);
-
-    const passwordValidators = [Validators.required];
-    const passwordConfirmValidators = [Validators.required];
-
-    this.passwordForm = this.formBuilder.group(
-      {
-        spotbieResetPassword: ['', passwordValidators],
-        spotbieResetPasswordC: ['', passwordConfirmValidators],
-      },
-      {
-        validators: [
-          ValidatePassword('spotbieResetPassword'),
-          MustMatch('spotbieResetPassword', 'spotbieResetPasswordC'),
-        ],
-      }
-    );
   }
 
   private showSuccess(): void {

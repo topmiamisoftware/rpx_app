@@ -44,11 +44,11 @@
     LOAD MORE
   </ion-button>
 
-  <div class='spotbie-no-notis-box' *ngIf="((lpRedeemedList$ | async).length === 0 && lpRedeemed$ | async)">
+  <div class='spotbie-no-notis-box' *ngIf="(lpRedeemedList$ | async).length === 0 && (lpRedeemed$ | async) && (loading$ | async) === false">
     <i class="fas fa-exclamation-triangle"></i>
     <br/><br/>
     <p class="spotbie-text-gradient">
-      <span *ngIf="(lpRedeemedList$ | async).length === 0 && lpRedeemed$ | async">You have no redeemed points.</span>
+      <span>You have no redeemed points.</span>
     </p>
     <br/><br/>
   </div>

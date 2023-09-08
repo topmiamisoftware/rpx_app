@@ -14,7 +14,8 @@ import {ValidateUsername} from '../../../helpers/username.validator';
 import {ValidatePersonName} from '../../../helpers/name.validator';
 import {UserauthService} from '../../../services/userauth.service';
 import {Router} from '@angular/router';
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject} from 'rxjs';
+import {Preferences} from "@capacitor/preferences";
 
 @Component({
   selector: 'app-settings',
@@ -23,15 +24,13 @@ import {BehaviorSubject} from "rxjs";
 })
 export class SettingsComponent implements OnInit {
   @ViewChild('spotbieSettingsInfoText') spotbieSettingsInfoText: ElementRef;
-  @ViewChild('spotbiePasswordChangeInfoText')
-  spotbiePasswordInfoText: ElementRef;
+  @ViewChild('spotbiePasswordInfoText') spotbiePasswordInfoText: ElementRef;
   @ViewChild('currentPasswordInfo') spotbieCurrentPasswordInfoText: ElementRef;
   @ViewChild('spotbieDeactivationInfo') spotbieAccountDeactivationInfo;
   @ViewChild('spotbieSettingsWindow') spotbieSettingsWindow;
 
   @Output() closeWindowEvt = new EventEmitter();
 
-  personalAccount$ = new BehaviorSubject<boolean>(true);
   settingsForm: FormGroup;
   passwordForm: FormGroup;
   savePasswordBool$ = new BehaviorSubject<boolean>(false);
@@ -39,17 +38,16 @@ export class SettingsComponent implements OnInit {
   accountDeactivation$ = new BehaviorSubject<boolean>(false);
   deactivationSubmitted$ = new BehaviorSubject<boolean>(false);
   loading$ = new BehaviorSubject<boolean>(false);
-  helpText$ = new BehaviorSubject<string>('');
   user$ = new BehaviorSubject<User>(new User());
   submitted$ = new BehaviorSubject<boolean>(false);
-  placeFormSubmitted$ = new BehaviorSubject<boolean>(false);
-  adSettingsWindow$ = new BehaviorSubject<boolean>(false);
   passwordSubmitted$ = new BehaviorSubject<boolean>(false);
   settingsFormInitiated$ = new BehaviorSubject<boolean>(false);
-  showNoResultsBox$ = new BehaviorSubject<boolean>(false);
-  showMobilePrompt$ = new BehaviorSubject<boolean>(false);
-  showMobilePrompt2$ = new BehaviorSubject<boolean>(false);
   isSocialAccount$ = new BehaviorSubject<boolean>(false);
+  errorText$ = new BehaviorSubject<string>(null);
+  spotbieSettingsInfoText$ = new BehaviorSubject<string>(null);
+  currentPasswordInfoText$ = new BehaviorSubject<string>(
+    'To complete the change, enter your CURRENT password.'
+  );
 
   constructor(
     private formBuilder: FormBuilder,
@@ -107,27 +105,23 @@ export class SettingsComponent implements OnInit {
   }
 
   savePassword(): void {
+    this.passwordSubmitted$.next(true);
+
     this.spotbiePasswordInfoText.nativeElement.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
     });
 
     if (this.passwordForm.invalid) {
-      this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
+      if (this.password !== this.confirmPassword) {
+        console.log('confirm password error');
+        this.errorText$.next('Passwords must match.');
+        return;
+      }
       return;
     }
 
-    if (this.password !== this.confirmPassword) {
-      console.log('confirm password error');
-      this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
-      this.spotbiePasswordInfoText.nativeElement.innerHTML =
-        'Passwords must match.';
-      return;
-    }
-
-    this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
-    this.spotbiePasswordInfoText.nativeElement.innerHTML =
-      'Great, your passwords match!';
+    this.errorText$.next('Great, your passwords match!');
 
     this.savePasswordBool$.next(true);
 
@@ -202,14 +196,14 @@ export class SettingsComponent implements OnInit {
       },
       error: (error: any) => {
         if (error.error.errors.email[0] === 'notUnique') {
-          this.settingsForm.get('spotbie_email').setErrors({notUnique: true});
+          this.settingsForm.get('spotbieEmail').setErrors({notUnique: true});
         }
 
-        this.spotbieSettingsInfoText.nativeElement.innerHTML = `
+        this.spotbieSettingsInfoText$.next(`
                     <span class='spotbie-text-gradient spotbie-error'>
                         There was an error saving.
                     </span>
-                `;
+                `);
 
         this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
@@ -225,24 +219,15 @@ export class SettingsComponent implements OnInit {
   startDeactivateAccount(): void {
     this.accountDeactivation$.next(true);
 
-    const socialId = localStorage.getItem('spotbiecom_social_id');
-    if (socialId && socialId.length > 0) {
-      this.isSocialAccount$.next(true);
-    } else {
-      this.isSocialAccount$.next(false);
-    }
+    const deactivationPasswordValidator = [Validators.required];
 
-    if (!this.isSocialAccount$.getValue()) {
-      const deactivationPasswordValidator = [Validators.required];
+    this.deactivationForm = this.formBuilder.group({
+      spotbieDeactivationPassword: ['', deactivationPasswordValidator],
+    });
 
-      this.deactivationForm = this.formBuilder.group({
-        spotbieDeactivationPassword: ['', deactivationPasswordValidator],
-      });
-
-      this.deactivationForm
-        .get('spotbieDeactivationPassword')
-        .setValue('123456789');
-    }
+    this.deactivationForm
+      .get('spotbieDeactivationPassword')
+      .setValue('123456789');
   }
 
   deactivateAccount() {
@@ -293,19 +278,21 @@ export class SettingsComponent implements OnInit {
 
       this.settingsFormInitiated$.next(true);
 
-      this.settingsForm.get('spotbieUsername').setValue(this.user$.getValue().username);
+      this.settingsForm
+        .get('spotbieUsername')
+        .setValue(this.user$.getValue().username);
       this.settingsForm
         .get('spotbieFirstName')
         .setValue(this.user$.getValue().spotbie_user.first_name);
       this.settingsForm
         .get('spotbieLastName')
         .setValue(this.user$.getValue().spotbie_user.last_name);
-      this.settingsForm.get('spotbieEmail').setValue(this.user$.getValue().email);
+      this.settingsForm
+        .get('spotbieEmail')
+        .setValue(this.user$.getValue().email);
       this.settingsForm
         .get('spotbiePhoneNumber')
         .setValue(this.user$.getValue().spotbie_user.phone_number);
-      this.passwordForm.get('spotbiePassword').setValue('userpassword');
-      this.passwordForm.get('spotbieConfirmPassword').setValue('123456789');
     } else {
       console.log('Settings Error: ', settingsResponse);
     }
@@ -317,16 +304,13 @@ export class SettingsComponent implements OnInit {
     if (resp.success) {
       switch (resp.message) {
         case 'saved':
-          this.spotbieCurrentPasswordInfoText.nativeElement.innerHTML =
-            'Your password was updated.';
+          this.currentPasswordInfoText$.next('Your password was updated.');
 
           this.passwordForm.get('spotbieCurrentPassword').setValue('123456789');
           this.passwordForm.get('spotbiePassword').setValue('asdrqweee');
           this.passwordForm.get('spotbieConfirmPassword').setValue('asdeqweqq');
 
-          this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
-          this.spotbiePasswordInfoText.nativeElement.innerHTML =
-            'Would you like to change your password?';
+          this.errorText$.next('Would you like to change your password?');
 
           setTimeout(() => {
             this.passwordSubmitted$.next(false);
@@ -338,9 +322,7 @@ export class SettingsComponent implements OnInit {
           // server error
           this.savePasswordBool$.next(false);
           this.passwordSubmitted$.next(false);
-          this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
-          this.spotbiePasswordInfoText.nativeElement.innerHTML =
-            'There was an error with the server. Try again.';
+          this.errorText$.next('You entered the incorrect current password.');
           break;
       }
 
@@ -417,32 +399,24 @@ export class SettingsComponent implements OnInit {
     this.loading$.next(false);
 
     if (resp.success) {
-      this.spotbieSettingsInfoText.nativeElement.innerHTML = `
-                <span class='sb-text-light-green-gradient'>
-                Your settings were saved.
-                </span>
-            `;
+      this.spotbieSettingsInfoText$.next('Your settings were saved.');
 
       this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
-      localStorage.setItem('spotbie_userLogin', resp.user.username);
-      localStorage.setItem(
-        'spotbie_userType',
-        resp.user.spotbie_user.user_type
-      );
+      Preferences.set({key: 'spotbie_userLogin', value: resp.user.username});
+      Preferences.set({
+        key: 'spotbie_userType',
+        value: resp.user.spotbie_user.user_type,
+      });
     } else {
-      this.spotbieSettingsInfoText.nativeElement.innerHTML = `
-                <span class='spotbie-text-gradient spotbie-error'>
-                    There was an error saving.
-                </span>
-            `;
-      console.log('Failed Save Settings: ', resp);
+      this.spotbieSettingsInfoText$.next('There was an error saving.');
     }
   }
 
   private deactivateCallback(resp: any) {
     this.loading$.next(false);
     if (resp.success) {
+      // Your account has been deactivated.
     } else {
       console.log('deactivateCallback', resp);
     }

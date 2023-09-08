@@ -17,6 +17,7 @@ import {RewardCreatorComponent} from './reward-creator/reward-creator.component'
 import {RewardComponent} from './reward/reward.component';
 import {environment} from '../../../../environments/environment';
 import { BehaviorSubject } from "rxjs";
+import {Preferences} from "@capacitor/preferences";
 
 @Component({
   selector: 'app-reward-menu',
@@ -36,11 +37,8 @@ export class RewardMenuComponent implements OnInit {
   @Output() notEnoughLpEvt = new EventEmitter();
 
   eAllowedAccountTypes = AllowedAccountTypes;
-  menuItemList: Array<any>;
   itemCreator = false;
   rewardApp$ = new BehaviorSubject(false);
-  userLoyaltyPoints;
-  userResetBalance;
   userPointToDollarRatio;
   rewards$ = new BehaviorSubject<Array<Reward>>(null);
   reward$ = new BehaviorSubject<Reward>(null);
@@ -84,10 +82,7 @@ export class RewardMenuComponent implements OnInit {
     if (resp.success) {
       this.rewards$.next(resp.rewards);
 
-      if (
-        this.userType === this.eAllowedAccountTypes.Personal ||
-        this.isLoggedIn !== '1'
-      ) {
+      if (this.isLoggedIn !== '1') {
         this.userPointToDollarRatio = resp.loyalty_point_dollar_percent_value;
         this.business = resp.business;
       }
@@ -144,9 +139,12 @@ export class RewardMenuComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    this.userType = parseInt(localStorage.getItem('spotbie_userType'));
-    this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
+  async ngOnInit() {
+    const userRet = await Preferences.get({key: 'spotbie_userType'});
+    this.userType = parseInt(userRet.value);
+
+    const retUserLoggedIn = await Preferences.get({key: 'spotbie_loggedIn'});
+    this.isLoggedIn = retUserLoggedIn.value;
 
     if (this.userType !== this.eAllowedAccountTypes.Personal) {
       this.fetchRewards();

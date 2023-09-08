@@ -1,134 +1,68 @@
 import {
   Component,
-  OnInit,
   ViewChild,
   Output,
   EventEmitter,
   ElementRef,
-  AfterViewInit,
 } from '@angular/core';
-import {Location} from '@angular/common';
-import {AppLauncher} from '@capacitor/app-launcher';
-import {Router} from '@angular/router';
-import {Platform} from '@ionic/angular';
+import {MenuController} from '@ionic/angular';
+import {LogInComponent} from './log-in/log-in.component';
+import {BehaviorSubject} from 'rxjs';
+import {MapComponent} from '../map/map.component';
+import {NavigationEnd, Router} from '@angular/router';
+import {filter} from 'rxjs/operators';
 
 @Component({
   selector: 'app-menu-logged-out',
   templateUrl: './menu-logged-out.component.html',
   styleUrls: ['../menu.component.css'],
 })
-export class MenuLoggedOutComponent implements OnInit, AfterViewInit {
+export class MenuLoggedOutComponent {
   @Output() myFavoritesEvt = new EventEmitter();
-  @Output() spawnCategoriesOut = new EventEmitter();
   @Output() openHome = new EventEmitter();
 
   @ViewChild('spotbieMainMenu') spotbieMainMenu: ElementRef;
+  @ViewChild('appLogin') appLogin: LogInComponent;
+  @ViewChild('appMap') appMap: MapComponent;
 
-  logInWindow = {open: true};
-  signUpWindow = {open: false};
-  menuActive = false;
-  isMobile: boolean;
-  isDesktop: boolean;
-  isTablet: boolean;
-  business = false;
+  logInWindow$ = new BehaviorSubject<boolean>(true);
+  signUpWindow$ = new BehaviorSubject<boolean>(false);
+  onForgotPassword$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private location: Location,
-    private platform: Platform,
-    private router: Router
-  ) {}
-
-  ngOnInit(): void {
-    const activatedRoute = this.location.path();
-
-    this.isMobile = this.platform.is('mobile');
-    this.isDesktop = this.platform.is('desktop');
-    this.isTablet = this.platform.is('tablet');
-
-    // check if we need to auto log-in
-    const cookiedRememberMe = localStorage.getItem('spotbie_rememberMe');
-    const loggedIn = localStorage.getItem('spotbie_rememberMe');
-
-    if (activatedRoute.indexOf('/business') > -1) {
-      this.business = true;
-    }
-
-    if (
-      cookiedRememberMe === '1' &&
-      activatedRoute.indexOf('/home') > -1 &&
-      loggedIn !== '1'
-    ) {
-      this.logInWindow.open = true;
-    }
+  constructor(private menuCtrl: MenuController, private router: Router) {
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(event => {
+        const r = event as NavigationEnd;
+        if (r.url.indexOf('forgot-password') > 0) {
+          this.onForgotPassword$.next(true);
+        }
+      });
   }
+  spawnCategories(type: number): void {
+    this.logInWindow$.next(false);
+    this.signUpWindow$.next(false);
 
-  ngAfterViewInit(): void {}
+    this.menuCtrl.close('main-menu');
 
-  spawnCategories(type: any, slideMenu = true): void {
-    this.logInWindow.open = false;
-    this.signUpWindow.open = false;
-
-    if (slideMenu) {
-      this.slideMenu();
-    }
-
-    this.spawnCategoriesOut.emit(type);
+    this.appMap.spawnCategories(type);
   }
-
-  async goToBlog() {
-    await AppLauncher.openUrl({url: 'https://blog.spotbie.com/'});
-    return;
-  }
-
-  openWindow(window: any) {
-    window.open = !window.open;
-  }
-
-  closeWindow(window) {
-    window.open = false;
-  }
-
-  goToBusiness() {
-    this.router.navigate(['/business']);
-  }
-
-  goToAppUser() {
-    this.router.navigate(['/home']);
-  }
-
-  signUp() {
-    this.logInWindow.open = false;
-    this.signUpWindow.open = !this.signUpWindow.open;
-  }
-
   logIn() {
-    this.signUpWindow.open = false;
-    this.logInWindow.open = !this.logInWindow.open;
+    this.signUpWindow$.next(false);
+    this.logInWindow$.next(!this.logInWindow$.getValue());
   }
 
-  slideMenu() {
-    this.menuActive = !this.menuActive;
-  }
-
-  getMenuStyle() {
-    if (!this.menuActive) {
-      return {'background-color': 'transparent'};
-    }
-  }
-
-  scrollTo(el: string) {
-    const element = document.getElementById(el);
-    element.scrollIntoView();
-  }
-
-  myFavorites() {
-    this.menuActive = false;
-    this.myFavoritesEvt.next(null);
+  closeSignUp(event$) {
+    this.signUpWindow$.next(false);
   }
 
   home() {
-    this.menuActive = false;
-    this.signUpWindow.open = false;
-    this.logInWindow.open = true;
+    this.menuCtrl.close('main-menu');
+    this.signUpWindow$.next(false);
+    this.logInWindow$.next(true);
+
+    if (this.onForgotPassword$.getValue()) {
+      this.router.navigate(['/home']);
+    }
   }
 }

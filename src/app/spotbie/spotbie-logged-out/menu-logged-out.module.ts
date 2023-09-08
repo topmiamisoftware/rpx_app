@@ -6,10 +6,10 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MenuLoggedOutComponent} from './menu-logged-out.component';
 import {LogInComponent} from './log-in/log-in.component';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
-import {ForgotPasswordModule} from './forgot-password/forgot-password.module';
 import {HelperModule} from '../../helpers/helper.module';
 import {SignUpComponent} from './sign-up/sign-up.component';
 import {IonicModule} from '@ionic/angular';
+import {MapModule} from '../map/map.module';
 
 @NgModule({
   declarations: [MenuLoggedOutComponent, LogInComponent, SignUpComponent],
@@ -21,8 +21,8 @@ import {IonicModule} from '@ionic/angular';
     RouterModule,
     HelperModule,
     FontAwesomeModule,
-    ForgotPasswordModule,
     IonicModule.forRoot(),
+    MapModule,
   ],
   exports: [MenuLoggedOutComponent],
 })

@@ -1,6 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {Router} from '@angular/router';
 import {MapComponent} from '../spotbie/map/map.component';
+import {Preferences} from '@capacitor/preferences';
 
 @Component({
   selector: 'app-home',
@@ -19,23 +20,16 @@ export class HomeComponent implements OnInit {
     this.getStartedPrompt = false;
   }
 
-  spawnCategories(category: number): void {
-    this.appMap.spawnCategories(category);
-  }
-
-  openHome() {
-    this.appMap.openWelcome();
-  }
-
-  myFavorites() {
-    this.appMap.myFavorites();
-  }
-
-  async ngOnInit() {
-    const isLoggedIn = localStorage.getItem('spotbie_loggedIn');
+  async checkIfLoggedIn() {
+    const ret = await Preferences.get({key: 'spotbie_loggedIn'});
+    const isLoggedIn = ret.value;
 
     if (isLoggedIn === '1') {
       this.router.navigate(['/user-home']);
     }
+  }
+
+  ngOnInit() {
+    this.checkIfLoggedIn();
   }
 }

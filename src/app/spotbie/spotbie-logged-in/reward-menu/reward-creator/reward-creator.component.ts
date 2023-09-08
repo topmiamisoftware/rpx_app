@@ -13,6 +13,7 @@ import {Reward} from '../../../../models/reward';
 import {RewardCreatorService} from '../../../../services/spotbie-logged-in/business-menu/reward-creator/reward-creator.service';
 import {environment} from '../../../../../environments/environment';
 import * as spotbieGlobals from '../../../../globals';
+import {Preferences} from "@capacitor/preferences";
 
 const REWARD_MEDIA_UPLOAD_API_URL = `${spotbieGlobals.API}reward/upload-media`;
 const REWARD_MEDIA_MAX_UPLOAD_SIZE = 25e6;
@@ -188,7 +189,7 @@ export class RewardCreatorComponent implements OnInit {
     this.rewardMediaInput.nativeElement.click();
   }
 
-  uploadMedia(files): void {
+  async uploadMedia(files) {
     const fileListLength = files.length;
 
     if (fileListLength === 0) {
@@ -220,7 +221,8 @@ export class RewardCreatorComponent implements OnInit {
       formData.append('image', file_to_upload, file_to_upload.name);
     }
 
-    const token = localStorage.getItem('spotbiecom_session');
+    const tokenRet = await Preferences.get({key: 'spotbiecom_session'});
+    const token = tokenRet.value;
 
     this.http
       .post(REWARD_MEDIA_UPLOAD_API_URL, formData, {
@@ -248,7 +250,9 @@ export class RewardCreatorComponent implements OnInit {
     if (httpResponse.success) {
       this.rewardUploadImage = httpResponse.image;
 
-      this.rewardCreatorForm.get('rewardImage').setValue(this.rewardUploadImage);
+      this.rewardCreatorForm
+        .get('rewardImage')
+        .setValue(this.rewardUploadImage);
     } else {
       console.log('rewardMediaUploadFinished', httpResponse);
     }

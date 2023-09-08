@@ -6,7 +6,9 @@
     </div>
 
     <div class='spotbie-block sb-topSettingsPadding'>
-        <div #spotbieSettingsInfoText class="spotbie-text-gradient mt-4 mb-4"></div>
+        <div #spotbieSettingsInfoText class="spotbie-text-gradient mt-4 mb-4">
+            {{ spotbieSettingsInfoText$ | async }}
+        </div>
         <form [formGroup]="settingsForm" *ngIf="settingsFormInitiated$ | async">
             <table class='spotbie-settings-table'>
                 <tr>
@@ -130,7 +132,9 @@
                     <!-- Change Password Block -->
                     <tr>
                         <td>
-                            <div class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2" style="display: none;" #spotbiePasswordInfoText></div>
+                            <div class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2" #spotbiePasswordInfoText>
+                                {{ errorText$ | async }}
+                            </div>
 
                             <div *ngIf="(passwordSubmitted$ | async) && g.spotbiePassword.errors else spotbie_password_normal"
                                     class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2">
@@ -159,7 +163,11 @@
                                     Change your password.
                                 </label>
                             </ng-template>
-                            <input class="sb-input" formControlName="spotbiePassword" type="password" value="password" autocomplete="false"/>
+                            <input class="sb-input"
+                                   formControlName="spotbiePassword"
+                                   type="password"
+                                   placeholder="Your new password."
+                                   autocomplete="false"/>
                         </td>
                     </tr>
                     <tr>
@@ -178,7 +186,10 @@
                             </ng-template>
 
                             <input class="sb-input"
-                                    formControlName="spotbieConfirmPassword" type="password" value="newpassword" autocomplete="false" />
+                                    formControlName="spotbieConfirmPassword"
+                                    type="password"
+                                    placeholder="Confirm your password."
+                                    autocomplete="false" />
                         </td>
                     </tr>
                     <tr>
@@ -205,16 +216,20 @@
                         </div>
 
                         <ng-template #spotbie_current_password_normal>
-                            <div class="spotbie-input-info spotbie-text-gradient" #currentPasswordInfo>
-                                To complete the change, enter your CURRENT password.
+                            <div class="spotbie-input-info spotbie-text-gradient mb-2" #currentPasswordInfo>
+                                {{ currentPasswordInfoText$ | async }}
                             </div>
                         </ng-template>
                         <tr>
                             <td>
-                                <input class="sb-input" type="password" formControlName="spotbieCurrentPassword" value="123456789" autocomplete="false">
+                                <input class="sb-input"
+                                       type="password"
+                                       formControlName="spotbieCurrentPassword"
+                                       placeholder="Enter your current password."
+                                       autocomplete="false" />
 
                                 <div class="spotbie-button spotbie-button-mini" (click)="completeSavePassword()">
-                                    Complete Change
+                                    COMPLETE CHANGE
                                 </div>
                             </td>
                         </tr>

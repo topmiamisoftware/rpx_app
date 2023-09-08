@@ -12,7 +12,7 @@ const routes: Routes = [
     loadChildren: () => import('./home/home.module').then(m => m.HomeModule),
   },
   {
-    path: 'password',
+    path: 'forgot-password',
     loadChildren: () =>
       import(
         './spotbie/spotbie-logged-out/forgot-password/forgot-password.module'

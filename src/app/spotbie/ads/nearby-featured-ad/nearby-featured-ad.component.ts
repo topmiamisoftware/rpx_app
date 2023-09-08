@@ -14,6 +14,7 @@ import {
 import { AdsService } from '../ads.service';
 import { AppLauncher } from '@capacitor/app-launcher';
 import { getRandomInt } from '../../../helpers/numbers.helper';
+import {Preferences} from "@capacitor/preferences";
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
@@ -73,7 +74,7 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
     this.switchAdInterval = false;
   }
 
-  getNearByFeatured() {
+  async getNearByFeatured() {
     let adId = null;
     let accountType;
 
@@ -94,7 +95,8 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
         adId = this.ad.id;
       }
 
-      accountType = parseInt(localStorage.getItem('spotbie_userType'));
+      const retAccType = await Preferences.get({key: 'spotbie_userType'});
+      accountType = retAccType.value;
 
       switch (accountType) {
         case '1':

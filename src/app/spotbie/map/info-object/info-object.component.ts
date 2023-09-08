@@ -1,11 +1,17 @@
-import {Component, OnInit, Input, Output, EventEmitter, AfterViewInit} from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+  AfterViewInit,
+} from '@angular/core';
 import {InfoObjectServiceService} from './info-object-service.service';
 // import {MyFavoritesService} from '../../my-favorites/my-favorites.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {DateFormatPipe, TimeFormatPipe} from '../../../pipes/date-format.pipe';
 import {SpotbieMetaService} from '../../../services/meta/spotbie-meta.service';
 import {setYelpRatingImage} from '../../../helpers/info-object-helper';
-import {shareNative} from '../../../helpers/cordova/sharesheet';
 import {
   spotbieMetaDescription,
   spotbieMetaTitle,
@@ -17,6 +23,7 @@ import {Ad} from '../../../models/ad';
 import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
 import {BehaviorSubject} from 'rxjs';
 import {AppLauncher} from '@capacitor/app-launcher';
+import {Preferences} from "@capacitor/preferences";
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
@@ -430,15 +437,6 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     return;
   }
 
-  shareThisNative() {
-    const message = this.infoObjectDescription;
-    const subject = this.infoObjectTitle;
-    const url = this.infoObjectLink;
-    const chooserTitle = 'Pick an App!';
-
-    shareNative(message, subject, url, chooserTitle);
-  }
-
   setEventMetaData(): void {
     const infoObject = this.infoObject$.getValue();
     const alias = infoObject.name
@@ -488,20 +486,19 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-
     // I'm sure there's a better way to do this but I don't have time right now.
     const closeButton = document.getElementById('sb-closeButtonInfoObject');
     const ionToolBar = document.getElementsByTagName('ion-header');
 
     const p = ionToolBar[1].offsetHeight;
-    closeButton.style.top = p+'px';
+    closeButton.style.top = p + 'px';
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.loading$.next(true);
 
-    this.bgColor = localStorage.getItem('spotbie_backgroundColor');
-    this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
+    const isLoggedInRet = await Preferences.get({key: 'spotbie_loggedIn'});
+    this.isLoggedIn = isLoggedInRet.value;
 
     const infoObject = this.infoObject$.getValue();
 

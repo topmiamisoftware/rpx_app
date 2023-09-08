@@ -261,36 +261,36 @@
     padding-bottom: 5px;
 }
 .spotbie-search-result-rating{
-    position: relative;
-    padding-top: 5px;
-    padding-bottom: 5px;
+  position: relative;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 .spotbie-search-result-rating-img{
-    position: relative;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    height: 24px;
-    min-height: 24px;
-    max-height: 24px;
-    width: 132px;
-    min-width: 132px;
-    max-width: 132px;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-    background-size: contain !important;
+  position: relative;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  height: 24px;
+  min-height: 24px;
+  max-height: 24px;
+  width: 132px;
+  min-width: 132px;
+  max-width: 132px;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
 }
 .spotbie-search-result-yelp-logo{
-    position: relative;
-    margin-top: 2px;
-    height: 24px;
-    min-height: 24px;
-    max-height: 24px;
-    width: 48px;
-    min-width: 48px;
-    max-width: 48px;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-    background-size: contain !important;
+  position: relative;
+  margin-top: 2px;
+  height: 24px;
+  min-height: 24px;
+  max-height: 24px;
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
 }
 .spotbie-yelp-rating-table td{
     vertical-align: middle;
@@ -300,92 +300,93 @@
 }
 
 .spotbie-search-result-image{
-    position: relative;
-    height: 150px;
-    min-height: 150px;
-    max-height: 150px;
-    width: 150px;
-    min-width: 150px;
-    max-width: 150px;
-    margin-right: 15px;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-    background-size: cover !important;
-    border-radius: 5px;
+  position: relative;
+  height: 150px;
+  min-height: 150px;
+  max-height: 150px;
+  width: 150px;
+  min-width: 150px;
+  max-width: 150px;
+  margin-right: 15px;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  border-radius: 5px;
 }
 .spotbie-search-results {
-    position: relative;
-    margin: 0 auto;
-    background-color: #f3f3f3;
-    text-align: left;
+  position: relative;
+  margin: 0 auto;
+  background-color: #f3f3f3;
+  text-align: left;
 }
 .spotbie-search-result{
-    color: black;
-    background-color: rgb(28 25 36 / 14%);
+  color: black;
+  background-color: rgb(28 25 36 / 14%);
 }
 .no-results{
-    padding-top: 25px;
-    padding-bottom: 25px;
+  padding-top: 25px;
+  padding-bottom: 25px;
 }
 .spotbie-search-results.no-results .spotbie-search-results-title{
-    text-align: center;
+  text-align: center;
 }
 .spotbie-search-result-wrapper{
-    position: relative;
-    margin: 0 auto;
-    text-align: center;
-    min-width: 100%;
-    width: 100%;
-    max-width: 100%;
+  position: relative;
+  margin: 0 auto;
+  text-align: center;
+  min-width: 100%;
+  width: 100%;
+  max-width: 100%;
 }
 .spotbie-search-result{
-    position: relative;
-    display: inline-block;
-    vertical-align: top;
-    width: 24%;
-    min-width: 24%;
-    max-width: 24%;
-    margin-left: 1px;
-    margin-right: 1px;
-    margin-top: 2px;
-    margin-bottom: 2px;
-    padding: 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all .2s;
-    text-align: left;
-    text-transform: uppercase;
-    font-size: .8rem;
-    min-height: 225px;
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  width: 24%;
+  min-width: 24%;
+  max-width: 24%;
+  margin-left: 1px;
+  margin-right: 1px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding: 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: left;
+  text-transform: uppercase;
+  font-size: .8rem;
+  min-height: 225px;
 }
 .spotbie-communityMember-search-result{
-    background-color: #1c1924!important;
-    background: url(../../../assets/images/home_imgs/spotbie-white-icon.svg);
-    background-repeat: no-repeat!important;
-    background-size: cover;
-    background-position: center;
+  background-color: #1c1924!important;
+  background: url(../../../assets/images/home_imgs/spotbie-white-icon.svg);
+  background-repeat: no-repeat!important;
+  background-size: cover;
+  background-position: center;
 }
 .spotbie-communityMember-search-result .spotbie-search-result-title{
-    word-break: break-word;
+  word-break: break-word;
 }
 .spotbie-communityMember-search-result p{
-    word-wrap: break-word;
+  word-wrap: break-word;
 }
 .spotbie-next-previous-table-big{
-    position: relative;
-    margin: 0 auto;
-    margin-top: 20px;
-    margin-bottom: 15px;
+  position: relative;
+  margin: 0 auto;
+  margin-top: 20px;
+  margin-bottom: 15px;
 }
 .spotbie-next-previous-table-big .spotbie-button-cell{
-    display: table-cell;
-    font-size: 16px;
+  display: table-cell;
+  font-size: 16px;
 }
 .sb-page-button {
-    display: inline-block;
-    padding: 10px 5px!important;
-    margin: 5px;
-    font-size: .8rem !important;
+  display: inline-block;
+  padding: 10px 5px!important;
+  margin: 5px;
+  font-size: .8rem !important;
+  color: black;
 }
 .sb-community-member-brand{
     position: relative;

@@ -1,8 +1,9 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {LoyaltyPointsLedger} from '../../../../models/loyalty-points-ledger';
 import {LoyaltyPointsService} from '../../../../services/loyalty-points/loyalty-points.service';
-import {Router} from '@angular/router';
+import {filter} from 'rxjs/operators';
+import {LoadingController} from '@ionic/angular';
 
 @Component({
   selector: 'app-ledger',
@@ -10,22 +11,40 @@ import {Router} from '@angular/router';
   styleUrls: ['./ledger.component.scss', '../my-list.component.css'],
 })
 export class LedgerComponent implements OnInit {
-
-  userType: string;
-
   ledger$ = new BehaviorSubject<boolean>(false);
   lpLedgerList$ = new BehaviorSubject<Array<LoyaltyPointsLedger>>([]);
   lpLedgerPage$ = new BehaviorSubject<number>(1);
   lpLedgerTotal$ = new BehaviorSubject<number>(0);
-
   loadMore$ = new BehaviorSubject<boolean>(false);
+  loading$ = new BehaviorSubject<boolean>(false);
+  loader: HTMLIonLoadingElement;
+
   constructor(
     private loyaltyPointsService: LoyaltyPointsService,
-    private router: Router
-  ) {}
+    private loadingCtrl: LoadingController
+  ) {
+    this.initLoading();
+  }
+
+  initLoading() {
+    this.loading$
+      .pipe(filter(loading => loading !== undefined))
+      .subscribe(async loading => {
+        if (loading) {
+          this.loader = await this.loadingCtrl.create({
+            message: 'LOADING...',
+          });
+          this.loader.present();
+        } else {
+          if (this.loader) {
+            this.loader.dismiss();
+            this.loader = null;
+          }
+        }
+      });
+  }
 
   ngOnInit() {
-    this.userType = localStorage.getItem('spotbie_userType');
     this.ledger$.next(true);
     this.getLedger();
   }
@@ -42,6 +61,8 @@ export class LedgerComponent implements OnInit {
   }
 
   getLedger() {
+    this.loading$.next(true);
+
     const getLedgerObj = {
       page: this.lpLedgerPage$.getValue(),
     };
@@ -67,6 +88,8 @@ export class LedgerComponent implements OnInit {
             ledgerRecord,
           ]);
         });
+
+        this.loading$.next(false);
       },
       error: error => {
         console.log('getLedger', error);
@@ -80,13 +103,5 @@ export class LedgerComponent implements OnInit {
     } else {
       return 'sb-text-light-green-gradient';
     }
-  }
-
-  setTopMargin() {
-    const toolbarHeight =
-      document.getElementsByTagName('ion-toolbar')[0].offsetHeight;
-
-    document.getElementById('redeemWindowNavMargin').style.marginTop =
-      toolbarHeight + 'px';
   }
 }

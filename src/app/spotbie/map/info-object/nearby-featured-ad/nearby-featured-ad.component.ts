@@ -15,6 +15,7 @@ import {
 import {getRandomInt} from '../../../../helpers/numbers.helper';
 import {BehaviorSubject} from 'rxjs';
 import {BusinessMenuServiceService} from '../../../../services/spotbie-logged-in/business-menu/business-menu-service.service';
+import {Preferences} from "@capacitor/preferences";
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
@@ -74,9 +75,9 @@ export class NearbyFeaturedAdComponent implements OnInit {
     private businessService: BusinessMenuServiceService
   ) {}
 
-  getNearByFeatured() {
+  async getNearByFeatured() {
     let adId = null;
-    let accountType;
+    let accountType = null;
 
     const needleElement = document.getElementsByClassName('sb-closeButton');
 
@@ -94,7 +95,8 @@ export class NearbyFeaturedAdComponent implements OnInit {
         adId = this.ad$.getValue().id;
       }
 
-      accountType = localStorage.getItem('spotbie_userType');
+      const retAccType = await Preferences.get({key: 'spotbie_userType'});
+      accountType = retAccType.value;
 
       switch (accountType) {
         case 1:

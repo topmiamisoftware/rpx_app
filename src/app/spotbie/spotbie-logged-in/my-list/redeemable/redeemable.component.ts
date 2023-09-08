@@ -10,6 +10,9 @@ import {LoyaltyPointsService} from '../../../../services/loyalty-points/loyalty-
 import {Redeemable} from '../../../../models/redeemable';
 import {BehaviorSubject} from 'rxjs';
 import {Router} from '@angular/router';
+import {Preferences} from "@capacitor/preferences";
+import {filter} from "rxjs/operators";
+import {LoadingController} from "@ionic/angular";
 
 @Component({
   selector: 'app-redeemable',
@@ -19,26 +22,42 @@ import {Router} from '@angular/router';
 export class RedeemableComponent implements OnInit {
   @Output() closeWindowEvt = new EventEmitter();
 
-  eAllowedAccountTypes = AllowedAccountTypes;
-  userType: string;
-
-  showRewardList$ = new BehaviorSubject<boolean>(false);
   rewards$ = new BehaviorSubject<boolean>(false);
   rewardList$ = new BehaviorSubject<Array<Redeemable>>([]);
   rewardPage$ = new BehaviorSubject<number>(1);
   rewardTotal$ = new BehaviorSubject<number>(0);
-
   loadMore$ = new BehaviorSubject<boolean>(false);
+  loading$ = new BehaviorSubject<boolean>(false);
+  loader: HTMLIonLoadingElement;
 
   constructor(
     private loyaltyPointsService: LoyaltyPointsService,
-    private router: Router
-  ) {}
+    private loadingCtrl: LoadingController
+  ) {
+    this.initLoading();
+  }
 
-  ngOnInit(): void {
-    this.userType = localStorage.getItem('spotbie_userType');
+  ngOnInit() {
     this.rewards$.next(true);
     this.getRewards();
+  }
+
+  initLoading() {
+    this.loading$
+      .pipe(filter(loading => loading !== undefined))
+      .subscribe(async loading => {
+        if (loading) {
+          this.loader = await this.loadingCtrl.create({
+            message: 'LOADING...',
+          });
+          this.loader.present();
+        } else {
+          if (this.loader) {
+            this.loader.dismiss();
+            this.loader = null;
+          }
+        }
+      });
   }
 
   loadMoreItems() {
@@ -48,13 +67,9 @@ export class RedeemableComponent implements OnInit {
     }
   }
 
-  getRewardsStyle() {
-    if (this.rewards$.getValue()) {
-      return {'background-color': 'rgb(80 216 120)'};
-    }
-  }
-
   getRewards() {
+    this.loading$.next(true);
+
     const getRewardsObj = {
       page: this.rewardPage$.getValue(),
     };
@@ -79,6 +94,8 @@ export class RedeemableComponent implements OnInit {
         });
 
         this.rewards$.next(true);
+
+        this.loading$.next(false);
       },
       error: error => {
         console.log('getRewards', error);

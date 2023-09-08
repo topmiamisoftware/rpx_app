@@ -5,24 +5,21 @@ import {RouterModule, Routes} from '@angular/router';
 import {HelperModule} from '../../../helpers/helper.module';
 import {HttpClientModule} from '@angular/common/http';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {IonicModule} from "@ionic/angular";
+import {IonicModule} from '@ionic/angular';
 
-const routes: Routes = [
-  {path: 'password', component: ForgotPasswordComponent},
-  {path: 'password/reset/:token', component: ForgotPasswordComponent},
-];
+const routes: Routes = [{path: '', component: ForgotPasswordComponent}];
 
 @NgModule({
   declarations: [ForgotPasswordComponent],
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        HttpClientModule,
-        HelperModule,
-        RouterModule.forChild(routes),
-        IonicModule,
-    ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    HttpClientModule,
+    HelperModule,
+    RouterModule.forChild(routes),
+    IonicModule,
+  ],
   exports: [ForgotPasswordComponent],
   providers: [],
 })

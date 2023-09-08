@@ -2,7 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {Redeemable} from '../../../../models/redeemable';
 import {LoyaltyPointsService} from '../../../../services/loyalty-points/loyalty-points.service';
-import {Router} from '@angular/router';
+import {LoadingController} from "@ionic/angular";
+import {filter} from "rxjs/operators";
 
 @Component({
   selector: 'app-redeemed',
@@ -10,19 +11,43 @@ import {Router} from '@angular/router';
   styleUrls: ['./redeemed.component.scss', '../my-list.component.css'],
 })
 export class RedeemedComponent implements OnInit {
-  userType: string;
-
   lpRedeemed$ = new BehaviorSubject<boolean>(false);
   lpRedeemedList$ = new BehaviorSubject<Array<Redeemable>>([]);
   lpRedeemedPage$ = new BehaviorSubject<number>(1);
   lpRedeemedTotal$ = new BehaviorSubject<number>(0);
-
   loadMore$ = new BehaviorSubject<boolean>(false);
+  loading$ = new BehaviorSubject<boolean>(false);
+  loader: HTMLIonLoadingElement;
 
   constructor(
     private loyaltyPointsService: LoyaltyPointsService,
-    private router: Router
-  ) {}
+    private loadingCtrl: LoadingController
+  ) {
+    this.initLoading();
+  }
+
+  ngOnInit() {
+    this.lpRedeemed$.next(true);
+    this.getRedeemed();
+  }
+
+  initLoading() {
+    this.loading$
+      .pipe(filter(loading => loading !== undefined))
+      .subscribe(async loading => {
+        if (loading) {
+          this.loader = await this.loadingCtrl.create({
+            message: 'LOADING...',
+          });
+          this.loader.present();
+        } else {
+          if (this.loader) {
+            this.loader.dismiss();
+            this.loader = null;
+          }
+        }
+      });
+  }
 
   getRedeemedStyle() {
     if (this.lpRedeemed$.getValue()) {
@@ -31,6 +56,8 @@ export class RedeemedComponent implements OnInit {
   }
 
   getRedeemed() {
+    this.loading$.next(true);
+
     const getRedeemedObj = {
       page: this.lpRedeemedPage$.getValue(),
     };
@@ -56,6 +83,8 @@ export class RedeemedComponent implements OnInit {
             redeemItem,
           ]);
         });
+
+        this.loading$.next(false);
       },
       error: error => {
         console.log('getRedeemed', error);
@@ -74,11 +103,5 @@ export class RedeemedComponent implements OnInit {
     if (this.lpRedeemed$.getValue() && this.lpRedeemedTotal$.getValue() > 0) {
       return true;
     }
-  }
-
-  ngOnInit() {
-    this.userType = localStorage.getItem('spotbie_userType');
-    this.lpRedeemed$.next(true);
-    this.getRedeemed();
   }
 }

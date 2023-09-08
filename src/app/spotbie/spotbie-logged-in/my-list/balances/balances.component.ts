@@ -2,6 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {LoyaltyPointBalance} from '../../../../models/loyalty-point-balance';
 import {BehaviorSubject} from 'rxjs';
 import {LoyaltyPointsService} from '../../../../services/loyalty-points/loyalty-points.service';
+import {filter} from 'rxjs/operators';
+import {LoadingController} from '@ionic/angular';
 
 @Component({
   selector: 'app-balances',
@@ -16,16 +18,42 @@ export class BalancesComponent implements OnInit {
   balanceListPage$ = new BehaviorSubject<number>(1);
   balanceListTotal$ = new BehaviorSubject<number>(0);
   loadMore$ = new BehaviorSubject<boolean>(false);
+  loading$ = new BehaviorSubject<boolean>(false);
+  loader: HTMLIonLoadingElement;
 
-  constructor(private loyaltyPointsService: LoyaltyPointsService) {}
+  constructor(
+    private loyaltyPointsService: LoyaltyPointsService,
+    private loadingCtrl: LoadingController
+  ) {
+    this.initLoading();
+  }
 
-  ngOnInit(): void {
-    this.userType = localStorage.getItem('spotbie_userType');
+  ngOnInit() {
     this.showBalanceList$.next(true);
     this.getBalanceList();
   }
 
+  initLoading() {
+    this.loading$
+      .pipe(filter(loading => loading !== undefined))
+      .subscribe(async loading => {
+        if (loading) {
+          this.loader = await this.loadingCtrl.create({
+            message: 'LOADING...',
+          });
+          this.loader.present();
+        } else {
+          if (this.loader) {
+            this.loader.dismiss();
+            this.loader = null;
+          }
+        }
+      });
+  }
+
   getBalanceList() {
+    this.loading$.next(true);
+
     const getBalanceListObj = {
       page: this.balanceListPage$.getValue(),
     };
@@ -47,6 +75,8 @@ export class BalancesComponent implements OnInit {
         balanceListData.forEach((lpBalance: LoyaltyPointBalance) => {
           this.balanceList$.next([...this.balanceList$.getValue(), lpBalance]);
         });
+
+        this.loading$.next(false);
       },
       error: error => {
         console.log('getLedger', error);
@@ -65,11 +95,8 @@ export class BalancesComponent implements OnInit {
     }
   }
 
-  showLoadMore(){
-    if (
-      this.balanceList$.getValue() &&
-      this.balanceListTotal$.getValue() > 0
-    ) {
+  showLoadMore() {
+    if (this.balanceList$.getValue() && this.balanceListTotal$.getValue() > 0) {
       return true;
     }
   }

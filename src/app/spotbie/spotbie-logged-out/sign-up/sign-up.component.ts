@@ -13,20 +13,24 @@ import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
 import {ValidateUsername} from '../../../helpers/username.validator';
 import {ValidatePassword} from '../../../helpers/password.validator';
 import {SignUpService} from '../../../services/spotbie-logged-out/sign-up/sign-up.service';
-import {catchError, filter} from 'rxjs/operators';
+import {catchError, filter, tap} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
 import {BehaviorSubject, of} from 'rxjs';
 import {EmailConfirmationService} from '../../email-confirmation/email-confirmation.service';
 import {ValidateUniqueEmail} from '../../../validators/email-unique.validator';
-import {faEye, faEyeSlash, faInfoCircle,} from '@fortawesome/free-solid-svg-icons';
-import {UserauthService} from '../../../services/userauth.service';
+import {
+  faEye,
+  faEyeSlash,
+  faInfoCircle,
+} from '@fortawesome/free-solid-svg-icons';
 import {AppLauncher} from '@capacitor/app-launcher';
+import {LoadingController} from '@ionic/angular';
+import {Preferences} from '@capacitor/preferences';
 
 @Component({
   selector: 'app-sign-up',
   templateUrl: './sign-up.component.html',
   styleUrls: ['../../menu.component.css', './sign-up.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SignUpComponent implements OnInit {
   @ViewChild('spotbieRegisterInfo') spotbieRegisterInfo;
@@ -44,21 +48,24 @@ export class SignUpComponent implements OnInit {
   signingUp$ = new BehaviorSubject<boolean>(false);
   signUpBox$ = new BehaviorSubject<boolean>(false);
   submitted$ = new BehaviorSubject<boolean>(false);
-  loading$ = new BehaviorSubject<boolean>(false);
+  loading$ = new BehaviorSubject<boolean>(undefined);
   alreadyConfirmedEmail$ = new BehaviorSubject<string>('');
   emailIsConfirmed$ = new BehaviorSubject<boolean>(false);
   emailConfirmation$ = new BehaviorSubject<boolean>(false);
   passwordShow$ = new BehaviorSubject<boolean>(false);
   rememberMeToken$ = new BehaviorSubject<string>(null);
   business$ = new BehaviorSubject<boolean>(false);
+  loader: HTMLIonLoadingElement;
 
   constructor(
     private router: Router,
     private signUpService: SignUpService,
     private formBuilder: UntypedFormBuilder,
     private emailUniqueCheckService: EmailConfirmationService,
-    private userAuthService: UserauthService
-  ) {}
+    private loadingCtrl: LoadingController
+  ) {
+    this.initLoading();
+  }
 
   get spotbieUsername() {
     return this.signUpFormx.get('spotbieUsername').value;
@@ -75,8 +82,6 @@ export class SignUpComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loading$.next(true);
-
     if (this.router.url === '/business') {
       this.business$.next(true);
     } else {
@@ -84,10 +89,6 @@ export class SignUpComponent implements OnInit {
     }
 
     this.initSignUpForm();
-  }
-
-  scrollTo(el: ElementRef): void {
-    $('html, body').animate({scrollTop: $(el).offset().top}, 'slow');
   }
 
   closeWindowX(): void {
@@ -104,13 +105,19 @@ export class SignUpComponent implements OnInit {
 
   initSignUp(): void {
     this.submitted$.next(true);
-    this.loading$.next(true);
     this.spotbieSignUpIssues.nativeElement.scrollTo(0, 0);
     this.signUpFormx.updateValueAndValidity();
 
     // stop here if form is invalid
     if (this.signUpFormx.invalid) {
       this.signingUp$.next(false);
+
+      if (this.signUpFormx.get('spotbieUsername').invalid) {
+        document.getElementById('spotbie_username').style.border =
+          '1px solid red';
+      } else {
+        document.getElementById('spotbie_username').style.border = 'unset';
+      }
 
       if (this.signUpFormx.get('spotbieEmail').invalid) {
         document.getElementById('user_email').style.border = '1px solid red';
@@ -123,8 +130,6 @@ export class SignUpComponent implements OnInit {
       } else {
         document.getElementById('user_pass').style.border = 'unset';
       }
-
-      this.loading$.next(false);
 
       return;
     } else {
@@ -158,12 +163,11 @@ export class SignUpComponent implements OnInit {
   signUpError<T>(operation = 'operation', result?: T) {
     this.signingUp$.next(false);
     this.loading$.next(false);
+    console.log('2', this.loading$.getValue());
 
     return (error: any): Observable<T> => {
       const signUpInstructions = this.spotbieSignUpIssues.nativeElement;
       signUpInstructions.style.display = 'none';
-
-      console.log('signUpError', error);
 
       const errorList = error.error.errors;
 
@@ -183,7 +187,6 @@ export class SignUpComponent implements OnInit {
       if (errorList.email) {
         const errors: {[k: string]: any} = {};
         errorList.email.forEach(err => {
-          console.log('ALSO EMAIL', err);
           errors[err] = true;
         });
 
@@ -242,8 +245,6 @@ export class SignUpComponent implements OnInit {
     this.signUpFormx.setAsyncValidators(
       ValidateUniqueEmail.valid(this.emailUniqueCheckService, this.spotbieEmail)
     );
-
-    this.loading$.next(false);
   }
 
   usersHome() {
@@ -267,25 +268,39 @@ export class SignUpComponent implements OnInit {
     return;
   }
 
+  initLoading() {
+    this.loading$
+      .pipe(filter(loading => loading !== undefined))
+      .subscribe(async loading => {
+        if (loading) {
+          this.loader = await this.loadingCtrl.create({
+            message: 'LOADING...',
+          });
+          this.loader.present();
+        } else {
+          if (this.loader) {
+            this.loader.dismiss();
+            this.loader = null;
+          }
+        }
+      });
+  }
+
   private initSignUpCallback(resp: any) {
     const signUpInstructions = this.spotbieSignUpIssues.nativeElement;
 
-    console.log('signUpInstructions', resp);
-
     if (resp.message === 'success') {
-      localStorage.setItem('spotbie_userLogin', resp.user.username);
-      localStorage.setItem('spotbie_loggedIn', '1');
-      localStorage.setItem('spotbie_rememberMe', '0');
-      localStorage.setItem('spotbie_userId', resp.user.id);
-      localStorage.setItem(
-        'spotbie_userDefaultImage',
-        resp.spotbie_user.default_picture
-      );
-      localStorage.setItem('spotbie_userType', resp.spotbie_user.user_type);
-      localStorage.setItem(
-        'spotbiecom_session',
-        resp.token_info.original.access_token
-      );
+      Preferences.set({key: 'spotbie_userLogin', value: resp.user.username});
+      Preferences.set({key: 'spotbie_loggedIn', value: '1'});
+      Preferences.set({key: 'spotbie_rememberMe', value: '0'});
+      Preferences.set({
+        key: 'spotbie_userType',
+        value: resp.spotbie_user.user_type,
+      });
+      Preferences.set({
+        key: 'spotbiecom_session',
+        value: resp.token_info.original.access_token,
+      });
 
       signUpInstructions.innerHTML =
         "<span class='spotbie-text-gradient'>Welcome to SpotBie!</span>";
@@ -297,6 +312,7 @@ export class SignUpComponent implements OnInit {
     }
 
     this.loading$.next(false);
+    console.log('3', this.loading$.getValue());
     this.signingUp$.next(false);
   }
 }
