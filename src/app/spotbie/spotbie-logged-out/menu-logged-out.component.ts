@@ -60,6 +60,9 @@ export class MenuLoggedOutComponent {
     this.menuCtrl.close('main-menu');
     this.signUpWindow$.next(false);
     this.logInWindow$.next(true);
+    this.appMap.map$.next(false);
+    this.appMap.searchResults$.next([]);
+    this.appMap.showSearchResults$.next(false);
 
     if (this.onForgotPassword$.getValue()) {
       this.router.navigate(['/home']);

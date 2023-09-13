@@ -31,7 +31,7 @@
 
 <div class="ion-page" id="main-content">
   <ion-header>
-    <ion-toolbar class="p-2 pt-5 pb-1" color="tertiary">
+    <ion-toolbar id="ionToolbarLoggedOut" class="p-2 pt-5 pb-1" color="tertiary">
       <ion-buttons slot="start">
         <ion-menu-button auto-hide="false"></ion-menu-button>
       </ion-buttons>
@@ -41,7 +41,7 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-content class="ion-padding has-header text-center">
+  <ion-content class="has-header text-center" color="light">
     <app-sign-up *ngIf="signUpWindow$ | async" (closeWindow)="closeSignUp($event)" (logInEvent)="logIn()"></app-sign-up>
     <app-log-in *ngIf="logInWindow$ | async" #appLogin></app-log-in>
     <app-map #appMap></app-map>

@@ -26,7 +26,7 @@
        *ngIf="map$ | async"
        [ngClass]="getMapClass()"></div>
 
-  <div class='spotbie-categoryPull' *ngIf="!isDesktop && (map$ | async)">
+  <div class='spotbie-categoryPull' *ngIf="map$ | async">
     <div class='sb-optionGet' (click)="spawnCategories(1)">
       <img src="assets/images/home_imgs/find-places-to-eat.svg" />
     </div>
@@ -42,7 +42,7 @@
 
   <app-bottom-ad-banner
     class='mt-4'
-    *ngIf="(map$ | async) && (locationFound$ | async) && (searchResults$ | async).length < 1 && isMobile"
+    *ngIf="(map$ | async) && (locationFound$ | async) && (searchResults$ | async).length < 1"
     [eventsClassification]="eventsClassification$ | async"
     [accountType]="searchCategory$ | async"
     [categories]="bottomBannerCategories$ | async"
@@ -132,15 +132,6 @@
              title="Opened or Closed"
              [ngStyle]="{ 'border-right' : 'unset' }"
              *ngIf="(searchCategorySorter$ | async) === 1">
-
-        <td *ngIf="!isMobile">
-          <span class='fa fa-circle spotbie-is-open'></span>
-        </td>
-
-        <td *ngIf="!(showOpened$ | async) && !isMobile">
-          <span class='fa fa-circle spotbie-is-closed'></span>
-        </td>
-
         <td *ngIf="(showOpened$ | async) ">
           OPEN
         </td>
@@ -155,15 +146,6 @@
               title="Opened or Closed"
               [ngStyle]="{ 'border-right' : 'unset' }"
               *ngIf="(searchCategorySorter$ | async) === 2">
-
-        <td *ngIf="!isMobile">
-          <span class='fa fa-circle spotbie-is-open'></span>
-        </td>
-
-        <td *ngIf="!(showOpened$ | async) && !isMobile">
-          <span class='fa fa-circle spotbie-is-closed'></span>
-        </td>
-
         <td *ngIf="(showOpened$ | async) ">
           OPEN
         </td>
@@ -175,7 +157,6 @@
 
       <table class='spotbie-controls-search-results text-uppercase' *ngIf="(searchCategorySorter$ | async) === 3">
         <tr>
-          <td (click)="hideSearchResults()" title="Hide Results"><img src='assets/images/map/hide.svg' /></td>
           <td (click)="sortBy(0)" title="Sort By Distance"><img src='assets/images/map/distance.svg' /></td>
           <td (click)="sortBy(3)" title="Sort By Pricing"><img src='assets/images/map/pricing.svg' /></td>
           <td (click)="sortBy(7)" title="Events Today">Today</td>
@@ -268,7 +249,7 @@
             </td>
             <td *ngIf="(typeOfInfoObject$ | async) === 'ticketmaster_events'">
               <div class='spotbie-venue-name' *ngIf="search_result._embedded.venues[0]">
-                {{ search_result._embedded.venues[0].name }}
+                {{ search_result.name }}, {{ search_result._embedded.venues[0].name }}
               </div>
 
               <div class='spotbie-distance'>
@@ -298,43 +279,43 @@
 
       <!--Page Number Wrapper -->
       <div class='mt-5 pb-5'>
-      <span class='sb-page-button text-uppercase cursor-pointer' (click)="goToPage(1)" *ngIf="allPages > 1">
-        <i class="fa fa-angle-double-left"></i>
-      </span>
+        <span class='sb-page-button text-uppercase cursor-pointer' (click)="goToPage('prev-two')" *ngIf="(allPages$ | async) > 1">
+          <i class="fa fa-angle-double-left"></i>
+        </span>
 
-        <span class='sb-page-button text-uppercase cursor-pointer' (click)="loadMoreResults(0)" *ngIf="allPages > 1">
-        <i class="fa fa-angle-left"></i>
-      </span>
-
-        <span class="spotbie-result-page"
-              (click)="goToPage((aroundMeSearchPage - 2))"
-              [ngStyle]="displayPage((aroundMeSearchPage - 2))">{{ aroundMeSearchPage - 2 }}</span>
+        <span class='sb-page-button text-uppercase cursor-pointer' (click)="goToPage('prev-one')" *ngIf="(allPages$ | async) > 1">
+          <i class="fa fa-angle-left"></i>
+        </span>
 
         <span class="spotbie-result-page"
-              (click)="goToPage((aroundMeSearchPage - 1))"
-              [ngStyle]="displayPage((aroundMeSearchPage - 1))">{{ aroundMeSearchPage - 1 }}</span>
-
-        <span class="spotbie-result-page active">{{ aroundMeSearchPage }}</span>
+              (click)="goToPage('prev-two')"
+              [ngStyle]="displayPage(((aroundMeSearchPage$ | async) - 2))">{{ (aroundMeSearchPage$ | async) - 2 }}</span>
 
         <span class="spotbie-result-page"
-              (click)="goToPage((aroundMeSearchPage + 1))"
-              [ngStyle]="displayPageNext((aroundMeSearchPage + 1))">{{ aroundMeSearchPage + 1 }}</span>
+              (click)="goToPage('prev-one')"
+              [ngStyle]="displayPage(((aroundMeSearchPage$ | async) - 1))">{{ (aroundMeSearchPage$ | async) - 1 }}</span>
+
+        <span class="spotbie-result-page active">{{ (aroundMeSearchPage$ | async) }}</span>
 
         <span class="spotbie-result-page"
-              (click)="goToPage((aroundMeSearchPage + 2))"
-              [ngStyle]="displayPageNext((aroundMeSearchPage + 2))">{{ aroundMeSearchPage + 2 }}</span>
+              (click)="goToPage('next-one')"
+              [ngStyle]="displayPageNext(((aroundMeSearchPage$ | async) + 1))">{{ (aroundMeSearchPage$ | async) + 1 }}</span>
 
-        <span class='sb-page-button text-uppercase cursor-pointer' (click)="loadMoreResults(1)" *ngIf="allPages > 1">
-        <i class="fa fa-angle-right"></i>
-      </span>
+        <span class="spotbie-result-page"
+              (click)="goToPage('next-two')"
+              [ngStyle]="displayPageNext(((aroundMeSearchPage$ | async) + 2))">{{ (aroundMeSearchPage$ | async) + 2 }}</span>
 
-        <span class='sb-page-button text-uppercase cursor-pointer' (click)="goToPage(allPages - 1)" *ngIf="allPages > 1">
-        <i class="fa fa-angle-double-right"></i>
-      </span>
+        <span class='sb-page-button text-uppercase cursor-pointer' (click)="goToPage('next-one')" *ngIf="(allPages$ | async) > 1">
+          <i class="fa fa-angle-right"></i>
+        </span>
+
+        <span class='sb-page-button text-uppercase cursor-pointer' (click)="goToPage('next-two')" *ngIf="(allPages$ | async) > 1">
+          <i class="fa fa-angle-double-right"></i>
+        </span>
 
         <div></div>
 
-        <span class='spotbie-search-page-number'>{{ aroundMeSearchPage }}/{{ allPages - 1 }}</span>
+        <span class='spotbie-search-page-number'>{{ (aroundMeSearchPage$ | async) }}/{{ (allPages$ | async) - 1 }}</span>
       </div>
 
       <app-bottom-ad-banner class='mt-4'
@@ -410,20 +391,6 @@
 </div>
 
 <div class='spotbie-category-search-yelp animated slideInUp' *ngIf="catsUp$ | async">
-  <div class='spotbie-categoryPull' *ngIf="!isMobile">
-    <div class='sb-optionGet' (click)="spawnCategories(1)">
-      <img src="assets/images/home_imgs/find-places-to-eat.svg" />
-    </div>
-
-    <div class='sb-optionGet' (click)="spawnCategories(2)">
-      <img src="assets/images/home_imgs/find-places-for-shopping.svg" />
-    </div>
-
-    <div class='sb-optionGet' (click)="spawnCategories(3)">
-      <img src="assets/images/home_imgs/find-events.svg" />
-    </div>
-  </div>
-
   <input type='text'
          class='spotbie-searchbar sb-input'
          placeholder="{{ searchCategoriesPlaceHolder }}"

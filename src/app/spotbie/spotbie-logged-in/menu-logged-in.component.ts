@@ -83,14 +83,14 @@ export class MenuLoggedInComponent implements AfterViewInit {
   }
 
   spawnCategories(category: number): void {
-    this.menuCtrl.close('main-menu');
+    this.menuCtrl.close('logged-in-menu');
 
     this.slideMenu();
     this.spotbieMap.spawnCategories(category);
   }
 
   home() {
-    this.menuCtrl.close('main-menu');
+    this.menuCtrl.close('logged-in-menu');
 
     this.settingsWindow$.next(false);
     this.foodWindow.open = false;
@@ -107,7 +107,7 @@ export class MenuLoggedInComponent implements AfterViewInit {
   }
 
   openSettings() {
-    this.menuCtrl.close('main-menu');
+    this.menuCtrl.close('logged-in-menu');
 
     if (this.settingsWindow$.getValue()) {
       return;

@@ -818,9 +818,10 @@ button.gm-ui-hover-effect:focus-within{
     border: unset !important;
 }
 .spotbie-no-results{
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  color: black;
 }
 .sb-eventsResultsTitle{
     padding-top: 100px;

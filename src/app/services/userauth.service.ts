@@ -73,7 +73,6 @@ export class UserauthService {
     return this.http.post<any>(getSettingsApi, null).pipe(
       tap(settings => {
         this.userProfile = settings;
-        console.log('settings', settings);
       }),
       catchError(err => {
         throw err;

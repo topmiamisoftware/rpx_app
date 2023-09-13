@@ -1,7 +1,5 @@
 import {
-  ChangeDetectionStrategy,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   OnInit,
@@ -41,19 +39,13 @@ export class SignUpComponent implements OnInit {
   @Input() windowObj;
 
   faEye = faEye;
-  faInfo = faInfoCircle;
   faEyeSlash = faEyeSlash;
 
   signUpFormx: UntypedFormGroup;
   signingUp$ = new BehaviorSubject<boolean>(false);
-  signUpBox$ = new BehaviorSubject<boolean>(false);
   submitted$ = new BehaviorSubject<boolean>(false);
   loading$ = new BehaviorSubject<boolean>(undefined);
-  alreadyConfirmedEmail$ = new BehaviorSubject<string>('');
-  emailIsConfirmed$ = new BehaviorSubject<boolean>(false);
-  emailConfirmation$ = new BehaviorSubject<boolean>(false);
   passwordShow$ = new BehaviorSubject<boolean>(false);
-  rememberMeToken$ = new BehaviorSubject<string>(null);
   business$ = new BehaviorSubject<boolean>(false);
   loader: HTMLIonLoadingElement;
 
@@ -105,6 +97,7 @@ export class SignUpComponent implements OnInit {
 
   initSignUp(): void {
     this.submitted$.next(true);
+    this.loading$.next(true);
     this.spotbieSignUpIssues.nativeElement.scrollTo(0, 0);
     this.signUpFormx.updateValueAndValidity();
 
@@ -247,22 +240,6 @@ export class SignUpComponent implements OnInit {
     );
   }
 
-  usersHome() {
-    this.router.navigate(['/home']);
-  }
-
-  businessHome() {
-    this.router.navigate(['/business']);
-  }
-
-  getCurrentWindowBg() {
-    if (this.business$.getValue()) {
-      return 'sb-businessBg';
-    } else {
-      return 'sb-regularBg';
-    }
-  }
-
   async openTerms() {
     await AppLauncher.openUrl({url: 'https://spotbie.com/terms'});
     return;
@@ -312,7 +289,6 @@ export class SignUpComponent implements OnInit {
     }
 
     this.loading$.next(false);
-    console.log('3', this.loading$.getValue());
     this.signingUp$.next(false);
   }
 }

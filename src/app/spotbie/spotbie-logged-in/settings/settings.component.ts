@@ -15,7 +15,7 @@ import {ValidatePersonName} from '../../../helpers/name.validator';
 import {UserauthService} from '../../../services/userauth.service';
 import {Router} from '@angular/router';
 import {BehaviorSubject} from 'rxjs';
-import {Preferences} from "@capacitor/preferences";
+import {Preferences} from '@capacitor/preferences';
 
 @Component({
   selector: 'app-settings',
@@ -310,25 +310,26 @@ export class SettingsComponent implements OnInit {
           this.passwordForm.get('spotbiePassword').setValue('asdrqweee');
           this.passwordForm.get('spotbieConfirmPassword').setValue('asdeqweqq');
 
-          this.errorText$.next('Would you like to change your password?');
-
           setTimeout(() => {
             this.passwordSubmitted$.next(false);
             this.savePasswordBool$.next(false);
           }, 2000);
-          break;
-
-        case 'SB-E-000':
-          // server error
-          this.savePasswordBool$.next(false);
-          this.passwordSubmitted$.next(false);
-          this.errorText$.next('You entered the incorrect current password.');
           break;
       }
 
       this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
     } else {
       console.log(resp);
+      switch (resp.message) {
+        case 'SB-E-000':
+          // server error
+          this.savePasswordBool$.next(false);
+          this.passwordSubmitted$.next(false);
+          this.currentPasswordInfoText$.next(
+            'You entered the incorrect current password.'
+          );
+          break;
+      }
     }
 
     this.loading$.next(false);

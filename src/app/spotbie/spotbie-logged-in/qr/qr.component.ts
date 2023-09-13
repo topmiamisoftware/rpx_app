@@ -73,6 +73,7 @@ export class QrComponent implements OnInit {
       this.sbSpentPoints.nativeElement.style.display = 'block';
     } else {
       alert(resp.message);
+      this.closeQrUser();
     }
 
     this.scanSuccess$.next(false);

@@ -101,26 +101,6 @@ img.sb-qr:hover{
 .spotbie-our-blog-link:visited{
   font-weight: normal;
 }
-.spotbie-menu-fixed{
-  top: 0;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: 100%;
-  min-width: 100%;
-  max-width: 100%;
-  z-index: 99;
-  overflow-x: scroll;
-  overflow-y: hidden;
-  background-color: #332f3e;
-}
-.spotbie-menu-fixed td{
-  padding-top: 20px;
-  padding-bottom: 20px;
-  padding-left: 20px;
-  padding-right: 20px;
-  font-size: 20px;
-}
 .spotbie-menu-page-padding-top{
   padding-top: 60px;
 }
@@ -319,6 +299,7 @@ img.sb-qr:hover{
   padding-left: 3%;
 }
 .spotbie-login-terms{
+  margin: 0 auto;
   font-size: 13px !important;
   margin-top: 0px;
   margin-bottom: 0px;
@@ -352,18 +333,6 @@ img.sb-qr:hover{
 .sb-login-top-padding{
   padding-top: 120px;
 }
-.spotbie-menu-fixed span{
-  font-size: .8rem;
-  padding: 10px;
-  padding-left: 20px;
-  padding-right: 20px;
-  color: white;
-  border-right: 1px solid #01a79d;
-  cursor: pointer
-}
-.spotbie-menu-fixed span:hover{
-  color: #e5e5e5;
-}
 .sb-loginTop{
   min-width: 150px;
   width: 150px;
@@ -395,18 +364,14 @@ ion-item::part(native) {
 }
 /**WIDTH MEDIA QUERIES */
 @media (max-width: 1600px) {
-  .sb-userName,
-  .spotbie-menu-fixed span{
+  .sb-userName {
     font-size: .6rem;
+  }
+  .log-in-wrapper {
+    max-width: 400px;
   }
 }
 @media (max-width: 1200px) {
-  .spotbie-menu-fixed,
-  .spotbie-menu-fixed{
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
-  }
 }
 @media (max-width: 1024px) {
 
@@ -417,9 +382,6 @@ ion-item::part(native) {
 @media (max-width: 768px) {
   .spotbie-menu-logged{
     margin-top: env(safe-area-inset-top, 20px);
-  }
-  .spotbie-menu-fixed{
-    padding-top: env(safe-area-inset-top, 20px);
   }
   .sb-desktopNavBar{
     display: none;
@@ -490,6 +452,9 @@ ion-item::part(native) {
   }
   .spotbie-slider-menu td{
     font-size: 18px;
+  }
+  .log-in-wrapper {
+    max-width: 370px;
   }
 }
 @media (max-width: 460px) {

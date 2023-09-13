@@ -1,12 +1,20 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {Reward} from '../../../../models/reward';
+import {Preferences} from "@capacitor/preferences";
 
 @Component({
   selector: 'app-reward',
   templateUrl: './reward.component.html',
   styleUrls: ['./reward.component.css'],
 })
-export class RewardComponent implements OnInit {
+export class RewardComponent implements OnInit, AfterViewInit {
   @Output() closeWindowEvt = new EventEmitter();
 
   @Input() fullScreenMode = true;
@@ -14,13 +22,27 @@ export class RewardComponent implements OnInit {
   @Input() userPointToDollarRatio: number;
 
   loading = false;
-  infoObjectImageUrl = 'assets/images/home_imgs/spotbie-white-icon.svg';
   successful_url_copy = false;
-  rewardLink: string = null;
+  isLoggedIn: string;
 
   constructor() {}
 
-  ngOnInit(): void {}
+  async ngAfterViewInit() {
+    const isLoggedInRet = await Preferences.get({key: 'spotbie_loggedIn'});
+    this.isLoggedIn = isLoggedInRet.value;
+
+    // I'm sure there's a better way to do this but I don't have time right now.
+    const closeButton = document.getElementById('sb-closeButtonReward');
+
+    const p =
+      this.isLoggedIn === '0' || !this.isLoggedIn
+        ? document.getElementById('ionToolbarLoggedOut').offsetHeight
+        : document.getElementById('ionToolbarLoggedIn').offsetHeight;
+
+    closeButton.style.top = p + 'px';
+  }
+
+  ngOnInit() {}
 
   getFullScreenModeClass() {
     if (this.fullScreenMode) {

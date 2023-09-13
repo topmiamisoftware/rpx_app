@@ -11,6 +11,7 @@ export class InfoObject {
   isOpenNow: any;
   location: any;
   categories: any;
+  cleanCategories?: string;
   address: string;
   name: string;
   rating_image: string;

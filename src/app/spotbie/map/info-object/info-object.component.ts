@@ -7,7 +7,6 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import {InfoObjectServiceService} from './info-object-service.service';
-// import {MyFavoritesService} from '../../my-favorites/my-favorites.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {DateFormatPipe, TimeFormatPipe} from '../../../pipes/date-format.pipe';
 import {SpotbieMetaService} from '../../../services/meta/spotbie-meta.service';
@@ -23,7 +22,8 @@ import {Ad} from '../../../models/ad';
 import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
 import {BehaviorSubject} from 'rxjs';
 import {AppLauncher} from '@capacitor/app-launcher';
-import {Preferences} from "@capacitor/preferences";
+import {Preferences} from '@capacitor/preferences';
+import {Share} from '@capacitor/share';
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
@@ -52,29 +52,23 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   @Output() closeWindow = new EventEmitter();
   @Output() removeFavoriteEvent = new EventEmitter();
 
-  bgColor: string;
   loading$ = new BehaviorSubject(false);
   rewardMenuUp$ = new BehaviorSubject(false);
   urlApi: string;
-  apiAction: string;
   infoObject$: BehaviorSubject<InfoObject> | null =
     new BehaviorSubject<InfoObject>(null);
   infoObjectImageUrl: string;
   private infoObjectCategory: number;
-  showFavorites: boolean = true;
-  isLoggedIn: string;
+  isLoggedIn$ = new BehaviorSubject<string>(null);
   infoObjectLink: string;
   infoObjectDescription: string;
   infoObjectTitle: string;
-  successful_url_copy: boolean;
   objectCategories: string = '';
   objectDisplayAddress: string;
   eInfoObjectType: any = InfoObjectType;
-  displayAds: boolean;
 
   constructor(
     private infoObjectService: InfoObjectServiceService,
-    // private myFavoritesService: MyFavoritesService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private spotbieMetaService: SpotbieMetaService
@@ -102,6 +96,8 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   }
 
   private pullInfoObject(): void {
+    console.log('pullInfoObject');
+
     if (this.router.url.indexOf('event') > -1) {
       const infoObjectId = this.activatedRoute.snapshot.paramMap.get('id');
       this.urlApi = `id=${infoObjectId}`;
@@ -122,18 +118,10 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     }
   }
 
-  linkCopy(inputElement) {
-    inputElement.select();
-    document.execCommand('copy');
-    inputElement.setSelectionRange(0, inputElement.value.length);
-    this.successful_url_copy = true;
-
-    setTimeout(() => {
-      this.successful_url_copy = false;
-    }, 2500);
-  }
-
   private pullInfoObjectCallback(httpResponse: any): void {
+    console.log('httpResponse', httpResponse);
+    console.log('this.infoObjectCategory;', this.infoObjectCategory);
+
     if (httpResponse.success) {
       const infoObject = httpResponse.data as InfoObject;
       infoObject.type_of_info_object_category = this.infoObjectCategory;
@@ -187,7 +175,7 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
         });
       }
 
-      if (infoObject.is_community_member) {
+      if (!infoObject.is_community_member) {
         this.objectDisplayAddress = `${infoObject.location.display_address[0]}, ${infoObject.location.display_address[1]}`;
       } else {
         this.objectDisplayAddress = infoObject.address;
@@ -221,39 +209,10 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
 
       this.infoObject$.next(infoObject);
       this.loading$.next(false);
-      // this.isInMyFavorites(this.infoObject$.id, this.infoObject$.type_of_info_object)
     } else {
       console.log('pullInfoObjectCallback', httpResponse);
     }
   }
-
-  /*private isInMyFavorites(objId: string, objType: string): void{
-    if(this.isLoggedIn === '1'){
-      this.myFavoritesService.isInMyFavorites(objId, objType).subscribe(
-        resp =>{
-          this.isInMyFavoritesCb(resp)
-        }
-      )
-    } else {
-      let isAFavorite = this.myFavoritesService.isInMyFavoritesLoggedOut(objId)
-      if(isAFavorite)
-        this.showFavorites = false
-      else
-        this.showFavorites = true
-    }
-  }
-
-  private isInMyFavoritesCb(httpResponse: any): void{
-    if (httpResponse.success) {
-      let isAFavorite = httpResponse.is_a_favorite
-      if(isAFavorite)
-        this.showFavorites = false
-      else
-        this.showFavorites = true
-    } else
-      console.log('pullInfoObjectCallback', httpResponse)
-    this.loading = false
-  }*/
 
   async openWithGoogleMaps() {
     const confirmNav = confirm(
@@ -275,8 +234,27 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     return;
   }
 
-  switchPhoto(thumbnail): void {
-    this.infoObjectImageUrl = thumbnail;
+  share() {
+    console.log('infoObjectTitle', this.infoObjectTitle);
+    console.log('infoObjectDescription', this.infoObjectDescription);
+    console.log('infoObjectLink', this.infoObjectLink);
+    Share.share({
+      title: this.infoObjectTitle,
+      text: this.infoObjectDescription,
+      url: this.infoObjectLink,
+      dialogTitle: 'Share Spot...',
+    });
+  }
+
+  getIconStyle() {
+    if (
+      this.infoObject$.getValue().type_of_info_object ===
+      InfoObjectType.SpotBieCommunity
+    ) {
+      return {color: 'white'};
+    } else {
+      return {color: '#333'};
+    }
   }
 
   async goToTicket() {
@@ -314,89 +292,6 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
       className = 'spotbie-text-gradient text-uppercase';
     }
     return className;
-  }
-
-  getIconTheme(): string {
-    let className = 'material-light';
-    if (this.infoObject$.getValue().is_community_member) {
-      className = 'material-dark';
-    }
-    return className;
-  }
-
-  addFavorite(): void {
-    /*    this.loading$.next(true);
-
-    const id = this.infoObject$.id;
-    const name = this.infoObject$.name;
-
-    let locX = null;
-    let locY = null;
-
-    if (
-      this.infoObject$.type_of_info_object === InfoObjectType.SpotBieCommunity
-    ) {
-      locX = this.infoObject$.loc_x;
-      locY = this.infoObject$.loc_y;
-    } else {
-      locX = this.infoObject$.coordinates.latitude;
-      locY = this.infoObject$.coordinates.longitude;
-    }
-
-    const favoriteObj = {
-      third_party_id: id,
-      name,
-      description: null,
-      loc_x: locX,
-      loc_y: locY,
-      type_of_info_object_category:
-        this.infoObject$.type_of_info_object_category,
-    };
-
-    if (this.isLoggedIn === '1') {
-      /!*this.myFavoritesService.addFavorite(favoriteObj).subscribe(
-        resp => {
-          this.addFavoriteCb(resp)
-        }
-      )*!/
-    } else {
-      //this.myFavoritesService.addFavoriteLoggedOut(favoriteObj)
-      this.showFavorites = false;
-      this.loading$.next(false);
-    }*/
-  }
-
-  addFavoriteCb(resp: any): void {
-    /*    if (resp.success) this.showFavorites = false;
-    else console.log('addFavoriteCb', resp);
-
-    this.loading$.next(false);*/
-  }
-
-  removeFavorite() {
-    /*
-    this.loading = true
-    const yelpId = this.infoObject$.id
-
-    if(this.isLoggedIn == '1'){
-      this.myFavoritesService.removeFavorite(yelpId).subscribe(resp => {
-          this.removeFavoriteCb(resp, yelpId)
-        })
-    } else {
-      this.myFavoritesService.removeFavoriteLoggedOut(yelpId)
-      this.removeFavoriteCb({success: true}, yelpId)
-      this.loading = false
-      this.showFavorites = true
-    }
-    */
-  }
-
-  removeFavoriteCb(resp, favoriteId: string) {
-    /*    if (resp.success) {
-      this.showFavorites = true;
-      this.removeFavoriteEvent.emit({favoriteId: favoriteId});
-    } else console.log('removeFavoriteCb', resp);
-    this.loading$.next(false);*/
   }
 
   getEventCallback(httpResponse: any): void {
@@ -472,33 +367,27 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     return;
   }
 
-  getInputClass(): string {
-    let className = 'sb-infoObjectInputDark';
-    if (this.infoObject$.getValue().is_community_member) {
-      className = 'sb-infoObjectInputLight';
-    }
-    return className;
-  }
-
   clickGoToSponsored(): void {
-    window.open('/business', '_blank');
-    return;
+    AppLauncher.openUrl({url: 'https://spotbie.com/business'});
   }
 
-  ngAfterViewInit() {
+  async ngAfterViewInit() {
     // I'm sure there's a better way to do this but I don't have time right now.
     const closeButton = document.getElementById('sb-closeButtonInfoObject');
-    const ionToolBar = document.getElementsByTagName('ion-header');
 
-    const p = ionToolBar[1].offsetHeight;
+    const isLoggedInRet = await Preferences.get({key: 'spotbie_loggedIn'});
+    this.isLoggedIn$.next(isLoggedInRet.value);
+
+    const p =
+      this.isLoggedIn$.getValue() === '0' || !this.isLoggedIn$.getValue()
+        ? document.getElementById('ionToolbarLoggedOut').offsetHeight
+        : document.getElementById('ionToolbarLoggedIn').offsetHeight;
+
     closeButton.style.top = p + 'px';
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.loading$.next(true);
-
-    const isLoggedInRet = await Preferences.get({key: 'spotbie_loggedIn'});
-    this.isLoggedIn = isLoggedInRet.value;
 
     const infoObject = this.infoObject$.getValue();
 
@@ -521,6 +410,20 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
             infoObject.user_type === 3
           ) {
             this.infoObjectLink = `${environment.baseUrl}community/${infoObject.qr_code_link}`;
+            switch (infoObject.user_type) {
+              case 1:
+                this.infoObjectTitle = `${infoObject.name} - ${infoObject.cleanCategories} - ${infoObject.address}`;
+                this.infoObjectDescription = `Let's go eat at ${infoObject.name}. I know you'll enjoy some of these categories ${this.infoObjectCategory}. They are located at ${this.objectDisplayAddress}.`;
+                break;
+              case 2:
+                this.infoObjectTitle = `${infoObject.name} - ${infoObject.cleanCategories} - ${infoObject.address}`;
+                this.infoObjectDescription = `I really recommend you go shopping at ${infoObject.name}!`;
+                break;
+              case 3:
+                this.infoObjectTitle = `${infoObject.name} - ${infoObject.cleanCategories} - ${infoObject.address}`;
+                this.infoObjectDescription = `Let's go to ${infoObject.name}!`;
+                break;
+            }
           }
 
           this.loading$.next(false);

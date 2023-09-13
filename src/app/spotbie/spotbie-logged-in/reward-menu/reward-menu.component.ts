@@ -8,16 +8,14 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AllowedAccountTypes} from '../../../helpers/enum/account-type.enum';
-import {LoyaltyPointBalance} from '../../../models/loyalty-point-balance';
 import {Business} from '../../../models/business';
 import {Reward} from '../../../models/reward';
-import {LoyaltyPointsService} from '../../../services/loyalty-points/loyalty-points.service';
 import {BusinessMenuServiceService} from '../../../services/spotbie-logged-in/business-menu/business-menu-service.service';
 import {RewardCreatorComponent} from './reward-creator/reward-creator.component';
 import {RewardComponent} from './reward/reward.component';
 import {environment} from '../../../../environments/environment';
-import { BehaviorSubject } from "rxjs";
-import {Preferences} from "@capacitor/preferences";
+import {BehaviorSubject} from 'rxjs';
+import {Preferences} from '@capacitor/preferences';
 
 @Component({
   selector: 'app-reward-menu',
@@ -37,18 +35,15 @@ export class RewardMenuComponent implements OnInit {
   @Output() notEnoughLpEvt = new EventEmitter();
 
   eAllowedAccountTypes = AllowedAccountTypes;
-  itemCreator = false;
   rewardApp$ = new BehaviorSubject(false);
-  userPointToDollarRatio;
+  userPointToDollarRatio$ = new BehaviorSubject<number>(null);
   rewards$ = new BehaviorSubject<Array<Reward>>(null);
   reward$ = new BehaviorSubject<Reward>(null);
-  userType: number = null;
-  business: Business = new Business();
-  loyaltyPointsBalance: LoyaltyPointBalance;
-  isLoggedIn: string = null;
+  userType$ = new BehaviorSubject<number>(null);
+  business$ = new BehaviorSubject<Business>(null);
+  isLoggedIn$ = new BehaviorSubject<string>(null);
 
   constructor(
-    private loyaltyPointsService: LoyaltyPointsService,
     private businessMenuService: BusinessMenuServiceService,
     private router: Router,
     route: ActivatedRoute
@@ -82,21 +77,12 @@ export class RewardMenuComponent implements OnInit {
     if (resp.success) {
       this.rewards$.next(resp.rewards);
 
-      if (this.isLoggedIn !== '1') {
-        this.userPointToDollarRatio = resp.loyalty_point_dollar_percent_value;
-        this.business = resp.business;
-      }
-    }
-  }
+      this.userPointToDollarRatio$.next(
+          (resp.loyalty_point_dollar_percent_value) as number
+      );
 
-  addItem() {
-    if (this.loyaltyPointsBalance.balance === 0) {
-      this.notEnoughLpEvt.emit();
-      this.closeWindow();
-      return;
+      this.business$.next(resp.business);
     }
-
-    this.itemCreator = !this.itemCreator;
   }
 
   closeWindow() {
@@ -104,7 +90,6 @@ export class RewardMenuComponent implements OnInit {
   }
 
   openReward(reward: Reward) {
-    console.log('reward', reward);
     reward.link = `${environment.baseUrl}business-menu/${this.qrCodeLink}/${reward.uuid}`;
     this.reward$.next(reward);
 
@@ -114,21 +99,6 @@ export class RewardMenuComponent implements OnInit {
   closeReward() {
     this.reward$.next(null);
     this.rewardApp$.next(false);
-  }
-
-  editReward(reward: Reward) {
-    this.reward$.next(reward);
-    this.itemCreator = true;
-  }
-
-  closeRewardCreator() {
-    this.reward$.next(null);
-    this.itemCreator = false;
-  }
-
-  closeRewardCreatorAndRefetchRewardList() {
-    this.closeRewardCreator();
-    this.fetchRewards();
   }
 
   rewardTileStyling(reward: Reward) {
@@ -141,12 +111,12 @@ export class RewardMenuComponent implements OnInit {
 
   async ngOnInit() {
     const userRet = await Preferences.get({key: 'spotbie_userType'});
-    this.userType = parseInt(userRet.value);
+    this.userType$.next(parseInt(userRet.value));
 
     const retUserLoggedIn = await Preferences.get({key: 'spotbie_loggedIn'});
-    this.isLoggedIn = retUserLoggedIn.value;
+    this.isLoggedIn$.next(retUserLoggedIn.value);
 
-    if (this.userType !== this.eAllowedAccountTypes.Personal) {
+    if (this.userType$.getValue() !== this.eAllowedAccountTypes.Personal) {
       this.fetchRewards();
     } else {
       this.fetchRewards(this.qrCodeLink);
