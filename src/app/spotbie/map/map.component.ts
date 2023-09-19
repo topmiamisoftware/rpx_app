@@ -1430,6 +1430,7 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   showMapError() {
     // Check for location permission and prompt the user.
+    alert("Please enable location to find SpotBie locations.");
 
     this.displayLocationEnablingInstructions$.next(true);
     this.map$.next(false);

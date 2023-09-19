@@ -1,10 +1,6 @@
 <app-loading-screen *ngIf="loading$ | async"></app-loading-screen>
 
 <div class='spotbie-overlay-window pt-2 pb-5' #spotbieSettingsWindow>
-    <div class='sb-closeButton' (click)="closeWindow()">
-        <i class="fa fa-times"></i>
-    </div>
-
     <div class='spotbie-block sb-topSettingsPadding'>
         <div #spotbieSettingsInfoText class="spotbie-text-gradient mt-4 mb-4">
             {{ spotbieSettingsInfoText$ | async }}
@@ -216,7 +212,7 @@
                         </div>
 
                         <ng-template #spotbie_current_password_normal>
-                            <div class="spotbie-input-info spotbie-text-gradient mb-2" #currentPasswordInfo>
+                            <div class="spotbie-input-info mb-2" #currentPasswordInfo>
                                 {{ currentPasswordInfoText$ | async }}
                             </div>
                         </ng-template>
@@ -230,6 +226,9 @@
 
                                 <div class="spotbie-button spotbie-button-mini" (click)="completeSavePassword()">
                                     COMPLETE CHANGE
+                                </div>
+                                <div class="spotbie-text-gradient mt-4" (click)="cancelPasswordSet()">
+                                    CANCEL
                                 </div>
                             </td>
                         </tr>

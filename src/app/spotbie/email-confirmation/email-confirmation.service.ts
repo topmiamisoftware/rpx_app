@@ -40,7 +40,7 @@ export class EmailConfirmationService {
       .pipe(retryWithBackOff(1000));
   }
 
-  public checkIfEmailUnique(email: string): Observable<any> {
+  checkIfEmailUnique(email: string): Observable<any> {
     const testEmailApi = EMAIL_API;
     const emailObj = {
       email,

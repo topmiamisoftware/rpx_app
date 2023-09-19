@@ -169,7 +169,6 @@ export class LogInComponent implements OnInit {
             .get('spotbieUsername')
             .setErrors({wrong_account_type: true});
         }
-        logOutCallback({success: true});
       }
     }
     this.loading$.next(false);

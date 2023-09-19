@@ -14,6 +14,7 @@ import {DeviceDetectorService} from 'ngx-device-detector';
 import {RewardCreatorService} from '../../../services/spotbie-logged-in/business-menu/reward-creator/reward-creator.service';
 import {BehaviorSubject} from 'rxjs';
 import {BarcodeScanner} from '@capacitor-community/barcode-scanner';
+import {AndroidSettings, IOSSettings, NativeSettings} from "capacitor-native-settings";
 
 @Component({
   selector: 'app-qr',
@@ -39,6 +40,7 @@ export class QrComponent implements OnInit {
   reward$ = new BehaviorSubject<Reward>(null);
   rewarded$ = new BehaviorSubject<boolean>(false);
   pointsCharged$ = new BehaviorSubject<number>(0);
+  showEnablePermission$ = new BehaviorSubject<boolean>(false);
 
   businessLoyaltyPointsForm: UntypedFormGroup;
 
@@ -65,7 +67,6 @@ export class QrComponent implements OnInit {
   }
 
   claimRewardCb(resp) {
-    console.log('response', resp);
     if (resp.success) {
       this.rewarded$.next(true);
       this.reward$.next(resp.reward);
@@ -79,7 +80,7 @@ export class QrComponent implements OnInit {
     this.scanSuccess$.next(false);
   }
 
-  async checkPermission() {
+  async checkPermission(): Promise<boolean> {
     // check if user already granted permission
     const status = await BarcodeScanner.checkPermission({force: false});
 
@@ -181,13 +182,22 @@ export class QrComponent implements OnInit {
   async startQrCodeScanner() {
     this.loyaltyPointsService.getLoyaltyPointBalance();
 
-    BarcodeScanner.hideBackground();
-    const result = await BarcodeScanner.startScan();
-    if (result.hasContent) {
-      this.scanSuccessHandler(result.content);
-    } else {
-      this.scanErrorHandler(result.content);
-    }
+    this.checkPermission().then(async granted => {
+      console.log('GRANTED', granted);
+      if (granted) {
+        this.showEnablePermission$.next(false);
+        BarcodeScanner.hideBackground();
+        const result = await BarcodeScanner.startScan();
+        if (result.hasContent) {
+          this.scanSuccessHandler(result.content);
+        } else {
+          this.scanErrorHandler(result.content);
+        }
+      } else {
+        alert('Please enable camera access to scan rewards.');
+        this.showEnablePermission$.next(true);
+      }
+    });
   }
 
   closeQr() {
@@ -196,6 +206,13 @@ export class QrComponent implements OnInit {
 
   closeQrUser() {
     this.closeQrUserEvt.emit(null);
+  }
+
+  openAppSettings() {
+    NativeSettings.open({
+      optionAndroid: AndroidSettings.ApplicationDetails,
+      optionIOS: IOSSettings.App,
+    });
   }
 
   ngOnInit(): void {

@@ -25,8 +25,6 @@ import {Preferences} from '@capacitor/preferences';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MenuLoggedInComponent implements AfterViewInit {
-  @Output() userBackgroundEvent = new EventEmitter();
-
   @ViewChild('spotbieMainMenu') spotbieMainMenu: ElementRef;
   @ViewChild('spotbieMap') spotbieMap: MapComponent;
   @ViewChild('spotbieSettings') spotbieSettings: SettingsComponent;
@@ -98,6 +96,7 @@ export class MenuLoggedInComponent implements AfterViewInit {
 
     this.spotbieMap.openWelcome();
     this.spotbieMap.closeCategories();
+    this.spotbieMap.homeDashboard.closeQrScanner();
   }
 
   slideMenu() {

@@ -1,7 +1,9 @@
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
+  NgZone,
   OnInit,
   Output,
   ViewChild,
@@ -13,7 +15,7 @@ import {ValidatePassword} from '../../../helpers/password.validator';
 import {SignUpService} from '../../../services/spotbie-logged-out/sign-up/sign-up.service';
 import {catchError, filter, tap} from 'rxjs/operators';
 import {Observable} from 'rxjs/internal/Observable';
-import {BehaviorSubject, of} from 'rxjs';
+import {BehaviorSubject, EMPTY, of, switchMap} from 'rxjs';
 import {EmailConfirmationService} from '../../email-confirmation/email-confirmation.service';
 import {ValidateUniqueEmail} from '../../../validators/email-unique.validator';
 import {
@@ -24,6 +26,7 @@ import {
 import {AppLauncher} from '@capacitor/app-launcher';
 import {LoadingController} from '@ionic/angular';
 import {Preferences} from '@capacitor/preferences';
+import {ChangeDetection} from "@angular/cli/lib/config/workspace-schema";
 
 @Component({
   selector: 'app-sign-up',
@@ -46,15 +49,14 @@ export class SignUpComponent implements OnInit {
   submitted$ = new BehaviorSubject<boolean>(false);
   loading$ = new BehaviorSubject<boolean>(undefined);
   passwordShow$ = new BehaviorSubject<boolean>(false);
-  business$ = new BehaviorSubject<boolean>(false);
   loader: HTMLIonLoadingElement;
 
   constructor(
     private router: Router,
     private signUpService: SignUpService,
     private formBuilder: UntypedFormBuilder,
-    private emailUniqueCheckService: EmailConfirmationService,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private changeDetection: ChangeDetectorRef
   ) {
     this.initLoading();
   }
@@ -74,12 +76,6 @@ export class SignUpComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.router.url === '/business') {
-      this.business$.next(true);
-    } else {
-      this.business$.next(false);
-    }
-
     this.initSignUpForm();
   }
 
@@ -97,14 +93,11 @@ export class SignUpComponent implements OnInit {
 
   initSignUp(): void {
     this.submitted$.next(true);
-    this.loading$.next(true);
     this.spotbieSignUpIssues.nativeElement.scrollTo(0, 0);
     this.signUpFormx.updateValueAndValidity();
 
     // stop here if form is invalid
     if (this.signUpFormx.invalid) {
-      this.signingUp$.next(false);
-
       if (this.signUpFormx.get('spotbieUsername').invalid) {
         document.getElementById('spotbie_username').style.border =
           '1px solid red';
@@ -142,6 +135,8 @@ export class SignUpComponent implements OnInit {
       route: this.router.url,
     };
 
+    this.loading$.next(true);
+
     this.signUpService
       .initRegister(signUpObj)
       .pipe(
@@ -153,61 +148,53 @@ export class SignUpComponent implements OnInit {
       });
   }
 
-  signUpError<T>(operation = 'operation', result?: T) {
-    this.signingUp$.next(false);
+  populateErrors(r) {
+    const errorList = r.errors;
+
+    if (errorList.username) {
+      const errors: {[k: string]: any} = {};
+      errorList.username.forEach(err => {
+        errors[err] = true;
+      });
+
+      this.signUpFormx.controls['spotbieUsername'].setErrors(errors);
+      document.getElementById('spotbie_username').style.border =
+        '1px solid red';
+    } else {
+      document.getElementById('spotbie_username').style.border = 'unset';
+    }
+
+    if (errorList.email) {
+      const errors: {[k: string]: any} = {};
+      errorList.email.forEach(err => {
+        errors[err] = true;
+      });
+
+      this.signUpFormx.get('spotbieEmail').setErrors(errors);
+      document.getElementById('user_email').style.border = '1px solid red';
+    } else {
+      document.getElementById('user_email').style.border = 'unset';
+    }
+
+    if (errorList.password) {
+      const errors: {[k: string]: any} = {};
+      errorList.password.forEach(err => {
+        errors[err] = true;
+      });
+
+      this.signUpFormx.get('spotbiePassword').setErrors(errors);
+      document.getElementById('user_pass').style.border = '1px solid red';
+    } else {
+      document.getElementById('user_pass').style.border = 'unset';
+    }
+
+    this.changeDetection.markForCheck();
     this.loading$.next(false);
-    console.log('2', this.loading$.getValue());
+  }
 
+  signUpError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
-      const signUpInstructions = this.spotbieSignUpIssues.nativeElement;
-      signUpInstructions.style.display = 'none';
-
-      const errorList = error.error.errors;
-
-      if (errorList.username) {
-        const errors: {[k: string]: any} = {};
-        errorList.username.forEach(err => {
-          errors[err] = true;
-        });
-
-        this.signUpFormx.get('spotbieUsername').setErrors(errors);
-        document.getElementById('spotbie_username').style.border =
-          '1px solid red';
-      } else {
-        document.getElementById('spotbie_username').style.border = 'unset';
-      }
-
-      if (errorList.email) {
-        const errors: {[k: string]: any} = {};
-        errorList.email.forEach(err => {
-          errors[err] = true;
-        });
-
-        this.signUpFormx.get('spotbieEmail').setErrors(errors);
-        document.getElementById('user_email').style.border = '1px solid red';
-      } else {
-        document.getElementById('user_email').style.border = 'unset';
-      }
-
-      if (errorList.password) {
-        const errors: {[k: string]: any} = {};
-        errorList.username.forEach(err => {
-          errors[err] = true;
-        });
-
-        this.signUpFormx.get('spotbiePassword').setErrors(errors);
-        document.getElementById('user_pass').style.border = '1px solid red';
-      } else {
-        document.getElementById('user_pass').style.border = 'unset';
-      }
-
-      this.signingUp$.next(false);
-
-      setTimeout(() => {
-        signUpInstructions.style.display = 'block';
-      }, 200);
-
-      return of(result as T);
+      return of(error as T);
     };
   }
 
@@ -233,10 +220,6 @@ export class SignUpComponent implements OnInit {
           ValidatePassword('spotbiePassword'),
         ],
       }
-    );
-
-    this.signUpFormx.setAsyncValidators(
-      ValidateUniqueEmail.valid(this.emailUniqueCheckService, this.spotbieEmail)
     );
   }
 
@@ -264,6 +247,8 @@ export class SignUpComponent implements OnInit {
   }
 
   private initSignUpCallback(resp: any) {
+    console.log('error', resp);
+
     const signUpInstructions = this.spotbieSignUpIssues.nativeElement;
 
     if (resp.message === 'success') {
@@ -286,6 +271,7 @@ export class SignUpComponent implements OnInit {
     } else {
       signUpInstructions.innerHTML =
         "<span class='spotbie-text-gradient spotbie-error'>There has been an error signing up.</span>";
+      this.populateErrors(resp.error);
     }
 
     this.loading$.next(false);

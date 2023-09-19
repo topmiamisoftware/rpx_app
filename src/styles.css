@@ -370,8 +370,8 @@ a, a:hover, a:active, a:after{
     margin: 10px auto;
     max-width: 440px;
     text-align: left;
-    letter-spacing: 3px;
-    font-size: .8rem;
+    letter-spacing: 2px;
+    font-size: .7rem;
 }
 .spotbie-play-button{
     position: absolute;

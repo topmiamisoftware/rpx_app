@@ -16,6 +16,7 @@ import {UserauthService} from '../../../services/userauth.service';
 import {Router} from '@angular/router';
 import {BehaviorSubject} from 'rxjs';
 import {Preferences} from '@capacitor/preferences';
+import {logOutCallback} from "../../../helpers/logout-callback";
 
 @Component({
   selector: 'app-settings',
@@ -81,7 +82,7 @@ export class SettingsComponent implements OnInit {
     return this.passwordForm.get('spotbieConfirmPassword').value;
   }
   get currentPassword() {
-    return this.passwordForm.get('spotbieConfirmPassword').value;
+    return this.passwordForm.get('spotbieCurrentPassword').value;
   }
   get g() {
     return this.passwordForm.controls;
@@ -100,10 +101,6 @@ export class SettingsComponent implements OnInit {
     this.initSettingsForm('personal');
   }
 
-  openWindow(window: any) {
-    window.open$.next(true);
-  }
-
   savePassword(): void {
     this.passwordSubmitted$.next(true);
 
@@ -114,15 +111,13 @@ export class SettingsComponent implements OnInit {
 
     if (this.passwordForm.invalid) {
       if (this.password !== this.confirmPassword) {
-        console.log('confirm password error');
         this.errorText$.next('Passwords must match.');
         return;
       }
       return;
     }
 
-    this.errorText$.next('Great, your passwords match!');
-
+    this.currentPasswordInfoText$.next('Great, now enter your current password.');
     this.savePasswordBool$.next(true);
 
     const currentPasswordValidators = [Validators.required];
@@ -149,7 +144,7 @@ export class SettingsComponent implements OnInit {
     const savePasswordObj = {
       password: this.password,
       passwordConfirmation: this.confirmPassword,
-      currentPassword: this.confirmPassword,
+      currentPassword: this.currentPassword,
     };
 
     this.userAuthService.passwordChange(savePasswordObj).subscribe(
@@ -243,19 +238,15 @@ export class SettingsComponent implements OnInit {
 
     this.loading$.next(true);
 
-    let deactivationPassword = null;
-
-    if (!this.isSocialAccount$.getValue()) {
-      if (this.deactivationForm.invalid) {
-        this.spotbieAccountDeactivationInfo.nativeElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-        return;
-      }
-
-      deactivationPassword = this.deactivationPassword;
+    if (this.deactivationForm.invalid) {
+      this.spotbieAccountDeactivationInfo.nativeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+      return;
     }
+
+    const deactivationPassword = this.deactivationPassword;
 
     this.userAuthService
       .deactivateAccount(deactivationPassword, this.isSocialAccount$.getValue())
@@ -304,27 +295,23 @@ export class SettingsComponent implements OnInit {
     if (resp.success) {
       switch (resp.message) {
         case 'saved':
-          this.currentPasswordInfoText$.next('Your password was updated.');
+          this.spotbieSettingsInfoText$.next('Your password was updated.');
 
-          this.passwordForm.get('spotbieCurrentPassword').setValue('123456789');
-          this.passwordForm.get('spotbiePassword').setValue('asdrqweee');
-          this.passwordForm.get('spotbieConfirmPassword').setValue('asdeqweqq');
+          this.passwordForm.get('spotbieCurrentPassword').setValue(null);
+          this.passwordForm.get('spotbiePassword').setValue(null);
+          this.passwordForm.get('spotbieConfirmPassword').setValue(null);
 
-          setTimeout(() => {
-            this.passwordSubmitted$.next(false);
-            this.savePasswordBool$.next(false);
-          }, 2000);
+          this.passwordSubmitted$.next(false);
+          this.savePasswordBool$.next(false);
+
           break;
       }
 
       this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
     } else {
-      console.log(resp);
       switch (resp.message) {
         case 'SB-E-000':
           // server error
-          this.savePasswordBool$.next(false);
-          this.passwordSubmitted$.next(false);
           this.currentPasswordInfoText$.next(
             'You entered the incorrect current password.'
           );
@@ -417,7 +404,8 @@ export class SettingsComponent implements OnInit {
   private deactivateCallback(resp: any) {
     this.loading$.next(false);
     if (resp.success) {
-      // Your account has been deactivated.
+      // Account has been deactivated. Let's log out.
+      logOutCallback(resp);
     } else {
       console.log('deactivateCallback', resp);
     }

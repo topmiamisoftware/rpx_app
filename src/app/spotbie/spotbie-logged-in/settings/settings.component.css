@@ -1,8 +1,6 @@
 .spotbie-block{
   position: relative;
   margin: 0 auto;
-  width: 950px;
-  max-width: 950px;
   margin-bottom: 20px;
 }
 .spotbie-info-text{
@@ -36,11 +34,13 @@
 .spotbie-settings-table{
   position: relative;
   margin: 0 auto;
-  width: 950px;
-  min-width: 950px;
-  max-width: 950px;
+  width: 90%;
+  max-width: 450px;
   padding: 20px;
-  border-radius: 20px;
+  border-top-color: unset !important;
+}
+.spotbie-settings-table tr{
+  border-top-color: unset !important;
 }
 .spotbie-place-result td{
   padding: unset;

@@ -89,6 +89,11 @@ h5{
 .success-msg{
     font-size: 24px;
 }
+.fa-camera{
+  position: relative;
+  color: #ffc107;
+  font-size: 2rem;
+}
 @media (max-width: 768px){
     .sb-readImage{
         width: 100%;
