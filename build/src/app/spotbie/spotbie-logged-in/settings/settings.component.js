@@ -4,31 +4,32 @@ exports.SettingsComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
 const forms_1 = require("@angular/forms");
+const user_1 = require("../../../models/user");
 const password_validator_1 = require("../../../helpers/password.validator");
 const must_match_validator_1 = require("../../../helpers/must-match.validator");
 const username_validator_1 = require("../../../helpers/username.validator");
 const name_validator_1 = require("../../../helpers/name.validator");
+const rxjs_1 = require("rxjs");
+const preferences_1 = require("@capacitor/preferences");
+const logout_callback_1 = require("../../../helpers/logout-callback");
 let SettingsComponent = class SettingsComponent {
     constructor(formBuilder, userAuthService, router) {
         this.formBuilder = formBuilder;
         this.userAuthService = userAuthService;
         this.router = router;
         this.closeWindowEvt = new core_1.EventEmitter();
-        this.personalAccount = true;
-        this.savePasswordBool = false;
-        this.accountDeactivation = false;
-        this.deactivationSubmitted = false;
-        this.loading = false;
-        this.helpText = '';
-        this.submitted = false;
-        this.placeFormSubmitted = false;
-        this.adSettingsWindow = { open: false };
-        this.passwordSubmitted = false;
-        this.settingsFormInitiated = false;
-        this.showNoResultsBox = false;
-        this.showMobilePrompt = false;
-        this.showMobilePrompt2 = false;
-        this.isSocialAccount = false;
+        this.savePasswordBool$ = new rxjs_1.BehaviorSubject(false);
+        this.accountDeactivation$ = new rxjs_1.BehaviorSubject(false);
+        this.deactivationSubmitted$ = new rxjs_1.BehaviorSubject(false);
+        this.loading$ = new rxjs_1.BehaviorSubject(false);
+        this.user$ = new rxjs_1.BehaviorSubject(new user_1.User());
+        this.submitted$ = new rxjs_1.BehaviorSubject(false);
+        this.passwordSubmitted$ = new rxjs_1.BehaviorSubject(false);
+        this.settingsFormInitiated$ = new rxjs_1.BehaviorSubject(false);
+        this.isSocialAccount$ = new rxjs_1.BehaviorSubject(false);
+        this.errorText$ = new rxjs_1.BehaviorSubject(null);
+        this.spotbieSettingsInfoText$ = new rxjs_1.BehaviorSubject(null);
+        this.currentPasswordInfoText$ = new rxjs_1.BehaviorSubject('To complete the change, enter your CURRENT password.');
     }
     get username() {
         return this.settingsForm.get('spotbieUsername').value;
@@ -55,7 +56,7 @@ let SettingsComponent = class SettingsComponent {
         return this.passwordForm.get('spotbieConfirmPassword').value;
     }
     get currentPassword() {
-        return this.passwordForm.get('spotbieConfirmPassword').value;
+        return this.passwordForm.get('spotbieCurrentPassword').value;
     }
     get g() {
         return this.passwordForm.controls;
@@ -68,48 +69,40 @@ let SettingsComponent = class SettingsComponent {
     }
     ngOnInit() {
         this.router.routeReuseStrategy.shouldReuseRoute = () => false;
-        this.loading = true;
+        this.loading$.next(true);
         this.initSettingsForm('personal');
     }
-    openWindow(window) {
-        window.open = true;
-    }
     savePassword() {
+        this.passwordSubmitted$.next(true);
         this.spotbiePasswordInfoText.nativeElement.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
         });
         if (this.passwordForm.invalid) {
-            this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
+            if (this.password !== this.confirmPassword) {
+                this.errorText$.next('Passwords must match.');
+                return;
+            }
             return;
         }
-        if (this.password !== this.confirmPassword) {
-            console.log('confirm password error');
-            this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
-            this.spotbiePasswordInfoText.nativeElement.innerHTML =
-                'Passwords must match.';
-            return;
-        }
-        this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
-        this.spotbiePasswordInfoText.nativeElement.innerHTML =
-            'Great, your passwords match!';
-        this.savePasswordBool = true;
+        this.currentPasswordInfoText$.next('Great, now enter your current password.');
+        this.savePasswordBool$.next(true);
         const currentPasswordValidators = [forms_1.Validators.required];
         this.passwordForm.addControl('spotbieCurrentPassword', new forms_1.FormControl('', currentPasswordValidators));
         this.passwordForm.get('spotbieCurrentPassword').setValue('123456789');
     }
     completeSavePassword() {
-        if (this.loading) {
+        if (this.loading$.getValue()) {
             return;
         }
-        this.loading = true;
+        this.loading$.next(true);
         if (this.passwordForm.invalid) {
             return;
         }
         const savePasswordObj = {
             password: this.password,
             passwordConfirmation: this.confirmPassword,
-            currentPassword: this.confirmPassword,
+            currentPassword: this.currentPassword,
         };
         this.userAuthService.passwordChange(savePasswordObj).subscribe(resp => {
             this.passwordChangeCallback(resp);
@@ -118,148 +111,137 @@ let SettingsComponent = class SettingsComponent {
         });
     }
     cancelPasswordSet() {
-        this.passwordSubmitted = false;
-        this.savePasswordBool = false;
+        this.passwordSubmitted$.next(false);
+        this.savePasswordBool$.next(false);
     }
     saveSettings() {
-        this.loading = true;
-        this.submitted = true;
+        this.loading$.next(true);
+        this.submitted$.next(true);
         if (this.settingsForm.invalid) {
-            this.loading = false;
+            this.loading$.next(false);
             this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
             return;
         }
-        this.user.username = this.username;
-        this.user.email = this.email;
-        this.user.spotbie_user.first_name = this.firstName;
-        this.user.spotbie_user.last_name = this.lastName;
-        this.user.spotbie_user.phone_number = this.spotbiePhoneNumber;
-        this.userAuthService.saveSettings(this.user).subscribe({
+        this.user$.next({
+            ...this.user$.getValue(),
+            username: this.username,
+            email: this.email,
+            spotbie_user: {
+                ...this.user$.getValue().spotbie_user,
+                first_name: this.firstName,
+                last_name: this.lastName,
+                phone_number: this.spotbiePhoneNumber,
+            },
+        });
+        this.userAuthService.saveSettings(this.user$.getValue()).subscribe({
             next: resp => {
                 this.saveSettingsCallback(resp);
             },
             error: (error) => {
                 if (error.error.errors.email[0] === 'notUnique') {
-                    this.settingsForm.get('spotbie_email').setErrors({ notUnique: true });
+                    this.settingsForm.get('spotbieEmail').setErrors({ notUnique: true });
                 }
-                this.spotbieSettingsInfoText.nativeElement.innerHTML = `
+                this.spotbieSettingsInfoText$.next(`
                     <span class='spotbie-text-gradient spotbie-error'>
                         There was an error saving.
                     </span>
-                `;
+                `);
                 this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
-                this.loading = false;
+                this.loading$.next(false);
             },
         });
     }
     cancelDeactivateAccount() {
-        this.accountDeactivation = false;
+        this.accountDeactivation$.next(false);
     }
     startDeactivateAccount() {
-        this.accountDeactivation = true;
-        const socialId = localStorage.getItem('spotbiecom_social_id');
-        if (socialId && socialId.length > 0) {
-            this.isSocialAccount = true;
-        }
-        else {
-            this.isSocialAccount = false;
-        }
-        if (!this.isSocialAccount) {
-            const deactivationPasswordValidator = [forms_1.Validators.required];
-            this.deactivationForm = this.formBuilder.group({
-                spotbieDeactivationPassword: ['', deactivationPasswordValidator],
-            });
-            this.deactivationForm
-                .get('spotbieDeactivationPassword')
-                .setValue('123456789');
-        }
+        this.accountDeactivation$.next(true);
+        const deactivationPasswordValidator = [forms_1.Validators.required];
+        this.deactivationForm = this.formBuilder.group({
+            spotbieDeactivationPassword: ['', deactivationPasswordValidator],
+        });
+        this.deactivationForm
+            .get('spotbieDeactivationPassword')
+            .setValue('123456789');
     }
     deactivateAccount() {
         const r = confirm('Are you sure you want to deactivate your account?');
         if (!r) {
             return;
         }
-        if (this.loading) {
+        if (this.loading$.getValue()) {
             return;
         }
-        this.loading = true;
-        let deactivationPassword = null;
-        if (!this.isSocialAccount) {
-            if (this.deactivationForm.invalid) {
-                this.spotbieAccountDeactivationInfo.nativeElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start',
-                });
-                return;
-            }
-            deactivationPassword = this.deactivationPassword;
+        this.loading$.next(true);
+        if (this.deactivationForm.invalid) {
+            this.spotbieAccountDeactivationInfo.nativeElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+            return;
         }
+        const deactivationPassword = this.deactivationPassword;
         this.userAuthService
-            .deactivateAccount(deactivationPassword, this.isSocialAccount)
+            .deactivateAccount(deactivationPassword, this.isSocialAccount$.getValue())
             .subscribe(resp => {
             this.deactivateCallback(resp);
         });
     }
     closeWindow() {
-        this.router.navigate(['/home']);
+        this.closeWindowEvt.emit();
     }
     populateSettings(settingsResponse) {
         if (settingsResponse.success) {
-            this.user = settingsResponse.user;
-            this.user.spotbie_user = settingsResponse.spotbie_user;
-            this.user.uuid = settingsResponse.user.hash;
-            this.settingsFormInitiated = true;
-            this.settingsForm.get('spotbieUsername').setValue(this.user.username);
+            this.user$.next({
+                ...settingsResponse.user,
+                spotbie_user: settingsResponse.spotbie_user,
+                uuid: settingsResponse.user.hash,
+            });
+            this.settingsFormInitiated$.next(true);
+            this.settingsForm
+                .get('spotbieUsername')
+                .setValue(this.user$.getValue().username);
             this.settingsForm
                 .get('spotbieFirstName')
-                .setValue(this.user.spotbie_user.first_name);
+                .setValue(this.user$.getValue().spotbie_user.first_name);
             this.settingsForm
                 .get('spotbieLastName')
-                .setValue(this.user.spotbie_user.last_name);
-            this.settingsForm.get('spotbieEmail').setValue(this.user.email);
+                .setValue(this.user$.getValue().spotbie_user.last_name);
+            this.settingsForm
+                .get('spotbieEmail')
+                .setValue(this.user$.getValue().email);
             this.settingsForm
                 .get('spotbiePhoneNumber')
-                .setValue(this.user.spotbie_user.phone_number);
-            this.passwordForm.get('spotbiePassword').setValue('userpassword');
-            this.passwordForm.get('spotbieConfirmPassword').setValue('123456789');
+                .setValue(this.user$.getValue().spotbie_user.phone_number);
         }
         else {
             console.log('Settings Error: ', settingsResponse);
         }
-        this.loading = false;
+        this.loading$.next(false);
     }
     passwordChangeCallback(resp) {
         if (resp.success) {
             switch (resp.message) {
                 case 'saved':
-                    this.spotbieCurrentPasswordInfoText.nativeElement.innerHTML =
-                        'Your password was updated.';
-                    this.passwordForm.get('spotbieCurrentPassword').setValue('123456789');
-                    this.passwordForm.get('spotbiePassword').setValue('asdrqweee');
-                    this.passwordForm.get('spotbieConfirmPassword').setValue('asdeqweqq');
-                    this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
-                    this.spotbiePasswordInfoText.nativeElement.innerHTML =
-                        'Would you like to change your password?';
-                    setTimeout(() => {
-                        this.passwordSubmitted = false;
-                        this.savePasswordBool = false;
-                    }, 2000);
-                    break;
-                case 'SB-E-000':
-                    // server error
-                    this.savePasswordBool = false;
-                    this.passwordSubmitted = false;
-                    this.spotbiePasswordInfoText.nativeElement.style.display = 'block';
-                    this.spotbiePasswordInfoText.nativeElement.innerHTML =
-                        'There was an error with the server. Try again.';
+                    this.spotbieSettingsInfoText$.next('Your password was updated.');
+                    this.passwordForm.get('spotbieCurrentPassword').setValue(null);
+                    this.passwordForm.get('spotbiePassword').setValue(null);
+                    this.passwordForm.get('spotbieConfirmPassword').setValue(null);
+                    this.passwordSubmitted$.next(false);
+                    this.savePasswordBool$.next(false);
                     break;
             }
             this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
         }
         else {
-            console.log(resp);
+            switch (resp.message) {
+                case 'SB-E-000':
+                    // server error
+                    this.currentPasswordInfoText$.next('You entered the incorrect current password.');
+                    break;
+            }
         }
-        this.loading = false;
+        this.loading$.next(false);
     }
     async initSettingsForm(action) {
         const usernameValidators = [forms_1.Validators.required, forms_1.Validators.maxLength(135)];
@@ -310,29 +292,25 @@ let SettingsComponent = class SettingsComponent {
         });
     }
     saveSettingsCallback(resp) {
-        this.loading = false;
+        this.loading$.next(false);
         if (resp.success) {
-            this.spotbieSettingsInfoText.nativeElement.innerHTML = `
-                <span class='sb-text-light-green-gradient'>
-                Your settings were saved.
-                </span>
-            `;
+            this.spotbieSettingsInfoText$.next('Your settings were saved.');
             this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
-            localStorage.setItem('spotbie_userLogin', resp.user.username);
-            localStorage.setItem('spotbie_userType', resp.user.spotbie_user.user_type);
+            preferences_1.Preferences.set({ key: 'spotbie_userLogin', value: resp.user.username });
+            preferences_1.Preferences.set({
+                key: 'spotbie_userType',
+                value: resp.user.spotbie_user.user_type,
+            });
         }
         else {
-            this.spotbieSettingsInfoText.nativeElement.innerHTML = `
-                <span class='spotbie-text-gradient spotbie-error'>
-                    There was an error saving.
-                </span>
-            `;
-            console.log('Failed Save Settings: ', resp);
+            this.spotbieSettingsInfoText$.next('There was an error saving.');
         }
     }
     deactivateCallback(resp) {
-        this.loading = false;
+        this.loading$.next(false);
         if (resp.success) {
+            // Account has been deactivated. Let's log out.
+            (0, logout_callback_1.logOutCallback)(resp);
         }
         else {
             console.log('deactivateCallback', resp);
@@ -343,7 +321,7 @@ tslib_1.__decorate([
     (0, core_1.ViewChild)('spotbieSettingsInfoText')
 ], SettingsComponent.prototype, "spotbieSettingsInfoText", void 0);
 tslib_1.__decorate([
-    (0, core_1.ViewChild)('spotbiePasswordChangeInfoText')
+    (0, core_1.ViewChild)('spotbiePasswordInfoText')
 ], SettingsComponent.prototype, "spotbiePasswordInfoText", void 0);
 tslib_1.__decorate([
     (0, core_1.ViewChild)('currentPasswordInfo')

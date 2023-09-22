@@ -6,7 +6,7 @@ const retry_operators_1 = require("../helpers/retry.operators");
 class ValidateUniqueEmail {
     static valid(checkEmailUniqueService, userEmail) {
         return (control) => checkEmailUniqueService.checkIfEmailUnique(control.value).pipe((0, retry_operators_1.retryWithBackOff)(1000), (0, operators_1.map)(res => {
-            if (res === undefined || res === null) {
+            if (!res) {
                 return null;
             }
             if (userEmail === control.value || res.is_valid) {

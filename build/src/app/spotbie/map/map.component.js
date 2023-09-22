@@ -12,16 +12,16 @@ const sort_order_pipe_1 = require("../../pipes/sort-order.pipe");
 const environment_1 = require("../../../environments/environment");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
-const { Geolocation, Toast } = core_2.Plugins;
+const geolocation_1 = require("@capacitor/geolocation");
+const capacitor_native_settings_1 = require("capacitor-native-settings");
+const preferences_1 = require("@capacitor/preferences");
 const YELP_BUSINESS_SEARCH_API = 'https://api.yelp.com/v3/businesses/search';
 const BANNED_YELP_IDS = map_extras.BANNED_YELP_IDS;
 const SBCM_INTERVAL = 16000;
 let MapComponent = class MapComponent {
-    constructor(locationService, deviceService, mapIconPipe, httpClient, platform, gestureCtrl) {
+    constructor(locationService, mapIconPipe, platform, gestureCtrl) {
         this.locationService = locationService;
-        this.deviceService = deviceService;
         this.mapIconPipe = mapIconPipe;
-        this.httpClient = httpClient;
         this.platform = platform;
         this.gestureCtrl = gestureCtrl;
         this.business = false;
@@ -35,15 +35,16 @@ let MapComponent = class MapComponent {
         this.rad_11 = null;
         this.rad_1 = null;
         this.searchResultsOriginal$ = new rxjs_1.BehaviorSubject([]);
+        this.isLoggedIn$ = new rxjs_1.BehaviorSubject(null);
         this.sortByTxt = 'Distance';
         this.sortingOrder = 'asc';
         this.sortAc = 0;
-        this.totalResults = 0;
-        this.currentOffset = 0;
-        this.itemsPerPage = 20;
-        this.aroundMeSearchPage = 1;
-        this.loadedTotalResults = 0;
-        this.allPages = 0;
+        this.totalResults$ = new rxjs_1.BehaviorSubject(0);
+        this.currentOffset$ = new rxjs_1.BehaviorSubject(0);
+        this.itemsPerPage$ = new rxjs_1.BehaviorSubject(20);
+        this.aroundMeSearchPage$ = new rxjs_1.BehaviorSubject(1);
+        this.loadedTotalResults$ = new rxjs_1.BehaviorSubject(0);
+        this.allPages$ = new rxjs_1.BehaviorSubject(0);
         this.maxDistanceCap = 45;
         this.maxDistance$ = new rxjs_1.BehaviorSubject(10);
         this.searchCategory$ = new rxjs_1.BehaviorSubject(null);
@@ -64,12 +65,10 @@ let MapComponent = class MapComponent {
         this.locationFound$ = new rxjs_1.BehaviorSubject(false);
         this.sliderRight = false;
         this.catsUp$ = new rxjs_1.BehaviorSubject(false);
-        this.toastHelper = false;
         this.showNoResultsBox$ = new rxjs_1.BehaviorSubject(false);
         this.showMobilePrompt2$ = new rxjs_1.BehaviorSubject(false);
         this.firstTimeShowingMap = true;
         this.showOpened$ = new rxjs_1.BehaviorSubject(false);
-        this.noResults = false;
         this.currentSearchType = '0';
         this.surroundingObjectList$ = new rxjs_1.BehaviorSubject([]);
         // This will store the third-party API search results.
@@ -85,30 +84,16 @@ let MapComponent = class MapComponent {
         this.shoppingCategories = map_extras.SHOPPING_CATEGORIES;
         this.numberCategories$ = new rxjs_1.BehaviorSubject(null);
         this.bottomBannerCategories$ = new rxjs_1.BehaviorSubject(null);
-        this.mapStyles = map_extras.MAP_STYLES;
         this.infoObject$ = new rxjs_1.BehaviorSubject(null);
         this.myFavoritesWindow = { open: false };
-        this.subCategory = {
-            food_sub: { open: false },
-            media_sub: { open: false },
-            artist_sub: { open: false },
-            place_sub: { open: false },
-        };
-        this.placesToEat = false;
-        this.eventsNearYou = false;
-        this.reatailShop = false;
-        this.usersAroundYou = false;
         this.isDesktop = false;
         this.isTablet = false;
         this.isMobile = false;
-        this.loadingText = null;
         this.displayLocationEnablingInstructions$ = new rxjs_1.BehaviorSubject(false);
         this.bannedYelpIDs = BANNED_YELP_IDS;
         this.eventsClassification$ = new rxjs_1.BehaviorSubject(null);
         this.getSpotBieCommunityMemberListInterval = false;
-        this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
-        this.userDefaultImage = localStorage.getItem('spotbie_userDefaultImage');
-        this.spotbieUsername = localStorage.getItem('spotbie_userLogin');
+        this.init();
         (0, rxjs_1.combineLatest)([this.lat$, this.lng$])
             .pipe((0, operators_1.filter)(([lat, lng]) => !!lat && !!lng), (0, operators_1.tap)(([lat, lng]) => {
             this.spotbieMap.setCenter({ lat, lng });
@@ -162,6 +147,14 @@ let MapComponent = class MapComponent {
         }))
             .subscribe();
     }
+    async init() {
+        const retIsLoggedIn = await preferences_1.Preferences.get({ key: 'spotbie_loggedIn' });
+        const retSpotbieUsername = await preferences_1.Preferences.get({
+            key: 'spotbie_userLogin',
+        });
+        this.isLoggedIn$.next(retIsLoggedIn.value);
+        this.spotbieUsername = retSpotbieUsername.value;
+    }
     hideMarkers(markerList) {
         markerList.forEach(marker => marker.setMap(null));
         return;
@@ -191,7 +184,7 @@ let MapComponent = class MapComponent {
         this.rad_1 = this.rad_11;
     }
     ngAfterViewInit() {
-        if (this.isLoggedIn !== '1') {
+        if (this.isLoggedIn$.getValue() !== '1') {
             this.userDefaultImage = 'assets/images/guest-spotbie-user-01.svg';
             this.spotbieUsername = 'Guest';
         }
@@ -377,7 +370,6 @@ let MapComponent = class MapComponent {
     }
     classificationSearchCallback(httpResponse) {
         this.loading$.next(false);
-        console.log('classificationSearchCallback', httpResponse);
         if (httpResponse.success) {
             const classifications = httpResponse.data._embedded.classifications;
             classifications.forEach(classification => {
@@ -442,10 +434,10 @@ let MapComponent = class MapComponent {
         classification.show_sub = !classification.show_sub;
     }
     newKeyWord() {
-        this.totalResults = 0;
-        this.allPages = 0;
-        this.currentOffset = 0;
-        this.aroundMeSearchPage = 1;
+        this.totalResults$.next(0);
+        this.allPages$.next(0);
+        this.currentOffset$.next(0);
+        this.aroundMeSearchPage$.next(1);
         this.searchResults$.next([]);
     }
     apiSearch(keyword, resetEventSorter = false) {
@@ -465,15 +457,15 @@ let MapComponent = class MapComponent {
         const lng = this.lng$.getValue();
         switch (this.searchCategory$.getValue()) {
             case 1: // food
-                apiUrl = `${this.searchApiUrl}?latitude=${lat}&longitude=${lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
+                apiUrl = `${this.searchApiUrl}?latitude=${lat}&longitude=${lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset$.getValue()}`;
                 this.numberCategories$.next(this.foodCategories.indexOf(this.searchKeyword$.getValue()));
                 break;
             case 2: // shopping
-                apiUrl = `${this.searchApiUrl}?latitude=${lat}&longitude=${lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset}`;
+                apiUrl = `${this.searchApiUrl}?latitude=${lat}&longitude=${lng}&term=${keyword}&categories=${keyword}&${this.showOpenedParam}&radius=40000&sort_by=rating&limit=20&offset=${this.currentOffset$.getValue()}`;
                 this.numberCategories$.next(this.shoppingCategories.indexOf(this.searchKeyword$.getValue()));
                 break;
             case 3: // events
-                apiUrl = `size=2&latlong=${lat},${lng}&classificationName=${keyword}&radius=45&${this.eventDateParam}`;
+                apiUrl = `size=20&latlong=${lat},${lng}&classificationName=${keyword}&radius=45&${this.eventDateParam}`;
                 this.numberCategories$.next(this.eventCategories.indexOf(this.searchKeyword$.getValue()));
                 break;
         }
@@ -515,7 +507,7 @@ let MapComponent = class MapComponent {
     }
     getMapOptions() {
         return {
-            styles: this.mapStyles,
+            //styles: this.mapStyles,
             zoom: this.zoom,
             clickable: false,
             mapTypeControl: false,
@@ -538,15 +530,22 @@ let MapComponent = class MapComponent {
     sortingOrderClass(sortingOrder) {
         return new sort_order_pipe_1.SortOrderPipe().transform(sortingOrder);
     }
+    async setMap(coordinates) {
+        this.map$.next(true);
+        await this.initMap();
+        this.showPosition(coordinates);
+    }
     async spawnCategories(category) {
         this.infoObject$.next(null);
         this.showSearchBox$.next(true);
         if (this.searchCategory$.getValue() !== category) {
             this.previousSearchCategory = this.searchCategory$.getValue();
         }
+        // If the category we picked is the same one as the
+        // previously opened one then we can skip some steps.
         if (category === this.previousSearchCategory) {
-            this.catsUp$.next(true);
-            this.loading$.next(false);
+            const coordinates = await geolocation_1.Geolocation.getCurrentPosition();
+            await this.setMap(coordinates);
             return;
         }
         this.loading$.next(true);
@@ -554,24 +553,27 @@ let MapComponent = class MapComponent {
         this.zoom = 18;
         this.fitBounds = false;
         if (!this.locationFound$.getValue() && core_2.Capacitor.isNativePlatform()) {
-            Geolocation.getCurrentPosition(async (position) => {
-                this.map$.next(true);
-                await this.initMap();
-                this.showPosition(position);
+            const hasPermissions = await this.checkPermission();
+            if (hasPermissions) {
+                const coordinates = await geolocation_1.Geolocation.getCurrentPosition();
+                await this.setMap(coordinates);
+            }
+            else {
+                this.showMapError();
+                return;
+            }
+        }
+        else if (!this.locationFound$.getValue()) {
+            window.navigator.geolocation.getCurrentPosition(async (position) => {
+                await this.setMap(position);
             }, err => {
                 console.log(err);
                 this.showMapError();
             });
         }
-        else if (!this.locationFound$.getValue()) {
-            window.navigator.geolocation.getCurrentPosition(async (position) => {
-                this.map$.next(true);
-                await this.initMap();
-                this.showPosition(position);
-            }, err => {
-                console.log(err);
-                this.showMapError();
-            });
+        else if (this.locationFound$.getValue()) {
+            const coordinates = await geolocation_1.Geolocation.getCurrentPosition();
+            await this.setMap(coordinates);
         }
         if (this.searchResults$.getValue().length === 0) {
             this.showSearchResults$.next(false);
@@ -610,6 +612,12 @@ let MapComponent = class MapComponent {
             onMove: ev => this.catsUp$.next(false),
         }, true);
         closeCategoryPicker.enable();
+        // I'm sure there's a better way to do this... but then again there's no time right now.
+        const topBar = document.getElementsByTagName('ion-header')[1].offsetHeight;
+        setTimeout(() => {
+            const spotbieCategories = document.getElementById('spotbieCategories');
+            spotbieCategories.style.paddingTop = topBar + 'px';
+        }, 500);
     }
     cleanCategory() {
         if (this.searchCategory$.getValue() !== this.previousSearchCategory) {
@@ -628,22 +636,14 @@ let MapComponent = class MapComponent {
         }
     }
     goToQrCode() {
-        //scroll to qr Code
         this.closeCategories();
         this.openWelcome();
-        setTimeout(() => {
-            this.homeDashboard.scrollToQrAppAnchor();
-        }, 750);
+        this.homeDashboard.startQrScanner();
     }
     goToLp() {
-        //scroll to loyalty points
         this.closeCategories();
-        this.homeDashboard.scrollToLpAppAnchor();
-    }
-    goToRewardMenu() {
-        //scroll to reward menu
-        this.closeCategories();
-        this.homeDashboard.scrollToRewardMenuAppAnchor();
+        this.openWelcome();
+        this.homeDashboard.redeemedLp();
     }
     closeCategories() {
         this.catsUp$.next(false);
@@ -667,7 +667,7 @@ let MapComponent = class MapComponent {
             }
             else {
                 //Used for loading places to eat and shopping from yelp
-                apiUrl = `${this.searchApiUrl}?latitude=${this.lat$.getValue()}&longitude=${this.lng$.getValue()}&term=${searchTerm}&${this.showOpenedParam}&radius=40000&sort_by=best_match&limit=20&offset=${this.currentOffset}`;
+                apiUrl = `${this.searchApiUrl}?latitude=${this.lat$.getValue()}&longitude=${this.lng$.getValue()}&term=${searchTerm}&${this.showOpenedParam}&radius=40000&sort_by=best_match&limit=20&offset=${this.currentOffset$.getValue()}`;
                 const searchObj = {
                     config_url: apiUrl,
                 };
@@ -689,7 +689,7 @@ let MapComponent = class MapComponent {
         }, 1500);
     }
     displayPageNext(page) {
-        if (page < this.allPages) {
+        if (page < this.allPages$.getValue()) {
             return {};
         }
         else {
@@ -704,58 +704,36 @@ let MapComponent = class MapComponent {
             return { display: 'none' };
         }
     }
-    goToPage(page) {
-        this.aroundMeSearchPage = page;
-        this.currentOffset =
-            this.aroundMeSearchPage * this.itemsPerPage - this.itemsPerPage;
-        this.apiSearch(this.searchKeyword$.getValue());
-        this.scrollMapAppAnchor.nativeElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-        });
-    }
-    loadMoreResults(action) {
+    goToPage(action) {
+        let page;
         switch (action) {
-            case 0:
-                //previous
-                if (this.aroundMeSearchPage === 1) {
-                    this.aroundMeSearchPage = Math.ceil(this.totalResults / this.itemsPerPage);
-                }
-                else {
-                    this.aroundMeSearchPage--;
-                }
+            case 'prev-two':
+                page = this.aroundMeSearchPage$.getValue() - 2;
                 break;
-            case 1:
-                //next
-                if (this.aroundMeSearchPage ===
-                    Math.ceil(this.totalResults / this.itemsPerPage)) {
-                    this.aroundMeSearchPage = 1;
-                    this.currentOffset = 0;
-                }
-                else {
-                    this.aroundMeSearchPage++;
-                }
+            case 'prev-one':
+                page = this.aroundMeSearchPage$.getValue() - 1;
+                break;
+            case 'next-two':
+                page = this.aroundMeSearchPage$.getValue() + 2;
+                break;
+            case 'next-one':
+                page = this.aroundMeSearchPage$.getValue() + 1;
+                break;
+            case 'one':
+                page = 1;
                 break;
         }
-        this.currentOffset =
-            this.aroundMeSearchPage * this.itemsPerPage - this.itemsPerPage;
+        if (page < 1 || page > this.allPages$.getValue()) {
+            return;
+        }
+        this.aroundMeSearchPage$.next(page);
+        this.currentOffset$.next(this.aroundMeSearchPage$.getValue() * this.itemsPerPage$.getValue() -
+            this.itemsPerPage$.getValue());
         this.apiSearch(this.searchKeyword$.getValue());
         this.scrollMapAppAnchor.nativeElement.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
         });
-    }
-    hideSearchResults() {
-        this.showSearchResults$.next(!this.showSearchResults$.getValue());
-    }
-    formatPhoneNumber(phoneNumberString) {
-        const cleaned = ('' + phoneNumberString).replace(/\D/g, '');
-        const match = cleaned.match(/^(1|)?(\d{3})(\d{3})(\d{4})$/);
-        if (match) {
-            const intlCode = match[1] ? '+1 ' : '';
-            return [intlCode, '(', match[2], ') ', match[3], '-', match[4]].join('');
-        }
-        return null;
     }
     getMapWrapperClass() {
         if (this.showSearchResults$.getValue()) {
@@ -779,9 +757,9 @@ let MapComponent = class MapComponent {
     getEventsSearchCallback(httpResponse) {
         this.loading$.next(false);
         if (httpResponse.success) {
-            this.totalResults = httpResponse.data.page.totalElements;
+            this.totalResults$.next(httpResponse.data.page.totalElements);
             const eventObject = httpResponse.data;
-            if (this.totalResults === 0 || !!eventObject._embedded) {
+            if (this.totalResults$.getValue() === 0) {
                 this.showNoResultsBox$.next(true);
                 this.loading$.next(false);
                 this.searchResults$.next([]);
@@ -797,10 +775,9 @@ let MapComponent = class MapComponent {
             this.catsUp$.next(false);
             this.loading$.next(false);
             const eventObjectList = eventObject._embedded.events;
-            this.totalResults = eventObjectList.length;
-            this.allPages = Math.ceil(this.totalResults / this.itemsPerPage);
-            if (this.allPages === 0) {
-                this.allPages = 1;
+            this.allPages$.next(Math.ceil(this.totalResults$.getValue() / this.itemsPerPage$.getValue()));
+            if (this.allPages$.getValue() === 0) {
+                this.allPages$.next(1);
             }
             const searchResults = [];
             for (let i = 0; i < eventObjectList.length; i++) {
@@ -821,6 +798,7 @@ let MapComponent = class MapComponent {
                 searchResults.push(eventObjectList[i]);
             }
             this.searchResults$.next(searchResults);
+            this.drawMarkers();
             this.sortingOrder = 'desc';
             this.sortBy(0);
             this.searchCategorySorter$.next(this.searchCategory$.getValue());
@@ -828,7 +806,7 @@ let MapComponent = class MapComponent {
             this.searchResultsOriginal$.next(this.searchResults$.getValue());
             this.showSearchResults$.next(true);
             this.showSearchBox$.next(true);
-            this.loadedTotalResults = this.searchResults$.getValue().length;
+            this.loadedTotalResults$.next(this.searchResults$.getValue().length);
             this.maxDistance$.next(45);
         }
         else {
@@ -900,8 +878,8 @@ let MapComponent = class MapComponent {
         this.maxDistanceCap = 25;
         this.fitBounds = true;
         if (httpResponse.success) {
-            this.totalResults = httpResponse.data.total;
-            if (this.totalResults === 0) {
+            this.totalResults$.next(httpResponse.data.total);
+            if (this.totalResults$.getValue() === 0) {
                 this.showNoResultsBox$.next(true);
                 return;
             }
@@ -922,7 +900,6 @@ let MapComponent = class MapComponent {
         }
     }
     pullSearchMarker(infoObject) {
-        console.log('the marker', infoObject);
         this.infoObject$.next(infoObject);
     }
     async initMap() {
@@ -998,7 +975,7 @@ let MapComponent = class MapComponent {
             loc_x: this.lat$.getValue(),
             loc_y: this.lng$.getValue(),
         };
-        if (this.isLoggedIn === '1') {
+        if (this.isLoggedIn$.getValue() === '1') {
             this.locationService.saveCurrentLocation(saveLocationObj).subscribe(resp => {
                 this.saveCurrentLocationCallback(resp);
             }, error => {
@@ -1050,19 +1027,6 @@ let MapComponent = class MapComponent {
         this.showMobilePrompt2$.next(false);
         this.createObjectMarker(surroundingObjectList);
     }
-    getMapPromptMobileClass() {
-        if (this.isMobile) {
-            return 'map-prompt-mobile align-items-center justify-content-center';
-        }
-        else {
-            return 'map-prompt-mobile align-items-center';
-        }
-    }
-    getMapPromptMobileInnerWrapperClassOne() {
-        if (this.isMobile) {
-            return 'map-prompt-v-align mt-2';
-        }
-    }
     createObjectMarker(surroundingObjectList) {
         this.surroundingObjectList$.next(surroundingObjectList);
     }
@@ -1097,6 +1061,8 @@ let MapComponent = class MapComponent {
         this.myFavoritesWindow.open = true;
     }
     showMapError() {
+        // Check for location permission and prompt the user.
+        alert("Please enable location to find SpotBie locations.");
         this.displayLocationEnablingInstructions$.next(true);
         this.map$.next(false);
         this.loading$.next(false);
@@ -1109,7 +1075,6 @@ let MapComponent = class MapComponent {
         this.showMobilePrompt2$.next(true);
     }
     async populateYelpResults(data) {
-        console.log('populateYelpResults', data);
         let results = data.businesses;
         let i = 0;
         const resultsToRemove = [];
@@ -1162,19 +1127,9 @@ let MapComponent = class MapComponent {
             results.splice(resultsToRemove[y], 1);
         }
         this.searchResultsOriginal$.next(results);
-        console.log('this.maxDistance$.getValue()', this.maxDistance$.getValue());
         results = results.filter(searchResult => searchResult.distance < this.maxDistance$.getValue());
         this.searchResults$.next(results);
-        // Create a merge observable that also takes in the community members array.
-        const markers = this.searchResults$.getValue();
-        const bounds = new google.maps.LatLngBounds();
-        for (let i = 0; i < markers.length; i++) {
-            bounds.extend({
-                lat: markers[i].coordinates.latitude,
-                lng: markers[i].coordinates.longitude,
-            });
-        }
-        this.spotbieMap.fitBounds(bounds);
+        this.drawMarkers();
         if (this.sortingOrder === 'desc') {
             this.sortingOrder = 'asc';
         }
@@ -1190,16 +1145,60 @@ let MapComponent = class MapComponent {
                 this.searchResultsSubtitle = 'Shopping Spots';
                 break;
         }
-        this.loadedTotalResults = this.searchResults$.getValue().length;
-        this.allPages = Math.ceil(this.totalResults / this.itemsPerPage);
-        if (this.allPages === 0) {
-            this.allPages = 1;
+        this.loadedTotalResults$.next(this.searchResults$.getValue().length);
+        this.allPages$.next(Math.ceil(this.totalResults$.getValue() / this.itemsPerPage$.getValue()));
+        if (this.allPages$.getValue() === 0) {
+            this.allPages$.next(1);
         }
-        if (this.loadedTotalResults > 1000) {
-            this.totalResults = 1000;
-            this.loadedTotalResults = 1000;
-            this.allPages = 20;
+        if (this.loadedTotalResults$.getValue() > 1000) {
+            this.totalResults$.next(1000);
+            this.loadedTotalResults$.next(1000);
+            this.allPages$.next(20);
         }
+    }
+    drawMarkers() {
+        const markers = this.searchResults$.getValue();
+        const bounds = new google.maps.LatLngBounds();
+        for (let i = 0; i < markers.length; i++) {
+            bounds.extend({
+                lat: markers[i].coordinates.latitude,
+                lng: markers[i].coordinates.longitude,
+            });
+        }
+        this.spotbieMap.fitBounds(bounds);
+    }
+    async checkPermission() {
+        // check if user already granted permission
+        const status = await geolocation_1.Geolocation.checkPermissions();
+        if (status.location === 'granted') {
+            // user granted permission
+            return true;
+        }
+        if (status.location === 'denied') {
+            // user denied permission
+            return false;
+        }
+        // user has not been requested this permission before
+        // it is advised to show the user some sort of prompt
+        // this way you will not waste your only chance to ask for the permission
+        const c = confirm('SpotBie uses your location to provide you with products, services, features, and events based on their location.');
+        if (!c) {
+            return false;
+        }
+        const permissionGranted = await geolocation_1.Geolocation.requestPermissions();
+        // user did not grant the permission, so he must have declined the request
+        if (!permissionGranted) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    openAppSettings() {
+        capacitor_native_settings_1.NativeSettings.open({
+            optionAndroid: capacitor_native_settings_1.AndroidSettings.ApplicationDetails,
+            optionIOS: capacitor_native_settings_1.IOSSettings.App,
+        });
     }
     openTerms() { }
 };

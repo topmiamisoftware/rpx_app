@@ -10,6 +10,7 @@ const reward_menu_module_1 = require("../../spotbie-logged-in/reward-menu/reward
 const nearby_ads_three_component_1 = require("./nearby-ads-three/nearby-ads-three.component");
 const nearby_featured_ad_component_1 = require("./nearby-featured-ad/nearby-featured-ad.component");
 const helper_module_1 = require("../../../helpers/helper.module");
+const angular_1 = require("@ionic/angular");
 let InfoObjectModule = class InfoObjectModule {
 };
 InfoObjectModule = tslib_1.__decorate([
@@ -36,6 +37,7 @@ InfoObjectModule = tslib_1.__decorate([
                     'whatsapp',
                 ],
             }),
+            angular_1.IonicModule,
         ],
         exports: [info_object_component_1.InfoObjectComponent],
     })

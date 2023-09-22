@@ -6,11 +6,11 @@ class HttpResponse {
         this.status = httpResponse.status;
         this.message = httpResponse.status;
         this.full_message = httpResponse.full_message;
-        if (httpResponse.responseObject == '') {
+        if (httpResponse.responseObject === '') {
             this.responseObject = '';
         }
         else {
-            this.responseObject = JSON.parse(httpResponse.responseObject);
+            this.responseObject = httpResponse.responseObject;
         }
         if (httpResponse.apiKey) {
             this.apiKey = httpResponse.apiKey;

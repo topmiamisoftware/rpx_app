@@ -12,7 +12,6 @@ const router_1 = require("@angular/router");
 const helper_module_1 = require("../../helpers/helper.module");
 const map_module_1 = require("../map/map.module");
 const settings_module_1 = require("./settings/settings.module");
-const redeemable_module_1 = require("./redeemable/redeemable.module");
 const angular_1 = require("@ionic/angular");
 //import { EventMenuModule } from './event-menu/event-menu.module';
 let MenuLoggedInModule = class MenuLoggedInModule {
@@ -21,7 +20,6 @@ MenuLoggedInModule = tslib_1.__decorate([
     (0, core_1.NgModule)({
         declarations: [menu_logged_in_component_1.MenuLoggedInComponent],
         imports: [
-            redeemable_module_1.RedeemableModule,
             common_1.CommonModule,
             forms_1.FormsModule,
             forms_1.ReactiveFormsModule,

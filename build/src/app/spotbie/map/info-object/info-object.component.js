@@ -5,12 +5,13 @@ const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
 const date_format_pipe_1 = require("../../../pipes/date-format.pipe");
 const info_object_helper_1 = require("../../../helpers/info-object-helper");
-const sharesheet_1 = require("../../../helpers/cordova/sharesheet");
 const spotbie_1 = require("../../../constants/spotbie");
 const environment_1 = require("../../../../environments/environment");
 const info_object_type_enum_1 = require("../../../helpers/enum/info-object-type.enum");
 const rxjs_1 = require("rxjs");
 const app_launcher_1 = require("@capacitor/app-launcher");
+const preferences_1 = require("@capacitor/preferences");
+const share_1 = require("@capacitor/share");
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 const SPOTBIE_META_DESCRIPTION = spotbie_1.spotbieMetaDescription;
 const SPOTBIE_META_TITLE = spotbie_1.spotbieMetaTitle;
@@ -20,9 +21,7 @@ let InfoObjectComponent = class InfoObjectComponent {
         this.accountType = infoObject.user_type;
         this.infoObject$.next(infoObject);
     }
-    constructor(infoObjectService, 
-    // private myFavoritesService: MyFavoritesService,
-    router, activatedRoute, spotbieMetaService) {
+    constructor(infoObjectService, router, activatedRoute, spotbieMetaService) {
         this.infoObjectService = infoObjectService;
         this.router = router;
         this.activatedRoute = activatedRoute;
@@ -36,7 +35,7 @@ let InfoObjectComponent = class InfoObjectComponent {
         this.loading$ = new rxjs_1.BehaviorSubject(false);
         this.rewardMenuUp$ = new rxjs_1.BehaviorSubject(false);
         this.infoObject$ = new rxjs_1.BehaviorSubject(null);
-        this.showFavorites = true;
+        this.isLoggedIn$ = new rxjs_1.BehaviorSubject(null);
         this.objectCategories = '';
         this.eInfoObjectType = info_object_type_enum_1.InfoObjectType;
     }
@@ -61,6 +60,7 @@ let InfoObjectComponent = class InfoObjectComponent {
         }
     }
     pullInfoObject() {
+        console.log('pullInfoObject');
         if (this.router.url.indexOf('event') > -1) {
             const infoObjectId = this.activatedRoute.snapshot.paramMap.get('id');
             this.urlApi = `id=${infoObjectId}`;
@@ -79,16 +79,9 @@ let InfoObjectComponent = class InfoObjectComponent {
             });
         }
     }
-    linkCopy(inputElement) {
-        inputElement.select();
-        document.execCommand('copy');
-        inputElement.setSelectionRange(0, inputElement.value.length);
-        this.successful_url_copy = true;
-        setTimeout(() => {
-            this.successful_url_copy = false;
-        }, 2500);
-    }
     pullInfoObjectCallback(httpResponse) {
+        console.log('httpResponse', httpResponse);
+        console.log('this.infoObjectCategory;', this.infoObjectCategory);
         if (httpResponse.success) {
             const infoObject = httpResponse.data;
             infoObject.type_of_info_object_category = this.infoObjectCategory;
@@ -130,7 +123,7 @@ let InfoObjectComponent = class InfoObjectComponent {
                     }
                 });
             }
-            if (infoObject.is_community_member) {
+            if (!infoObject.is_community_member) {
                 this.objectDisplayAddress = `${infoObject.location.display_address[0]}, ${infoObject.location.display_address[1]}`;
             }
             else {
@@ -156,39 +149,11 @@ let InfoObjectComponent = class InfoObjectComponent {
             this.spotbieMetaService.setImage(this.infoObjectImageUrl);
             this.infoObject$.next(infoObject);
             this.loading$.next(false);
-            // this.isInMyFavorites(this.infoObject$.id, this.infoObject$.type_of_info_object)
         }
         else {
             console.log('pullInfoObjectCallback', httpResponse);
         }
     }
-    /*private isInMyFavorites(objId: string, objType: string): void{
-      if(this.isLoggedIn === '1'){
-        this.myFavoritesService.isInMyFavorites(objId, objType).subscribe(
-          resp =>{
-            this.isInMyFavoritesCb(resp)
-          }
-        )
-      } else {
-        let isAFavorite = this.myFavoritesService.isInMyFavoritesLoggedOut(objId)
-        if(isAFavorite)
-          this.showFavorites = false
-        else
-          this.showFavorites = true
-      }
-    }
-  
-    private isInMyFavoritesCb(httpResponse: any): void{
-      if (httpResponse.success) {
-        let isAFavorite = httpResponse.is_a_favorite
-        if(isAFavorite)
-          this.showFavorites = false
-        else
-          this.showFavorites = true
-      } else
-        console.log('pullInfoObjectCallback', httpResponse)
-      this.loading = false
-    }*/
     async openWithGoogleMaps() {
         const confirmNav = confirm("We will try to open and navigate on your device's default navigation app.");
         let displayAddress = '';
@@ -197,13 +162,30 @@ let InfoObjectComponent = class InfoObjectComponent {
         });
         if (confirmNav) {
             await app_launcher_1.AppLauncher.openUrl({
-                url: `http://www.google.com/maps/place/${displayAddress}`,
+                url: `http://www.google.com/maps/place/${encodeURI(displayAddress)}`,
             });
         }
         return;
     }
-    switchPhoto(thumbnail) {
-        this.infoObjectImageUrl = thumbnail;
+    share() {
+        console.log('infoObjectTitle', this.infoObjectTitle);
+        console.log('infoObjectDescription', this.infoObjectDescription);
+        console.log('infoObjectLink', this.infoObjectLink);
+        share_1.Share.share({
+            title: this.infoObjectTitle,
+            text: this.infoObjectDescription,
+            url: this.infoObjectLink,
+            dialogTitle: 'Share Spot...',
+        });
+    }
+    getIconStyle() {
+        if (this.infoObject$.getValue().type_of_info_object ===
+            info_object_type_enum_1.InfoObjectType.SpotBieCommunity) {
+            return { color: 'white' };
+        }
+        else {
+            return { color: '#333' };
+        }
     }
     async goToTicket() {
         await app_launcher_1.AppLauncher.openUrl({ url: this.infoObject$.getValue().url });
@@ -224,9 +206,9 @@ let InfoObjectComponent = class InfoObjectComponent {
         return style;
     }
     getOverlayWindowStyling() {
-        let className = 'spotbie-overlay-window infoObjectWindow';
+        let className = 'spotbie-overlay-window infoObjectWindow has-header';
         if (this.infoObject$.getValue().is_community_member) {
-            className = 'spotbie-overlay-window communityMemberWindow';
+            className = 'spotbie-overlay-window communityMemberWindow has-header';
         }
         return className;
     }
@@ -236,84 +218,6 @@ let InfoObjectComponent = class InfoObjectComponent {
             className = 'spotbie-text-gradient text-uppercase';
         }
         return className;
-    }
-    getIconTheme() {
-        let className = 'material-light';
-        if (this.infoObject$.getValue().is_community_member) {
-            className = 'material-dark';
-        }
-        return className;
-    }
-    addFavorite() {
-        /*    this.loading$.next(true);
-    
-        const id = this.infoObject$.id;
-        const name = this.infoObject$.name;
-    
-        let locX = null;
-        let locY = null;
-    
-        if (
-          this.infoObject$.type_of_info_object === InfoObjectType.SpotBieCommunity
-        ) {
-          locX = this.infoObject$.loc_x;
-          locY = this.infoObject$.loc_y;
-        } else {
-          locX = this.infoObject$.coordinates.latitude;
-          locY = this.infoObject$.coordinates.longitude;
-        }
-    
-        const favoriteObj = {
-          third_party_id: id,
-          name,
-          description: null,
-          loc_x: locX,
-          loc_y: locY,
-          type_of_info_object_category:
-            this.infoObject$.type_of_info_object_category,
-        };
-    
-        if (this.isLoggedIn === '1') {
-          /!*this.myFavoritesService.addFavorite(favoriteObj).subscribe(
-            resp => {
-              this.addFavoriteCb(resp)
-            }
-          )*!/
-        } else {
-          //this.myFavoritesService.addFavoriteLoggedOut(favoriteObj)
-          this.showFavorites = false;
-          this.loading$.next(false);
-        }*/
-    }
-    addFavoriteCb(resp) {
-        /*    if (resp.success) this.showFavorites = false;
-        else console.log('addFavoriteCb', resp);
-    
-        this.loading$.next(false);*/
-    }
-    removeFavorite() {
-        /*
-        this.loading = true
-        const yelpId = this.infoObject$.id
-    
-        if(this.isLoggedIn == '1'){
-          this.myFavoritesService.removeFavorite(yelpId).subscribe(resp => {
-              this.removeFavoriteCb(resp, yelpId)
-            })
-        } else {
-          this.myFavoritesService.removeFavoriteLoggedOut(yelpId)
-          this.removeFavoriteCb({success: true}, yelpId)
-          this.loading = false
-          this.showFavorites = true
-        }
-        */
-    }
-    removeFavoriteCb(resp, favoriteId) {
-        /*    if (resp.success) {
-          this.showFavorites = true;
-          this.removeFavoriteEvent.emit({favoriteId: favoriteId});
-        } else console.log('removeFavoriteCb', resp);
-        this.loading$.next(false);*/
     }
     getEventCallback(httpResponse) {
         const eventObject = httpResponse.data._embedded.events[0] ?? undefined;
@@ -340,13 +244,6 @@ let InfoObjectComponent = class InfoObjectComponent {
         }
         this.loading$.next(false);
         return;
-    }
-    shareThisNative() {
-        const message = this.infoObjectDescription;
-        const subject = this.infoObjectTitle;
-        const url = this.infoObjectLink;
-        const chooserTitle = 'Pick an App!';
-        (0, sharesheet_1.shareNative)(message, subject, url, chooserTitle);
     }
     setEventMetaData() {
         const infoObject = this.infoObject$.getValue();
@@ -379,21 +276,21 @@ let InfoObjectComponent = class InfoObjectComponent {
         }
         return;
     }
-    getInputClass() {
-        let className = 'sb-infoObjectInputDark';
-        if (this.infoObject$.getValue().is_community_member) {
-            className = 'sb-infoObjectInputLight';
-        }
-        return className;
-    }
     clickGoToSponsored() {
-        window.open('/business', '_blank');
-        return;
+        app_launcher_1.AppLauncher.openUrl({ url: 'https://spotbie.com/business' });
+    }
+    async ngAfterViewInit() {
+        // I'm sure there's a better way to do this but I don't have time right now.
+        const closeButton = document.getElementById('sb-closeButtonInfoObject');
+        const isLoggedInRet = await preferences_1.Preferences.get({ key: 'spotbie_loggedIn' });
+        this.isLoggedIn$.next(isLoggedInRet.value);
+        const p = this.isLoggedIn$.getValue() === '0' || !this.isLoggedIn$.getValue()
+            ? document.getElementById('ionToolbarLoggedOut').offsetHeight
+            : document.getElementById('ionToolbarLoggedIn').offsetHeight;
+        closeButton.style.top = p + 'px';
     }
     ngOnInit() {
         this.loading$.next(true);
-        this.bgColor = localStorage.getItem('spotbie_backgroundColor');
-        this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
         const infoObject = this.infoObject$.getValue();
         if (infoObject) {
             this.infoObjectCategory = infoObject.type_of_info_object_category;
@@ -410,6 +307,20 @@ let InfoObjectComponent = class InfoObjectComponent {
                         infoObject.user_type === 2 ||
                         infoObject.user_type === 3) {
                         this.infoObjectLink = `${environment_1.environment.baseUrl}community/${infoObject.qr_code_link}`;
+                        switch (infoObject.user_type) {
+                            case 1:
+                                this.infoObjectTitle = `${infoObject.name} - ${infoObject.cleanCategories} - ${infoObject.address}`;
+                                this.infoObjectDescription = `Let's go eat at ${infoObject.name}. I know you'll enjoy some of these categories ${this.infoObjectCategory}. They are located at ${this.objectDisplayAddress}.`;
+                                break;
+                            case 2:
+                                this.infoObjectTitle = `${infoObject.name} - ${infoObject.cleanCategories} - ${infoObject.address}`;
+                                this.infoObjectDescription = `I really recommend you go shopping at ${infoObject.name}!`;
+                                break;
+                            case 3:
+                                this.infoObjectTitle = `${infoObject.name} - ${infoObject.cleanCategories} - ${infoObject.address}`;
+                                this.infoObjectDescription = `Let's go to ${infoObject.name}!`;
+                                break;
+                        }
                     }
                     this.loading$.next(false);
                     return;

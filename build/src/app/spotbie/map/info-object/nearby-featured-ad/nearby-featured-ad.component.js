@@ -10,6 +10,7 @@ const ad_1 = require("../../../../models/ad");
 const map_extras_1 = require("../../map_extras/map_extras");
 const numbers_helper_1 = require("../../../../helpers/numbers.helper");
 const rxjs_1 = require("rxjs");
+const preferences_1 = require("@capacitor/preferences");
 const PLACE_TO_EAT_AD_IMAGE = 'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
 const SHOPPING_AD_IMAGE = 'assets/images/def/shopping/featured_banner_in_house.jpg';
 const EVENTS_AD_IMAGE = 'assets/images/def/events/featured_banner_in_house.jpg';
@@ -50,9 +51,9 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
         this.businessReady$ = new rxjs_1.BehaviorSubject(false);
         this.switchAdInterval = false;
     }
-    getNearByFeatured() {
+    async getNearByFeatured() {
         let adId = null;
-        let accountType;
+        let accountType = null;
         const needleElement = document.getElementsByClassName('sb-closeButton');
         if (needleElement.length > 1) {
             return;
@@ -67,7 +68,8 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
             else {
                 adId = this.ad$.getValue().id;
             }
-            accountType = localStorage.getItem('spotbie_userType');
+            const retAccType = await preferences_1.Preferences.get({ key: 'spotbie_userType' });
+            accountType = retAccType.value;
             switch (accountType) {
                 case 1:
                     this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;

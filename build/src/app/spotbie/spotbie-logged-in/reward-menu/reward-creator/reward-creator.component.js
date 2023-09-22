@@ -8,6 +8,7 @@ const forms_1 = require("@angular/forms");
 const reward_1 = require("../../../../models/reward");
 const environment_1 = require("../../../../../environments/environment");
 const spotbieGlobals = require("../../../../globals");
+const preferences_1 = require("@capacitor/preferences");
 const REWARD_MEDIA_UPLOAD_API_URL = `${spotbieGlobals.API}reward/upload-media`;
 const REWARD_MEDIA_MAX_UPLOAD_SIZE = 25e6;
 const QR_CODE_CALIM_REWARD_SCAN_BASE_URL = environment_1.environment.qrCodeRewardScanBaseUrl;
@@ -140,7 +141,7 @@ let RewardCreatorComponent = class RewardCreatorComponent {
     startRewardMediaUploader() {
         this.rewardMediaInput.nativeElement.click();
     }
-    uploadMedia(files) {
+    async uploadMedia(files) {
         const fileListLength = files.length;
         if (fileListLength === 0) {
             this.rewardMediaMessage = 'You must upload at least one file.';
@@ -164,7 +165,8 @@ let RewardCreatorComponent = class RewardCreatorComponent {
             }
             formData.append('image', file_to_upload, file_to_upload.name);
         }
-        const token = localStorage.getItem('spotbiecom_session');
+        const tokenRet = await preferences_1.Preferences.get({ key: 'spotbiecom_session' });
+        const token = tokenRet.value;
         this.http
             .post(REWARD_MEDIA_UPLOAD_API_URL, formData, {
             reportProgress: true,
@@ -187,7 +189,9 @@ let RewardCreatorComponent = class RewardCreatorComponent {
     rewardMediaUploadFinished(httpResponse) {
         if (httpResponse.success) {
             this.rewardUploadImage = httpResponse.image;
-            this.rewardCreatorForm.get('rewardImage').setValue(this.rewardUploadImage);
+            this.rewardCreatorForm
+                .get('rewardImage')
+                .setValue(this.rewardUploadImage);
         }
         else {
             console.log('rewardMediaUploadFinished', httpResponse);

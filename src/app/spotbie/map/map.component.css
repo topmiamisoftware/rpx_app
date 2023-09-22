@@ -941,7 +941,6 @@ map-marker > img{
         padding-top: unset;
     }
     .map-prompt-mobile{
-        overflow-y: scroll;
         width: 100%;
         min-width: 100%;
     }

@@ -1,21 +1,30 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logOutCallback = void 0;
-const environment_1 = require("../../environments/environment");
-const logOutCallback = function (resp, locationReload = true) {
+const preferences_1 = require("@capacitor/preferences");
+const logOutCallback = function (resp) {
     if (resp.success) {
-        let loggedOutFavorites = localStorage.getItem('spotbie_currentFavorites');
-        localStorage.clear();
-        localStorage.setItem('spotbie_currentFavorites', loggedOutFavorites);
-        localStorage.setItem('spotbie_locationPrompted', '1');
-        localStorage.setItem('spotbie_userId', '0');
-        localStorage.setItem('spotbie_loggedIn', '0');
-        localStorage.setItem('spotbie_userApiKey', null);
-        localStorage.setItem('spotbie_rememberMe', '0');
-        localStorage.setItem('spotbie_rememberMeToken', null);
-        localStorage.setItem('spotbie_userType', null);
-        if (locationReload)
-            window.open(environment_1.environment.baseUrl + 'home', '_self');
+        preferences_1.Preferences.set({
+            key: 'spotbie_loggedIn',
+            value: '0',
+        });
+        preferences_1.Preferences.set({
+            key: 'spotbie_userApiKey',
+            value: null,
+        });
+        preferences_1.Preferences.set({
+            key: 'spotbie_rememberMe',
+            value: '0',
+        });
+        preferences_1.Preferences.set({
+            key: 'spotbie_rememberMeToken',
+            value: null,
+        });
+        preferences_1.Preferences.set({
+            key: 'spotbie_userType',
+            value: null,
+        });
+        location.href = '/home';
     }
 };
 exports.logOutCallback = logOutCallback;

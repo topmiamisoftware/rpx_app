@@ -47,7 +47,6 @@ let LoyaltyPointsService = class LoyaltyPointsService {
             .post(apiUrl, null)
             .pipe((0, operators_1.catchError)((0, error_helper_1.handleError)('getLoyaltyPointBalance')))
             .subscribe(resp => {
-            console.log('getLoyaltyPointBalance', resp);
             if (resp.success) {
                 const loyaltyPointBalance = resp.loyalty_points;
                 this.store.dispatch((0, loyalty_points_actions_1.setValue)({ loyaltyPointBalance }));

@@ -11,6 +11,7 @@ const business_1 = require("../../../models/business");
 const map_extras_1 = require("../../map/map_extras/map_extras");
 const app_launcher_1 = require("@capacitor/app-launcher");
 const numbers_helper_1 = require("../../../helpers/numbers.helper");
+const preferences_1 = require("@capacitor/preferences");
 const PLACE_TO_EAT_AD_IMAGE = 'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
 const SHOPPING_AD_IMAGE = 'assets/images/def/shopping/featured_banner_in_house.jpg';
 const EVENTS_AD_IMAGE = 'assets/images/def/events/featured_banner_in_house.jpg';
@@ -50,7 +51,7 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
         clearInterval(this.switchAdInterval);
         this.switchAdInterval = false;
     }
-    getNearByFeatured() {
+    async getNearByFeatured() {
         let adId = null;
         let accountType;
         //Stop the service if there's a window on top of the ad component.
@@ -68,7 +69,8 @@ let NearbyFeaturedAdComponent = class NearbyFeaturedAdComponent {
             else {
                 adId = this.ad.id;
             }
-            accountType = parseInt(localStorage.getItem('spotbie_userType'));
+            const retAccType = await preferences_1.Preferences.get({ key: 'spotbie_userType' });
+            accountType = retAccType.value;
             switch (accountType) {
                 case '1':
                     this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;

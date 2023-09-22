@@ -11,6 +11,7 @@ const account_type_enum_1 = require("../../../helpers/enum/account-type.enum");
 const info_object_type_enum_1 = require("../../../helpers/enum/info-object-type.enum");
 const app_launcher_1 = require("@capacitor/app-launcher");
 const rxjs_1 = require("rxjs");
+const preferences_1 = require("@capacitor/preferences");
 const PLACE_TO_EAT_AD_IMAGE = 'assets/images/def/places-to-eat/header_banner_in_house.jpg';
 const PLACE_TO_EAT_AD_IMAGE_MOBILE = 'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
 const SHOPPING_AD_IMAGE = 'assets/images/def/shopping/header_banner_in_house.jpg';
@@ -43,13 +44,13 @@ let HeaderAdBannerComponent = class HeaderAdBannerComponent {
         this.genericAdImageMobile = PLACE_TO_EAT_AD_IMAGE_MOBILE;
         this.switchAdInterval = false;
     }
-    getHeaderBanner() {
+    async getHeaderBanner() {
         let adId = null;
         let accountType;
-        //Stop the service if there's a window on top of the ad component.
+        // Stop the service if there's a window on top of the ad component.
         const needleElement = document.getElementsByClassName('sb-closeButton');
         if (needleElement.length > 0) {
-            //There's a componenet on top of the bottom header.
+            // There's a componenet on top of the bottom header.
             return; //bounce this request
         }
         if (this.editMode) {
@@ -61,7 +62,8 @@ let HeaderAdBannerComponent = class HeaderAdBannerComponent {
             else {
                 adId = this.ad.id;
             }
-            accountType = parseInt(localStorage.getItem('spotbie_userType'));
+            const retAccType = await preferences_1.Preferences.get({ key: 'spotbie_userType' });
+            const accountType = parseInt(retAccType.value);
             switch (accountType) {
                 case 1:
                     this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;

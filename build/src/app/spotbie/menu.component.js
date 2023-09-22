@@ -3,21 +3,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MenuComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
+const preferences_1 = require("@capacitor/preferences");
 let MenuComponent = class MenuComponent {
-    constructor() {
-        this.isLoggedIn = false;
-    }
+    constructor() { }
     ngOnInit() {
         // save timezone
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        localStorage.setItem('spotbie_userTimeZone', userTimezone);
-        // check log in status, turn map on if we are logged out
-        const cookiedLoggedIn = localStorage.getItem('spotbie_loggedIn');
-        if (cookiedLoggedIn === '1') {
-            this.isLoggedIn = true;
-        }
+        preferences_1.Preferences.set({
+            key: 'spotbie_userTimeZone',
+            value: userTimezone,
+        });
     }
-    ngAfterViewInit() { }
 };
 tslib_1.__decorate([
     (0, core_1.ViewChild)('spotbieMainMenu')

@@ -10,10 +10,10 @@ const forms_1 = require("@angular/forms");
 const menu_logged_out_component_1 = require("./menu-logged-out.component");
 const log_in_component_1 = require("./log-in/log-in.component");
 const angular_fontawesome_1 = require("@fortawesome/angular-fontawesome");
-const forgot_password_module_1 = require("./forgot-password/forgot-password.module");
 const helper_module_1 = require("../../helpers/helper.module");
 const sign_up_component_1 = require("./sign-up/sign-up.component");
 const angular_1 = require("@ionic/angular");
+const map_module_1 = require("../map/map.module");
 let MenuLoggedOutModule = class MenuLoggedOutModule {
 };
 MenuLoggedOutModule = tslib_1.__decorate([
@@ -27,8 +27,8 @@ MenuLoggedOutModule = tslib_1.__decorate([
             router_1.RouterModule,
             helper_module_1.HelperModule,
             angular_fontawesome_1.FontAwesomeModule,
-            forgot_password_module_1.ForgotPasswordModule,
             angular_1.IonicModule.forRoot(),
+            map_module_1.MapModule,
         ],
         exports: [menu_logged_out_component_1.MenuLoggedOutComponent],
     })

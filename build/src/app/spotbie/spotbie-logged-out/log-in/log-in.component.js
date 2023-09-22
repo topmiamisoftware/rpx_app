@@ -5,49 +5,58 @@ const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
 const forms_1 = require("@angular/forms");
 const free_solid_svg_icons_1 = require("@fortawesome/free-solid-svg-icons");
-const logout_callback_1 = require("../../../helpers/logout-callback");
 const rxjs_1 = require("rxjs");
+const operators_1 = require("rxjs/operators");
+const preferences_1 = require("@capacitor/preferences");
 let LogInComponent = class LogInComponent {
-    constructor(host = null, formBuilder, userAuthService, router) {
+    constructor(host = null, formBuilder, userAuthService, router, loadingCtrl) {
         this.host = host;
         this.formBuilder = formBuilder;
         this.userAuthService = userAuthService;
         this.router = router;
+        this.loadingCtrl = loadingCtrl;
         this.faEye = free_solid_svg_icons_1.faEye;
         this.faEyeSlash = free_solid_svg_icons_1.faEyeSlash;
-        this.loading$ = new rxjs_1.BehaviorSubject(false);
-        this.submitted = false;
-        this.helpToggle = false;
-        this.rememberMeState = '0';
-        this.rememberMeLight = 'red';
-        this.rememberMeTextOff = 'Remember Me is set to OFF.';
-        this.rememberMeTextOn = 'Remember Me is set to ON.';
-        this.rememberMeToggleStateText = this.rememberMeTextOff;
-        this.forgotPasswordWindow = { open: false };
+        this.loading$ = new rxjs_1.BehaviorSubject(undefined);
+        this.submitted$ = new rxjs_1.BehaviorSubject(false);
         this.passwordShow = false;
         this.business = false;
+        this.initLoading();
     }
+    ngOnInit() {
+        this.initLogInForm();
+        this.checkTokenLogin();
+    }
+    async checkTokenLogin() {
+        const retLastUsername = await preferences_1.Preferences.get({
+            key: 'spotbie_lastLoggedUserName',
+        });
+        this.current_login_username = retLastUsername.value;
+        const retRememberMe = await preferences_1.Preferences.get({ key: 'spotbie_rememberMe' });
+        const rememberMe = retRememberMe.value;
+        const retIsLoggedIn = await preferences_1.Preferences.get({ key: 'spotbie_loggedIn' });
+        const isLoggedIn = retIsLoggedIn.value;
+        if (rememberMe === '1' && isLoggedIn !== '1') {
+            this.initTokenLogin();
+        }
+    }
+    /**
+     * Shows and hide the password text.
+     */
     togglePassword() {
         this.passwordShow = !this.passwordShow;
     }
-    toggleRememberMe() {
-        if (this.rememberMeState === '0') {
-            this.rememberMeState = '1';
-            this.rememberMeLight = '#7bb126';
-            this.rememberMeToggleStateText = this.rememberMeTextOn;
-        }
-        else {
-            this.rememberMeState = '0';
-            this.rememberMeLight = 'red';
-            this.rememberMeToggleStateText = this.rememberMeTextOff;
-        }
-    }
-    toggleRememberMeHelp() {
-        this.helpToggle = !this.helpToggle;
-    }
-    loginUser() {
-        this.spotbieSignUpIssues.nativeElement.style.display = 'none';
-        this.userAuthService.initLogin().subscribe(resp => {
+    /**
+     * Will log the user in.
+     * @param userLogin
+     * @param userPass
+     * @param userRememberMe
+     * @param userReMemberMeToken
+     */
+    loginUser(userLogin, userPass, userRememberMe) {
+        this.userAuthService
+            .initLogin(userLogin, userPass, userRememberMe)
+            .subscribe(resp => {
             this.loginCallback(resp);
         }, e => {
             this.loading$.next(false);
@@ -71,18 +80,32 @@ let LogInComponent = class LogInComponent {
         }
         const loginStatus = loginResponse.message;
         if (loginStatus === 'success' || loginStatus === 'confirm') {
-            localStorage.setItem('spotbie_userLogin', loginResponse.user.username);
-            localStorage.setItem('spotbie_loggedIn', '1');
-            localStorage.setItem('spotbie_rememberMe', this.userAuthService.userRememberMe);
-            localStorage.setItem('spotbie_userId', loginResponse.user.id);
-            localStorage.setItem('spotbie_userDefaultImage', loginResponse.spotbie_user.default_picture);
-            localStorage.setItem('spotbie_userType', loginResponse.spotbie_user.user_type);
-            localStorage.setItem('spotbiecom_session', loginResponse.token_info.original.access_token);
+            preferences_1.Preferences.set({
+                key: 'spotbie_userLogin',
+                value: loginResponse.user.username,
+            });
+            preferences_1.Preferences.set({ key: 'spotbie_loggedIn', value: '1' });
+            preferences_1.Preferences.set({
+                key: 'spotbie_rememberMe',
+                value: this.userAuthService.userRememberMe,
+            });
+            preferences_1.Preferences.set({
+                key: 'spotbie_userType',
+                value: loginResponse.spotbie_user.user_type,
+            });
+            preferences_1.Preferences.set({
+                key: 'spotbiecom_session',
+                value: loginResponse.token_info.original.access_token,
+            });
             if (this.userAuthService.userRememberMe === '1') {
                 this.rememberMeToken = loginResponse.remember_me_token;
-                localStorage.setItem('spotbie_rememberMeToken', this.rememberMeToken);
+                preferences_1.Preferences.set({
+                    key: 'spotbie_rememberMeToken',
+                    value: this.rememberMeToken,
+                });
             }
             this.router.navigate(['/user-home']);
+            this.loading$.next(false);
         }
         else {
             this.spotbieSignUpIssues.nativeElement.scrollIntoView({
@@ -107,43 +130,40 @@ let LogInComponent = class LogInComponent {
                         .get('spotbieUsername')
                         .setErrors({ wrong_account_type: true });
                 }
-                (0, logout_callback_1.logOutCallback)({ success: true }, false);
             }
         }
         this.loading$.next(false);
     }
+    /**
+     * Initiate the user login.
+     */
     initLogIn() {
         this.loading$.next(true);
-        this.submitted = true;
-        this.userAuthService.userLogin = this.email;
-        this.userAuthService.userPassword = this.password;
-        this.userAuthService.userRememberMe = this.rememberMeState;
+        this.submitted$.next(true);
         this.userAuthService.route = this.router.url;
-        this.loginUser();
+        this.loginUser(this.email, this.password, '1');
     }
-    initLogInForm() {
+    /**
+     * Initiate the login form.
+     * @private
+     */
+    async initLogInForm() {
         const usernameValidators = [forms_1.Validators.required];
         const passwordValidators = [forms_1.Validators.required];
-        if (localStorage.getItem('spotbie_rememberMe') === '1')
-            this.toggleRememberMe();
         this.logInForm = this.formBuilder.group({
             spotbieUsername: ['', usernameValidators],
             spotbiePassword: ['', passwordValidators],
         });
-        if (this.current_login_username !== '')
-            this.logInForm
-                .get('spotbieUsername')
-                .setValue(this.current_login_username);
         this.loading$.next(false);
     }
-    initTokenLogin() {
-        const savedRememberMeToken = localStorage.getItem('spotbie_rememberMeToken');
-        const savedUsername = localStorage.getItem('spotbie_userLogin');
-        this.userAuthService.userLogin = savedUsername;
-        this.userAuthService.userPassword = '';
-        this.userAuthService.userRememberMe = '1';
-        this.userAuthService.userRememberMeToken = savedRememberMeToken;
-        this.loginUser();
+    /**
+     * Log the user in with the stored token.
+     */
+    async initTokenLogin() {
+        const retSavedUsernmae = await preferences_1.Preferences.get({ key: 'spotbie_userLogin' });
+        const savedUsername = retSavedUsernmae.value;
+        // The userPass is set to a random key because the user doesn't need a password to log-in with a token.
+        this.loginUser(savedUsername, 'randomkey', '1');
     }
     get email() {
         return this.logInForm.get('spotbieUsername').value;
@@ -154,44 +174,46 @@ let LogInComponent = class LogInComponent {
     get f() {
         return this.logInForm.controls;
     }
+    /**
+     * Close this window.
+     * It'd be better to navigate between sign-up and log-in using router instead.
+     */
     closeWindow() {
-        this.host.closeWindow(this.host.logInWindow);
+        this.host.logInWindow$.next(false);
     }
-    openWindow(window) {
-        window.open = true;
+    /**
+     * Navigate to forgot password route.
+     */
+    openForgotPassword() {
+        this.router.navigate(['/forgot-password']);
     }
+    /**
+     * Opens the sign up component.
+     */
     signUp() {
-        this.host.openWindow(this.host.signUpWindow);
-        this.host.closeWindow(this.host.logInWindow);
+        this.host.signUpWindow$.next(true);
+        this.host.logInWindow$.next(false);
     }
-    openIg() {
-        if (this.business) {
-            window.open('https://www.instagram.com/spotbie.business/', '_blank');
-        }
-        else {
-            window.open('https://www.instagram.com/spotbie.loyalty.points/', '_blank');
-        }
-    }
-    openYoutube() {
-        window.open('https://www.youtube.com/channel/UCtxkgw0SYiihwR7O8f-xIYA', '_blank');
-    }
-    openTwitter() {
-        window.open('https://twitter.com/SpotBie', '_blank');
-    }
-    openBlog() {
-        window.open('https://blog.spotbie.com/', '_blank');
-    }
-    ngOnInit() {
-        this.loading$.next(true);
-        this.current_login_username = localStorage.getItem('spotbie_lastLoggedUserName');
-        this.bg_color = '#181818';
-        this.current_login_photo = 'assets/images/user.png';
-        this.business = false;
-        this.initLogInForm();
-        if (localStorage.getItem('spotbie_rememberMe') === '1' &&
-            localStorage.getItem('spotbie_loggedIn') !== '1') {
-            this.initTokenLogin();
-        }
+    /**
+     * subscribe to the loading behavior subject to toggle the loading screen on/off.
+     */
+    initLoading() {
+        this.loading$
+            .pipe((0, operators_1.filter)(loading => loading !== undefined))
+            .subscribe(async (loading) => {
+            if (loading) {
+                this.loader = await this.loadingCtrl.create({
+                    message: 'LOADING...',
+                });
+                this.loader.present();
+            }
+            else {
+                if (this.loader) {
+                    this.loader.dismiss();
+                    this.loader = null;
+                }
+            }
+        });
     }
 };
 tslib_1.__decorate([
@@ -199,7 +221,7 @@ tslib_1.__decorate([
 ], LogInComponent.prototype, "spotbieSignUpIssues", void 0);
 LogInComponent = tslib_1.__decorate([
     (0, core_1.Component)({
-        selector: 'app-log-in',
+        selector: ' app-log-in',
         templateUrl: './log-in.component.html',
         styleUrls: ['../../menu.component.css', './log-in.component.css'],
         changeDetection: core_1.ChangeDetectionStrategy.OnPush,

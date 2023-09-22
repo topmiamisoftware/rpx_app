@@ -9,10 +9,8 @@ const router_1 = require("@angular/router");
 const helper_module_1 = require("../../../helpers/helper.module");
 const http_1 = require("@angular/common/http");
 const forms_1 = require("@angular/forms");
-const routes = [
-    { path: 'password', component: forgot_password_component_1.ForgotPasswordComponent },
-    { path: 'password/reset/:token', component: forgot_password_component_1.ForgotPasswordComponent },
-];
+const angular_1 = require("@ionic/angular");
+const routes = [{ path: '', component: forgot_password_component_1.ForgotPasswordComponent }];
 let ForgotPasswordModule = class ForgotPasswordModule {
 };
 ForgotPasswordModule = tslib_1.__decorate([
@@ -25,6 +23,7 @@ ForgotPasswordModule = tslib_1.__decorate([
             http_1.HttpClientModule,
             helper_module_1.HelperModule,
             router_1.RouterModule.forChild(routes),
+            angular_1.IonicModule,
         ],
         exports: [forgot_password_component_1.ForgotPasswordComponent],
         providers: [],

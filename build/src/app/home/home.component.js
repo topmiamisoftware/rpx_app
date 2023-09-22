@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HomeComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
+const preferences_1 = require("@capacitor/preferences");
 let HomeComponent = class HomeComponent {
     constructor(router) {
         this.router = router;
@@ -12,20 +13,15 @@ let HomeComponent = class HomeComponent {
     getStarted() {
         this.getStartedPrompt = false;
     }
-    spawnCategories(category) {
-        this.appMap.spawnCategories(category);
-    }
-    openHome() {
-        this.appMap.openWelcome();
-    }
-    myFavorites() {
-        this.appMap.myFavorites();
-    }
-    async ngOnInit() {
-        const isLoggedIn = localStorage.getItem('spotbie_loggedIn');
+    async checkIfLoggedIn() {
+        const ret = await preferences_1.Preferences.get({ key: 'spotbie_loggedIn' });
+        const isLoggedIn = ret.value;
         if (isLoggedIn === '1') {
             this.router.navigate(['/user-home']);
         }
+    }
+    ngOnInit() {
+        this.checkIfLoggedIn();
     }
 };
 tslib_1.__decorate([

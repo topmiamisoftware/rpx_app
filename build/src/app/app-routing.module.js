@@ -8,13 +8,14 @@ const login_guard_service_service_1 = require("./services/route-services/login-g
 const info_object_component_1 = require("./spotbie/map/info-object/info-object.component");
 const loyalty_points_component_1 = require("./spotbie/spotbie-logged-in/loyalty-points/loyalty-points.component");
 const reward_menu_component_1 = require("./spotbie/spotbie-logged-in/reward-menu/reward-menu.component");
+const my_list_component_1 = require("./spotbie/spotbie-logged-in/my-list/my-list.component");
 const routes = [
     {
         path: 'home',
         loadChildren: () => Promise.resolve().then(() => require('./home/home.module')).then(m => m.HomeModule),
     },
     {
-        path: 'password',
+        path: 'forgot-password',
         loadChildren: () => Promise.resolve().then(() => require('./spotbie/spotbie-logged-out/forgot-password/forgot-password.module')).then(m => m.ForgotPasswordModule),
     },
     {
@@ -35,6 +36,33 @@ const routes = [
     { path: 'place-to-eat/:name/:id', component: info_object_component_1.InfoObjectComponent },
     { path: 'shopping/:name/:id', component: info_object_component_1.InfoObjectComponent },
     { path: 'event/:name/:id', component: info_object_component_1.InfoObjectComponent },
+    {
+        path: 'my-list',
+        component: my_list_component_1.MyList,
+        children: [
+            {
+                path: '',
+                pathMatch: 'full',
+                redirectTo: 'balance-list',
+            },
+            {
+                path: 'balance-list',
+                loadChildren: () => Promise.resolve().then(() => require('./spotbie/spotbie-logged-in/my-list/balances/balances.module')).then(m => m.BalancesModule),
+            },
+            {
+                path: 'rewards',
+                loadChildren: () => Promise.resolve().then(() => require('./spotbie/spotbie-logged-in/my-list/redeemable/redeemable.module')).then(m => m.RedeemableModule),
+            },
+            {
+                path: 'ledger',
+                loadChildren: () => Promise.resolve().then(() => require('./spotbie/spotbie-logged-in/my-list/ledger/ledger.module')).then(m => m.LedgerModule),
+            },
+            {
+                path: 'redeemed',
+                loadChildren: () => Promise.resolve().then(() => require('./spotbie/spotbie-logged-in/my-list/redeemed/redeemed.module')).then(m => m.RedeemedModule),
+            },
+        ],
+    },
     { path: 'login-success', redirectTo: '/user-home', pathMatch: 'full' },
     { path: '', redirectTo: '/home', pathMatch: 'full' },
 ];

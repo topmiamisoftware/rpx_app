@@ -11,6 +11,7 @@ const business_1 = require("../../../models/business");
 const map_extras_1 = require("../../map/map_extras/map_extras");
 const numbers_helper_1 = require("../../../helpers/numbers.helper");
 const rxjs_1 = require("rxjs");
+const preferences_1 = require("@capacitor/preferences");
 const PLACE_TO_EAT_AD_IMAGE = 'assets/images/def/places-to-eat/footer_banner_in_house.jpg';
 const PLACE_TO_EAT_AD_IMAGE_MOBILE = 'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
 const SHOPPING_AD_IMAGE = 'assets/images/def/shopping/footer_banner_in_house.jpg';
@@ -44,7 +45,7 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
             this.loyaltyPointBalance = loyaltyPointBalance;
         });
     }
-    getBottomHeader() {
+    async getBottomHeader() {
         let adId = null;
         let accountType;
         // Stop the service if there's a window on top of the ad component.
@@ -63,7 +64,9 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
             else {
                 adId = this.ad.id;
             }
-            accountType = parseInt(localStorage.getItem('spotbie_userType'), 10);
+            const retAccType = await preferences_1.Preferences.get({ key: 'spotbie_userType' });
+            const accType = retAccType.value;
+            accountType = parseInt(accType, 10);
             switch (accountType) {
                 case 1:
                     this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
@@ -82,7 +85,6 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
         }
         else {
             accountType = this.accountType ? this.accountType : (0, numbers_helper_1.getRandomInt)(1, 3);
-            console.log('account type', accountType);
             switch (accountType) {
                 case 'food':
                     accountType = 1;
@@ -109,7 +111,6 @@ let BottomAdBannerComponent = class BottomAdBannerComponent {
             id: adId,
             account_type: accountType,
         };
-        console.log('the search object', searchObjSb);
         // Retrieve the SpotBie Ads
         this.adsService.getBottomHeader(searchObjSb).subscribe(resp => {
             this.getBottomHeaderCb(resp);

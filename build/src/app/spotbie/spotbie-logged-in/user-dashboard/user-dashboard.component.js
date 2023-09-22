@@ -4,32 +4,18 @@ exports.UserDashboardComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
 const rxjs_1 = require("rxjs");
+const barcode_scanner_1 = require("@capacitor-community/barcode-scanner");
 let UserDashboardComponent = class UserDashboardComponent {
-    constructor(platform) {
+    constructor(platform, router) {
         this.platform = platform;
+        this.router = router;
         this.spawnCategoriesEvt = new core_1.EventEmitter();
         this.scannerStarted$ = new rxjs_1.BehaviorSubject(false);
         this.isMobile$ = new rxjs_1.BehaviorSubject(false);
-        this.getRedeemableItems$ = new rxjs_1.BehaviorSubject(false);
         this.isMobile$.next(this.platform.is('mobile'));
     }
     redeemedLp() {
-        this.getRedeemableItems$.next(true);
-    }
-    scrollToLpAppAnchor() {
-        this.lpAppAnchor.nativeElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-        });
-    }
-    scrollToQrAppAnchor() {
-        if (this.qrCodeAppAnchor) {
-            this.qrCodeAppAnchor.nativeElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-            });
-        }
-        this.startQrScanner();
+        this.router.navigate(['/my-list/']);
     }
     scrollToRewardMenuAppAnchor() {
         this.rewardMenuAppAnchor.nativeElement.scrollIntoView({
@@ -41,10 +27,7 @@ let UserDashboardComponent = class UserDashboardComponent {
         this.scannerStarted$.next(true);
     }
     closeQrScanner() {
-        this.scannerStarted$.next(false);
-    }
-    closeRedeemables() {
-        this.getRedeemableItems$.next(false);
+        barcode_scanner_1.BarcodeScanner.stopScan().then(_ => this.scannerStarted$.next(false));
     }
     spawnCategories(category) {
         this.spawnCategoriesEvt.emit(category);

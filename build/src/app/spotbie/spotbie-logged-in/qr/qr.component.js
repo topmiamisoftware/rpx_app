@@ -3,61 +3,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.QrComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
-const forms_1 = require("@angular/forms");
-const environment_1 = require("../../../../environments/environment");
-const business_1 = require("../../../models/business");
 const rxjs_1 = require("rxjs");
 const barcode_scanner_1 = require("@capacitor-community/barcode-scanner");
-const QR_CODE_LOYALTY_POINTS_SCAN_BASE_URL = environment_1.environment.qrCodeLoyaltyPointsScanBaseUrl;
-const QR_CODE_CALIM_REWARD_SCAN_BASE_URL = environment_1.environment.qrCodeRewardScanBaseUrl;
+const capacitor_native_settings_1 = require("capacitor-native-settings");
 let QrComponent = class QrComponent {
-    constructor(userAuthService, loyaltyPointsService, deviceDetectorService, formBuilder, rewardService) {
-        this.userAuthService = userAuthService;
+    constructor(loyaltyPointsService, deviceDetectorService, rewardService) {
         this.loyaltyPointsService = loyaltyPointsService;
         this.deviceDetectorService = deviceDetectorService;
-        this.formBuilder = formBuilder;
         this.rewardService = rewardService;
         this.fullScreenWindow = false;
         this.closeThisEvt = new core_1.EventEmitter();
         this.openUserLPBalanceEvt = new core_1.EventEmitter();
         this.closeQrUserEvt = new core_1.EventEmitter();
         this.notEnoughLpEvt = new core_1.EventEmitter();
-        this.business$ = new rxjs_1.BehaviorSubject(null);
-        this.redeemable$ = new rxjs_1.BehaviorSubject(null);
-        this.userHash$ = new rxjs_1.BehaviorSubject(null);
-        this.isBusiness$ = false;
         this.userLoyaltyPoints$ = new rxjs_1.BehaviorSubject(0);
-        this.loyaltyPointWorth$ = new rxjs_1.BehaviorSubject(0);
-        this.businessLoyaltyPointsFormUp$ = new rxjs_1.BehaviorSubject(false);
         this.rewardPrompted$ = new rxjs_1.BehaviorSubject(false);
-        this.rewardPrompt$ = new rxjs_1.BehaviorSubject(false);
-        this.loyaltyPointReward$ = new rxjs_1.BehaviorSubject(null);
-        this.loyaltyPointRewardDollarValue$ = new rxjs_1.BehaviorSubject(null);
-        this.qrCodeLink$ = new rxjs_1.BehaviorSubject(null);
-        this.businessLoyaltyPointsSubmitted$ = new rxjs_1.BehaviorSubject(false);
         this.qrWidth$ = new rxjs_1.BehaviorSubject(0);
         this.scanSuccess$ = new rxjs_1.BehaviorSubject(false);
         this.awarded$ = new rxjs_1.BehaviorSubject(false);
         this.reward$ = new rxjs_1.BehaviorSubject(null);
         this.rewarded$ = new rxjs_1.BehaviorSubject(false);
         this.pointsCharged$ = new rxjs_1.BehaviorSubject(0);
-        this.qrType = 'url';
-        this.qrCodeLoyaltyPointsBaseUrl = QR_CODE_LOYALTY_POINTS_SCAN_BASE_URL;
-        this.qrCodeRewardBaseUrl = QR_CODE_CALIM_REWARD_SCAN_BASE_URL;
-    }
-    get totalSpent() {
-        return this.businessLoyaltyPointsForm.get('totalSpent').value;
+        this.showEnablePermission$ = new rxjs_1.BehaviorSubject(false);
     }
     get f() {
         return this.businessLoyaltyPointsForm.controls;
-    }
-    getWindowClass() {
-        if (this.fullScreenWindow) {
-            return 'spotbie-overlay-window';
-        }
-        else {
-            return '';
-        }
     }
     addLp(addLpObj) {
         this.loyaltyPointsService.addLoyaltyPoints(addLpObj, resp => {
@@ -74,10 +44,11 @@ let QrComponent = class QrComponent {
             this.rewarded$.next(true);
             this.reward$.next(resp.reward);
             this.pointsCharged$.next(this.reward$.getValue().point_cost);
-            this.sbEarnedPoints.nativeElement.style.display = 'block';
+            this.sbSpentPoints.nativeElement.style.display = 'block';
         }
         else {
             alert(resp.message);
+            this.closeQrUser();
         }
         this.scanSuccess$.next(false);
     }
@@ -150,48 +121,48 @@ let QrComponent = class QrComponent {
         if (resp.success) {
             this.awarded$.next(true);
             this.userLoyaltyPoints$.next(resp.redeemable.amount);
-            this.sbEarnedPoints.nativeElement.style.display = 'block';
         }
         else {
             alert(resp.message);
         }
         this.scanSuccess$.next(false);
     }
-    scanErrorHandler(event) { }
-    scanFailureHandler(event) {
+    scanErrorHandler(event) {
+        // Log the error somewhere.
         console.log('scan failure', event);
-    }
-    getQrCode() {
-        this.loyaltyPointsService.getLoyaltyPointBalance();
-        this.userAuthService.getSettings().subscribe(resp => {
-            this.userHash$.next(resp.user.hash);
-            this.business$.next({
-                ...new business_1.Business(),
-                address: resp.business.address,
-                name: resp.business.name,
-                qr_code_link: resp.business.qr_code_link,
-                trial_ends_at: resp.business.trial_ends_at,
-            });
-        });
-        const totalSpentValidators = [forms_1.Validators.required];
-        this.businessLoyaltyPointsForm = this.formBuilder.group({
-            totalSpent: ['', totalSpentValidators],
-        });
-        this.businessLoyaltyPointsFormUp$.next(true);
     }
     async startQrCodeScanner() {
         this.loyaltyPointsService.getLoyaltyPointBalance();
-        barcode_scanner_1.BarcodeScanner.hideBackground();
-        const result = await barcode_scanner_1.BarcodeScanner.startScan();
-        if (result.hasContent) {
-            console.log(result.content);
-        }
+        this.checkPermission().then(async (granted) => {
+            console.log('GRANTED', granted);
+            if (granted) {
+                this.showEnablePermission$.next(false);
+                barcode_scanner_1.BarcodeScanner.hideBackground();
+                const result = await barcode_scanner_1.BarcodeScanner.startScan();
+                if (result.hasContent) {
+                    this.scanSuccessHandler(result.content);
+                }
+                else {
+                    this.scanErrorHandler(result.content);
+                }
+            }
+            else {
+                alert('Please enable camera access to scan rewards.');
+                this.showEnablePermission$.next(true);
+            }
+        });
     }
     closeQr() {
         this.rewardPrompted$.next(false);
     }
     closeQrUser() {
         this.closeQrUserEvt.emit(null);
+    }
+    openAppSettings() {
+        capacitor_native_settings_1.NativeSettings.open({
+            optionAndroid: capacitor_native_settings_1.AndroidSettings.ApplicationDetails,
+            optionIOS: capacitor_native_settings_1.IOSSettings.App,
+        });
     }
     ngOnInit() {
         if (this.deviceDetectorService.isMobile()) {
@@ -221,6 +192,9 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     (0, core_1.ViewChild)('sbEarnedPoints')
 ], QrComponent.prototype, "sbEarnedPoints", void 0);
+tslib_1.__decorate([
+    (0, core_1.ViewChild)('sbSpentPoints')
+], QrComponent.prototype, "sbSpentPoints", void 0);
 QrComponent = tslib_1.__decorate([
     (0, core_1.Component)({
         selector: 'app-qr',

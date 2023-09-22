@@ -4,12 +4,11 @@ exports.RewardMenuComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
 const account_type_enum_1 = require("../../../helpers/enum/account-type.enum");
-const business_1 = require("../../../models/business");
 const environment_1 = require("../../../../environments/environment");
 const rxjs_1 = require("rxjs");
+const preferences_1 = require("@capacitor/preferences");
 let RewardMenuComponent = class RewardMenuComponent {
-    constructor(loyaltyPointsService, businessMenuService, router, route) {
-        this.loyaltyPointsService = loyaltyPointsService;
+    constructor(businessMenuService, router, route) {
         this.businessMenuService = businessMenuService;
         this.router = router;
         this.rewardAppFullScreen = false;
@@ -18,13 +17,13 @@ let RewardMenuComponent = class RewardMenuComponent {
         this.closeWindowEvt = new core_1.EventEmitter();
         this.notEnoughLpEvt = new core_1.EventEmitter();
         this.eAllowedAccountTypes = account_type_enum_1.AllowedAccountTypes;
-        this.itemCreator = false;
         this.rewardApp$ = new rxjs_1.BehaviorSubject(false);
+        this.userPointToDollarRatio$ = new rxjs_1.BehaviorSubject(null);
         this.rewards$ = new rxjs_1.BehaviorSubject(null);
         this.reward$ = new rxjs_1.BehaviorSubject(null);
-        this.userType = null;
-        this.business = new business_1.Business();
-        this.isLoggedIn = null;
+        this.userType$ = new rxjs_1.BehaviorSubject(null);
+        this.business$ = new rxjs_1.BehaviorSubject(null);
+        this.isLoggedIn$ = new rxjs_1.BehaviorSubject(null);
         if (this.router.url.indexOf('business-menu') > -1) {
             this.qrCodeLink = route.snapshot.params.qrCode;
         }
@@ -48,28 +47,15 @@ let RewardMenuComponent = class RewardMenuComponent {
     }
     async fetchRewardsCb(resp) {
         if (resp.success) {
-            console.log('RWARDS', resp.rewards);
             this.rewards$.next(resp.rewards);
-            if (this.userType === this.eAllowedAccountTypes.Personal ||
-                this.isLoggedIn !== '1') {
-                this.userPointToDollarRatio = resp.loyalty_point_dollar_percent_value;
-                this.business = resp.business;
-            }
+            this.userPointToDollarRatio$.next((resp.loyalty_point_dollar_percent_value));
+            this.business$.next(resp.business);
         }
-    }
-    addItem() {
-        if (this.loyaltyPointsBalance.balance === 0) {
-            this.notEnoughLpEvt.emit();
-            this.closeWindow();
-            return;
-        }
-        this.itemCreator = !this.itemCreator;
     }
     closeWindow() {
         this.closeWindowEvt.emit();
     }
     openReward(reward) {
-        console.log('reward', reward);
         reward.link = `${environment_1.environment.baseUrl}business-menu/${this.qrCodeLink}/${reward.uuid}`;
         this.reward$.next(reward);
         this.rewardApp$.next(true);
@@ -77,18 +63,6 @@ let RewardMenuComponent = class RewardMenuComponent {
     closeReward() {
         this.reward$.next(null);
         this.rewardApp$.next(false);
-    }
-    editReward(reward) {
-        this.reward$.next(reward);
-        this.itemCreator = true;
-    }
-    closeRewardCreator() {
-        this.reward$.next(null);
-        this.itemCreator = false;
-    }
-    closeRewardCreatorAndRefetchRewardList() {
-        this.closeRewardCreator();
-        this.fetchRewards();
     }
     rewardTileStyling(reward) {
         if (reward.type === 0) {
@@ -98,10 +72,12 @@ let RewardMenuComponent = class RewardMenuComponent {
             return { background: 'linear-gradient(90deg,#35a99f,#64e56f)' };
         }
     }
-    ngOnInit() {
-        this.userType = parseInt(localStorage.getItem('spotbie_userType'));
-        this.isLoggedIn = localStorage.getItem('spotbie_loggedIn');
-        if (this.userType !== this.eAllowedAccountTypes.Personal) {
+    async ngOnInit() {
+        const userRet = await preferences_1.Preferences.get({ key: 'spotbie_userType' });
+        this.userType$.next(parseInt(userRet.value));
+        const retUserLoggedIn = await preferences_1.Preferences.get({ key: 'spotbie_loggedIn' });
+        this.isLoggedIn$.next(retUserLoggedIn.value);
+        if (this.userType$.getValue() !== this.eAllowedAccountTypes.Personal) {
             this.fetchRewards();
         }
         else {

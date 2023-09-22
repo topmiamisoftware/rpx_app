@@ -3,14 +3,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RewardComponent = void 0;
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
+const preferences_1 = require("@capacitor/preferences");
 let RewardComponent = class RewardComponent {
     constructor() {
         this.closeWindowEvt = new core_1.EventEmitter();
         this.fullScreenMode = true;
         this.loading = false;
-        this.infoObjectImageUrl = 'assets/images/home_imgs/spotbie-white-icon.svg';
         this.successful_url_copy = false;
-        this.rewardLink = null;
+    }
+    async ngAfterViewInit() {
+        const isLoggedInRet = await preferences_1.Preferences.get({ key: 'spotbie_loggedIn' });
+        this.isLoggedIn = isLoggedInRet.value;
+        // I'm sure there's a better way to do this but I don't have time right now.
+        const closeButton = document.getElementById('sb-closeButtonReward');
+        const p = this.isLoggedIn === '0' || !this.isLoggedIn
+            ? document.getElementById('ionToolbarLoggedOut').offsetHeight
+            : document.getElementById('ionToolbarLoggedIn').offsetHeight;
+        closeButton.style.top = p + 'px';
     }
     ngOnInit() { }
     getFullScreenModeClass() {

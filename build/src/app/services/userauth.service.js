@@ -5,21 +5,17 @@ const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
 const operators_1 = require("rxjs/operators");
 const error_helper_1 = require("../helpers/error-helper");
-const account_type_enum_1 = require("../helpers/enum/account-type.enum");
 const spotbieGlobals = require("../globals");
 const USER_API = spotbieGlobals.API + 'user';
-const BUSINESS_API = spotbieGlobals.API + 'business';
 let UserauthService = class UserauthService {
-    constructor(http, router) {
+    constructor(http) {
         this.http = http;
-        this.router = router;
     }
     async checkIfLoggedIn() {
         const checkLoginObject = {};
         const loginApi = `${USER_API}/check-user-auth`;
         return new Promise((resolve, reject) => {
             this.http.post(loginApi, checkLoginObject).subscribe(resp => {
-                console.log('checkIfLoggedIn', resp);
                 if (resp.message === '1') {
                     resolve(resp);
                 }
@@ -29,23 +25,16 @@ let UserauthService = class UserauthService {
             });
         });
     }
-    reRouteFromSpotBie() {
-        this.router.navigate(['/home']);
-    }
     logOut() {
         const logOutApi = `${USER_API}/logout`;
         return this.http.post(logOutApi, null);
     }
-    closeBrowser() {
-        const logOutApi = `${USER_API}/close-browser`;
-        return this.http.post(logOutApi, null);
-    }
-    initLogin() {
+    initLogin(userLogin, userPassword, userRememberMe) {
         this.userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const params = {
-            login: this.userLogin,
-            password: this.userPassword,
-            remember_me_opt: this.userRememberMe,
+            login: userLogin,
+            password: userPassword,
+            remember_me_opt: userRememberMe,
             timezone: this.userTimezone,
             route: this.route,
         };
@@ -58,7 +47,6 @@ let UserauthService = class UserauthService {
         const getSettingsApi = `${USER_API}/settings`;
         return this.http.post(getSettingsApi, null).pipe((0, operators_1.tap)(settings => {
             this.userProfile = settings;
-            console.log('settings', settings);
         }), (0, operators_1.catchError)(err => {
             throw err;
         }));
@@ -145,65 +133,6 @@ let UserauthService = class UserauthService {
         return this.http
             .post(resetPasswordApi, passResetObj)
             .pipe((0, operators_1.catchError)((0, error_helper_1.handleError)('deactivateAccount')));
-    }
-    verifyBusiness(businessInfo) {
-        let apiUrl;
-        switch (businessInfo.accountType) {
-            case account_type_enum_1.AllowedAccountTypes.PlaceToEat:
-            case account_type_enum_1.AllowedAccountTypes.Shopping:
-            case account_type_enum_1.AllowedAccountTypes.Events:
-                apiUrl = `${BUSINESS_API}/verify`;
-                break;
-        }
-        const businessInfoObj = {
-            name: businessInfo.name,
-            description: businessInfo.description,
-            address: businessInfo.address,
-            photo: businessInfo.photo,
-            loc_x: businessInfo.loc_x,
-            loc_y: businessInfo.loc_y,
-            passkey: businessInfo.passkey,
-            categories: businessInfo.categories,
-            city: businessInfo.city,
-            country: businessInfo.country,
-            line1: businessInfo.line1,
-            line2: businessInfo.line2,
-            postal_code: businessInfo.postal_code,
-            state: businessInfo.state,
-            accountType: businessInfo.accountType,
-        };
-        return this.http
-            .post(apiUrl, businessInfoObj)
-            .pipe((0, operators_1.catchError)((0, error_helper_1.handleError)('verifyBusiness')));
-    }
-    saveBusiness(businessInfo) {
-        let apiUrl;
-        switch (businessInfo.accountType) {
-            case account_type_enum_1.AllowedAccountTypes.PlaceToEat:
-            case account_type_enum_1.AllowedAccountTypes.Shopping:
-            case account_type_enum_1.AllowedAccountTypes.Events:
-                apiUrl = `${BUSINESS_API}/save-business`;
-                break;
-        }
-        const businessInfoObj = {
-            name: businessInfo.name,
-            description: businessInfo.description,
-            address: businessInfo.address,
-            photo: businessInfo.photo,
-            loc_x: businessInfo.loc_x,
-            loc_y: businessInfo.loc_y,
-            categories: businessInfo.categories,
-            city: businessInfo.city,
-            country: businessInfo.country,
-            line1: businessInfo.line1,
-            line2: businessInfo.line2,
-            postal_code: businessInfo.postal_code,
-            state: businessInfo.state,
-            accountType: businessInfo.accountType,
-        };
-        return this.http
-            .post(apiUrl, businessInfoObj)
-            .pipe((0, operators_1.catchError)((0, error_helper_1.handleError)('saveBusiness')));
     }
 };
 UserauthService = tslib_1.__decorate([

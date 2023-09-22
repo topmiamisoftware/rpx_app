@@ -19,12 +19,13 @@ const forms_1 = require("@angular/forms");
 const userauth_service_1 = require("./services/userauth.service");
 const store_1 = require("@ngrx/store");
 const loyalty_points_reducer_1 = require("./spotbie/spotbie-logged-in/loyalty-points/loyalty-points.reducer");
-const stripe_angular_1 = require("stripe-angular");
+const router_1 = require("@angular/router");
+const my_list_component_1 = require("./spotbie/spotbie-logged-in/my-list/my-list.component");
 let AppModule = class AppModule {
 };
 AppModule = tslib_1.__decorate([
     (0, core_1.NgModule)({
-        declarations: [app_component_1.AppComponent, url_sanitizer_pipe_1.UrlSanitizerPipe],
+        declarations: [app_component_1.AppComponent, url_sanitizer_pipe_1.UrlSanitizerPipe, my_list_component_1.MyList],
         imports: [
             forms_1.FormsModule,
             forms_1.ReactiveFormsModule,
@@ -34,7 +35,6 @@ AppModule = tslib_1.__decorate([
             user_home_module_1.UserHomeModule,
             helper_module_1.HelperModule,
             animations_1.BrowserAnimationsModule,
-            stripe_angular_1.StripeModule.forRoot(''),
             store_1.StoreModule.forRoot({
                 loyaltyPoints: loyalty_points_reducer_1.loyaltyPointsReducer,
             }),
@@ -45,6 +45,7 @@ AppModule = tslib_1.__decorate([
             version_check_service_1.VersionCheckService,
             userauth_service_1.UserauthService,
             { provide: http_1.HTTP_INTERCEPTORS, useClass: token_interceptor_service_1.TokenInterceptor, multi: true },
+            { provide: router_1.RouteReuseStrategy, useClass: angular_1.IonicRouteStrategy },
         ],
         bootstrap: [app_component_1.AppComponent],
     })

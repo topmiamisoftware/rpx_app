@@ -19,6 +19,7 @@ const info_object_module_1 = require("./info-object/info-object.module");
 const ads_module_1 = require("../ads/ads.module");
 const stop_click_propagation_directive_1 = require("../../directives/stop-click-propagation.directive");
 const google_maps_1 = require("@angular/google-maps");
+const angular_1 = require("@ionic/angular");
 let MapModule = class MapModule {
 };
 MapModule = tslib_1.__decorate([
@@ -38,6 +39,7 @@ MapModule = tslib_1.__decorate([
             user_dashboard_module_1.UserDashboardModule,
             ads_module_1.AdsModule,
             google_maps_1.GoogleMapsModule,
+            angular_1.IonicModule,
         ],
         providers: [map_object_icon_pipe_1.MapObjectIconPipe, stop_click_propagation_directive_1.StopClickPropagationDirective],
         exports: [map_component_1.MapComponent],

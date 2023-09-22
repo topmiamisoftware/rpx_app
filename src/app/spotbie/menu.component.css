@@ -277,11 +277,12 @@ img.sb-qr:hover{
 }
 .sb-inputWithIconWrapper td{
   text-align: center;
+  vertical-align: middle;
 }
 .sb-inputWithIconWrapper .fa.fa-user,
 .sb-inputWithIconWrapper .fa.fa-envelope,
 .sb-inputWithIconWrapper .fa.fa-lock{
-  font-size: 25px;
+  font-size: 20px;
 }
 .sb-iconInInputWrapper{
   background: linear-gradient(45deg,#64e56f, #35a99f);
