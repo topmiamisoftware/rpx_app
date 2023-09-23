@@ -1,4 +1,4 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import {CapacitorConfig} from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
@@ -6,8 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'www',
   server: {
     androidScheme: 'https',
-    url: 'http://10.0.0.222:8100',
-    cleartext: true,
+    /*    url: 'http://10.0.0.250:8100',
+    cleartext: true,*/
   },
 };
 

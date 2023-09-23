@@ -1052,12 +1052,11 @@ app-community-member{
 }
 @media (max-width: 420px) {
     .spotbie-button{
-        max-width: 65%;
-        width: 65%;
-        min-width: 65%;
-        font-size: .9rem !important;
-        padding-top: 11px!important;
-        padding-bottom: 11px!important;
+      max-width: 80%;
+      width: 65%;
+      font-size: .9rem !important;
+      padding-top: 11px!important;
+      padding-bottom: 11px!important;
     }
     .sb-inputWithIconWrapper{
         min-width: 90% !important;

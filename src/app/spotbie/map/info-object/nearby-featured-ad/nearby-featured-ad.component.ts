@@ -15,7 +15,8 @@ import {
 import {getRandomInt} from '../../../../helpers/numbers.helper';
 import {BehaviorSubject} from 'rxjs';
 import {BusinessMenuServiceService} from '../../../../services/spotbie-logged-in/business-menu/business-menu-service.service';
-import {Preferences} from "@capacitor/preferences";
+import {Preferences} from '@capacitor/preferences';
+import {AppLauncher} from '@capacitor/app-launcher';
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
@@ -206,10 +207,11 @@ export class NearbyFeaturedAdComponent implements OnInit {
   }
 
   openAd(): void {
-    window.open(
-      `/business-menu/${this.business$.getValue().qr_code_link}`,
-      '_blank'
-    );
+    AppLauncher.openUrl({
+      url: `https://spotbie.com/business-menu/${
+        this.business$.getValue().qr_code_link
+      }`,
+    });
   }
 
   ngOnInit(): void {

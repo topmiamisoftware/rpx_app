@@ -1003,14 +1003,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   getMapClass() {
-    if (this.showSearchResults$.getValue()) {
-      return 'spotbie-agm-map sb-map-results-open';
-    } else {
-      if (this.isMobile) {
-        return 'spotbie-agm-map sb-map-results-open';
-      }
-      return 'spotbie-agm-map';
-    }
+    return 'spotbie-agm-map sb-map-results-open';
   }
 
   getEventsSearchCallback(httpResponse: any): void {
@@ -1571,7 +1564,18 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   async checkPermission() {
     // check if user already granted permission
-    const status = await Geolocation.checkPermissions();
+    let status;
+    try {
+      status = await Geolocation.checkPermissions();
+    } catch (e) {
+      const c = confirm('Please enable your GPS. Enable now?');
+      if (c) {
+        this.openGPSSettings();
+        return false;
+      } else {
+        return false;
+      }
+    }
 
     if (status.location === 'granted') {
       // user granted permission
@@ -1607,6 +1611,13 @@ export class MapComponent implements OnInit, AfterViewInit {
     NativeSettings.open({
       optionAndroid: AndroidSettings.ApplicationDetails,
       optionIOS: IOSSettings.App,
+    });
+  }
+
+  openGPSSettings() {
+    NativeSettings.open({
+      optionAndroid: AndroidSettings.Location,
+      optionIOS: IOSSettings.LocationServices,
     });
   }
 

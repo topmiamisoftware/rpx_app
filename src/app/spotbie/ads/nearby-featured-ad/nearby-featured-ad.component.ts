@@ -222,7 +222,7 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
   }
 
   clickGoToSponsored() {
-    window.open('/business', '_blank');
+    AppLauncher.openUrl({url: 'https://spotbie.com/business'});
   }
 
   switchAd() {

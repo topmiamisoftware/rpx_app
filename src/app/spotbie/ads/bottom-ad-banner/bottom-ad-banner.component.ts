@@ -15,6 +15,7 @@ import {AdsService} from '../ads.service';
 import {getRandomInt} from '../../../helpers/numbers.helper';
 import {BehaviorSubject} from 'rxjs';
 import {Preferences} from '@capacitor/preferences';
+import {AppLauncher} from '@capacitor/app-launcher';
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/footer_banner_in_house.jpg';
@@ -238,7 +239,7 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
     if (this.business) {
       this.communityMemberOpen = true;
     } else {
-      window.open('/business', '_blank');
+      AppLauncher.openUrl({url: 'https://spotbie.com/business'});
     }
     // this.router.navigate([`/business-menu/${this.business.qr_code_link}`])
   }
@@ -254,7 +255,7 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
   }
 
   clickGoToSponsored() {
-    window.open('/business', '_blank');
+    AppLauncher.openUrl({url: 'https://spotbie.com/business'});
   }
 
   updateAdImage(image = '') {

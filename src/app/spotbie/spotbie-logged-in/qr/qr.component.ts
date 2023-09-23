@@ -14,7 +14,12 @@ import {DeviceDetectorService} from 'ngx-device-detector';
 import {RewardCreatorService} from '../../../services/spotbie-logged-in/business-menu/reward-creator/reward-creator.service';
 import {BehaviorSubject} from 'rxjs';
 import {BarcodeScanner} from '@capacitor-community/barcode-scanner';
-import {AndroidSettings, IOSSettings, NativeSettings} from "capacitor-native-settings";
+import {
+  AndroidSettings,
+  IOSSettings,
+  NativeSettings,
+} from 'capacitor-native-settings';
+import {Camera} from "@capacitor/camera";
 
 @Component({
   selector: 'app-qr',
@@ -82,54 +87,37 @@ export class QrComponent implements OnInit {
 
   async checkPermission(): Promise<boolean> {
     // check if user already granted permission
-    const status = await BarcodeScanner.checkPermission({force: false});
+    let status = await Camera.checkPermissions();
 
-    if (status.granted) {
+    console.log('STATUS', status);
+
+    if (status.camera === 'granted') {
       // user granted permission
       return true;
     }
 
-    if (status.denied) {
+    if (status.camera === 'denied') {
       // user denied permission
       return false;
     }
 
-    if (status.asked) {
-      // system requested the user for permission during this call
-      // only possible when force set to true
-    }
-
-    if (status.neverAsked) {
-      // user has not been requested this permission before
-      // it is advised to show the user some sort of prompt
-      // this way you will not waste your only chance to ask for the permission
+    if (
+      status.camera === 'prompt' ||
+      status.camera === 'prompt-with-rationale'
+    ) {
       const c = confirm(
-        'We need your permission to use your camera to be able to scan barcodes'
+        'We need your permission to use your camera to be able to scan barcodes.'
       );
+
       if (!c) {
         return false;
       }
-    }
 
-    if (status.restricted || status.unknown) {
-      // ios only
-      // probably means the permission has been denied
-      return false;
-    }
-
-    // user has not denied permission
-    // but the user also has not yet granted the permission
-    // so request it
-    const statusRequest = await BarcodeScanner.checkPermission({force: true});
-
-    if (statusRequest.asked) {
-      // system requested the user for permission during this call
-      // only possible when force set to true
-    }
-
-    if (statusRequest.granted) {
-      // the user did grant the permission now
-      return true;
+      // prompt
+      status = await Camera.requestPermissions({permissions: ['camera']});
+      if (status.camera === 'granted') {
+        return true;
+      }
     }
 
     // user did not grant the permission, so he must have declined the request
@@ -183,7 +171,6 @@ export class QrComponent implements OnInit {
     this.loyaltyPointsService.getLoyaltyPointBalance();
 
     this.checkPermission().then(async granted => {
-      console.log('GRANTED', granted);
       if (granted) {
         this.showEnablePermission$.next(false);
         BarcodeScanner.hideBackground();

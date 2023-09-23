@@ -225,7 +225,7 @@ export class HeaderAdBannerComponent implements OnInit {
   }
 
   clickGoToSponsored() {
-    window.open('/business', '_blank');
+    AppLauncher.openUrl({url: 'https://spotbie.com/business'});
   }
 
   switchAd() {
