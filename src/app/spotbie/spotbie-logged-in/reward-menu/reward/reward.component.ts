@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import {Reward} from '../../../../models/reward';
 import {Preferences} from "@capacitor/preferences";
+import { LoyaltyTier } from '../../../../models/loyalty-point-tier.balance';
+import {Business} from "../../../../models/business";
 
 @Component({
   selector: 'app-reward',
@@ -20,6 +22,8 @@ export class RewardComponent implements OnInit, AfterViewInit {
   @Input() fullScreenMode = true;
   @Input() reward: Reward;
   @Input() userPointToDollarRatio: number;
+  @Input() tier: LoyaltyTier;
+  @Input() business: Business;
 
   loading = false;
   successful_url_copy = false;

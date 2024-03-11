@@ -3,6 +3,7 @@
                  [lat]="lat"
                  [lng]="lng"
                  [categories]="categories"
+                 [loyaltyTiers]="loyaltyTiers$ | async"
                  [accountType]="(loadedBusiness$ | async).user_type"
                  (closeWindow)="closeWindow()"
                  *ngIf="infoObjectLoaded$ | async"

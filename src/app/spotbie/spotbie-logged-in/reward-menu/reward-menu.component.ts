@@ -16,6 +16,7 @@ import {RewardComponent} from './reward/reward.component';
 import {environment} from '../../../../environments/environment';
 import {BehaviorSubject} from 'rxjs';
 import {Preferences} from '@capacitor/preferences';
+import {LoyaltyTier} from "../../../models/loyalty-point-tier.balance";
 
 @Component({
   selector: 'app-reward-menu',
@@ -30,6 +31,7 @@ export class RewardMenuComponent implements OnInit {
   @Input() fullScreenMode = true;
   @Input() loyaltyPoints: string;
   @Input() qrCodeLink: string = null;
+  @Input() businessTiers: LoyaltyTier[];
 
   @Output() closeWindowEvt = new EventEmitter();
   @Output() notEnoughLpEvt = new EventEmitter();
@@ -42,6 +44,7 @@ export class RewardMenuComponent implements OnInit {
   userType$ = new BehaviorSubject<number>(null);
   business$ = new BehaviorSubject<Business>(null);
   isLoggedIn$ = new BehaviorSubject<string>(null);
+  tier$ = new BehaviorSubject<LoyaltyTier>(null);
 
   constructor(
     private businessMenuService: BusinessMenuServiceService,
@@ -92,7 +95,7 @@ export class RewardMenuComponent implements OnInit {
   openReward(reward: Reward) {
     reward.link = `${environment.baseUrl}business-menu/${this.qrCodeLink}/${reward.uuid}`;
     this.reward$.next(reward);
-
+    this.tier$.next(this.businessTiers.find((tier) => tier.id === this.reward$.getValue().tier_id));
     this.rewardApp$.next(true);
   }
 

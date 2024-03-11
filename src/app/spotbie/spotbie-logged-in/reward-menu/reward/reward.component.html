@@ -41,4 +41,11 @@
     <div class='spotbie-communityMemberDescription spotbie-text-gradient mt-4 mb-4'>
         {{ reward.description }}
     </div>
+
+    <ng-container *ngIf="tier">
+      <div class='spotbie-communityMemberDescription spotbie-text-gradient mt-4 mb-4'>
+        Reward Tier Entrance: <span class="sb-text-light-green-gradient">{{ tier.lp_entrance | number: '1.00':'en-US' }}</span>
+        Loyalty Points at <span class="sb-text-light-green-gradient">{{ business.name }}</span>.
+      </div>
+    </ng-container>
 </div>

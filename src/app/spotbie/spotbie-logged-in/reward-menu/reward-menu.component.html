@@ -36,6 +36,8 @@
 <app-reward *ngIf="rewardApp$ | async"
             #appRewardViewer
             [reward]="reward$ | async"
+            [tier]="tier$ | async"
+            [business]="business$ | async"
             [fullScreenMode]="rewardAppFullScreen"
             [userPointToDollarRatio]="userPointToDollarRatio$.getValue()"
             (closeWindowEvt)="closeReward()"></app-reward>

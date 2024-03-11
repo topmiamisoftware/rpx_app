@@ -78,7 +78,7 @@ export class QrComponent implements OnInit {
       this.pointsCharged$.next(this.reward$.getValue().point_cost);
       this.sbSpentPoints.nativeElement.style.display = 'block';
     } else {
-      alert(resp.message);
+      confirm(resp.message);
       this.closeQrUser();
     }
 
@@ -156,7 +156,8 @@ export class QrComponent implements OnInit {
       this.awarded$.next(true);
       this.userLoyaltyPoints$.next(resp.redeemable.amount);
     } else {
-      alert(resp.message);
+      confirm(resp.message);
+      this.closeQrUser();
     }
 
     this.scanSuccess$.next(false);

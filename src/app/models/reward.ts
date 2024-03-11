@@ -13,4 +13,5 @@ export class Reward {
   updated_at: string;
   dollar_value: number;
   link: string;
+  tier_id: number;
 }

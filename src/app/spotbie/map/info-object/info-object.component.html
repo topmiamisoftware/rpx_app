@@ -131,6 +131,7 @@
     <app-reward-menu *ngIf="(rewardMenuUp$ | async)"
                      [qrCodeLink]="infoObject?.qr_code_link"
                      [rewardAppFullScreen]="fullScreenMode"
+                     [businessTiers]="infoObject.loyalty_tiers ?? loyaltyTiers"
                      [fullScreenMode]="false">
     </app-reward-menu>
 

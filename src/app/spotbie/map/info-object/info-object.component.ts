@@ -24,6 +24,7 @@ import {BehaviorSubject} from 'rxjs';
 import {AppLauncher} from '@capacitor/app-launcher';
 import {Preferences} from '@capacitor/preferences';
 import {Share} from '@capacitor/share';
+import {LoyaltyTier} from "../../../models/loyalty-point-tier.balance";
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
@@ -48,6 +49,7 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   @Input() accountType: string | number;
   @Input() eventsClassification: number = null;
   @Input() categories: number;
+  @Input() loyaltyTiers: LoyaltyTier[];
 
   @Output() closeWindow = new EventEmitter();
   @Output() removeFavoriteEvent = new EventEmitter();
@@ -75,8 +77,7 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   ) {}
 
   getFullScreenModeClass() {
-    if (this.fullScreenMode) return 'fullScreenMode';
-    else return '';
+    return this.fullScreenMode ? 'fullScreenMode' : '';
   }
 
   closeWindowX(): void {
@@ -96,8 +97,6 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   }
 
   private pullInfoObject(): void {
-    console.log('pullInfoObject');
-
     if (this.router.url.indexOf('event') > -1) {
       const infoObjectId = this.activatedRoute.snapshot.paramMap.get('id');
       this.urlApi = `id=${infoObjectId}`;
@@ -119,9 +118,6 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   }
 
   private pullInfoObjectCallback(httpResponse: any): void {
-    console.log('httpResponse', httpResponse);
-    console.log('this.infoObjectCategory;', this.infoObjectCategory);
-
     if (httpResponse.success) {
       const infoObject = httpResponse.data as InfoObject;
       infoObject.type_of_info_object_category = this.infoObjectCategory;
@@ -235,9 +231,6 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   }
 
   share() {
-    console.log('infoObjectTitle', this.infoObjectTitle);
-    console.log('infoObjectDescription', this.infoObjectDescription);
-    console.log('infoObjectLink', this.infoObjectLink);
     Share.share({
       title: this.infoObjectTitle,
       text: this.infoObjectDescription,

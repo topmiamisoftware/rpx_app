@@ -462,7 +462,6 @@ export class MapComponent implements OnInit, AfterViewInit {
         break;
       case 2:
         //sort by reviews
-        console.log('REVIEW BY SORT', this.sortingOrder);
         if (this.sortingOrder === 'desc') {
           this.searchResults$.next(
             searchResults.sort(sorterHelpers.reviewsSortDesc)
@@ -750,8 +749,22 @@ export class MapComponent implements OnInit, AfterViewInit {
     // If the category we picked is the same one as the
     // previously opened one then we can skip some steps.
     if (category === this.previousSearchCategory) {
-      const coordinates = await Geolocation.getCurrentPosition();
-      await this.setMap(coordinates);
+      if (Capacitor.isNativePlatform()) {
+        const coordinates = await Geolocation.getCurrentPosition();
+        await this.setMap(coordinates);
+        this.finishMapSetUp(category);
+      } else  {
+        window.navigator.geolocation.getCurrentPosition(
+          async position => {
+            await this.setMap(position);
+            this.finishMapSetUp(category);
+          },
+          err => {
+            console.log(err);
+            this.showMapError();
+          }
+        );
+      }
       return;
     }
 
@@ -766,6 +779,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       if (hasPermissions) {
         const coordinates = await Geolocation.getCurrentPosition();
         await this.setMap(coordinates);
+        this.finishMapSetUp(category);
       } else {
         this.showMapError();
         return;
@@ -774,6 +788,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       window.navigator.geolocation.getCurrentPosition(
         async position => {
           await this.setMap(position);
+          this.finishMapSetUp(category);
         },
         err => {
           console.log(err);
@@ -783,8 +798,11 @@ export class MapComponent implements OnInit, AfterViewInit {
     } else if (this.locationFound$.getValue()) {
       const coordinates = await Geolocation.getCurrentPosition();
       await this.setMap(coordinates);
+      this.finishMapSetUp(category);
     }
+  }
 
+  finishMapSetUp(category: number) {
     if (this.searchResults$.getValue().length === 0) {
       this.showSearchResults$.next(false);
     }

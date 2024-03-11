@@ -1,5 +1,6 @@
 import {LoyaltyPointBalance} from './loyalty-point-balance';
 import {SpotbieUser} from './spotbieuser';
+import {LoyaltyTier} from "./loyalty-point-tier.balance";
 
 export class Business {
   id: number;
@@ -24,4 +25,5 @@ export class Business {
   trial_ends_at: string;
   spotbie_user: SpotbieUser;
   loyalty_point_balance: LoyaltyPointBalance;
+  loyalty_tiers: LoyaltyTier[];
 }
