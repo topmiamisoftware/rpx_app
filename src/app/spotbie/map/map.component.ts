@@ -196,6 +196,7 @@ export class MapComponent implements OnInit, AfterViewInit {
               },
               map: this.spotbieMap,
               content: el,
+              zIndex: 3,
             });
             newMarker.addListener('click', ({_domEvent, _latLng}) => {
               this.pullSearchMarker(cm);
@@ -1245,28 +1246,6 @@ export class MapComponent implements OnInit, AfterViewInit {
     );
   }
 
-  checkSearchResultsFitBounds() {
-    if (
-      this.communityMemberList$.getValue().length < 3 &&
-      this.searchResults$.getValue().length > 0
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  checkCommunityMemberFitBounds() {
-    if (
-      this.searchResults$.getValue().length < 3 ||
-      this.communityMemberList$.getValue().length >= 3
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   /**
    * Fucntion gets called when the navigator's GPS system has found the user's location.
    *
@@ -1304,11 +1283,6 @@ export class MapComponent implements OnInit, AfterViewInit {
 
     this.showMobilePrompt2$.next(false);
     this.loading$.next(false);
-  }
-
-  pullMarker(mapObject: any): void {
-    this.currentMarker = mapObject;
-    this.sliderRight = true;
   }
 
   getSingleCatClass(i) {
@@ -1448,13 +1422,6 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.loading$.next(false);
     this.closeCategories();
     this.cleanCategory();
-  }
-
-  mobileStartLocation() {
-    this.loading$.next(true);
-    this.spawnCategories(1);
-
-    this.showMobilePrompt2$.next(true);
   }
 
   private async populateYelpResults(data: any) {
