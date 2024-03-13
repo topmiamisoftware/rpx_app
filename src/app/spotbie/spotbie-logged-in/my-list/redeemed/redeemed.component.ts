@@ -2,8 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {Redeemable} from '../../../../models/redeemable';
 import {LoyaltyPointsService} from '../../../../services/loyalty-points/loyalty-points.service';
-import {LoadingController} from "@ionic/angular";
+import {LoadingController, ModalController} from "@ionic/angular";
 import {filter} from "rxjs/operators";
+import {FeedbackComponent} from "../feedback/feedback.component";
 
 @Component({
   selector: 'app-redeemed',
@@ -21,7 +22,8 @@ export class RedeemedComponent implements OnInit {
 
   constructor(
     private loyaltyPointsService: LoyaltyPointsService,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private modalCtrl: ModalController
   ) {
     this.initLoading();
   }
@@ -47,12 +49,6 @@ export class RedeemedComponent implements OnInit {
           }
         }
       });
-  }
-
-  getRedeemedStyle() {
-    if (this.lpRedeemed$.getValue()) {
-      return {'background-color': 'rgb(80 216 120)'};
-    }
   }
 
   getRedeemed() {
@@ -102,6 +98,42 @@ export class RedeemedComponent implements OnInit {
   showLoadMore() {
     if (this.lpRedeemed$.getValue() && this.lpRedeemedTotal$.getValue() > 0) {
       return true;
+    }
+  }
+
+  identify(index, item: Redeemable) {
+    return item.uuid;
+  }
+
+  async leaveFeedback(redeemedItem: Redeemable) {
+    console.log('redeemed ITEM', redeemedItem);
+
+    const modal = await this.modalCtrl.create({
+      component: FeedbackComponent,
+      componentProps: {
+        feedback: redeemedItem?.feedback,
+        ledgerId: redeemedItem?.loyalty_point_ledger?.id,
+        businessName: redeemedItem.business.name,
+      }
+    });
+    modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'feedback_sent' || role === 'feedback_updated') {
+      // Need to update the redeemableItem
+      const newList = this.lpRedeemedList$.getValue().filter((item) => item.uuid !== redeemedItem.uuid);
+
+      if (role === 'feedback_sent') {
+        redeemedItem.feedback = data.feedback;
+      } else {
+        redeemedItem.feedback.feedback_text = data.feedback.feedback_text;
+      }
+
+      this.lpRedeemedList$.next([
+        redeemedItem,
+        ...newList
+      ]);
     }
   }
 }

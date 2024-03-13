@@ -10,8 +10,8 @@ import * as spotbieGlobals from '../../globals';
 import {LoyaltyTier} from '../../models/loyalty-point-tier.balance';
 
 const LOYATLY_POINTS_API = spotbieGlobals.API + 'loyalty-points';
-const LOYATLY_POINTS_TIER_API = spotbieGlobals.API + 'lp-tiers';
 const REDEEMABLE_API = spotbieGlobals.API + 'redeemable';
+const FEEDBACK_API = spotbieGlobals.API + 'feedback';
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +19,6 @@ const REDEEMABLE_API = spotbieGlobals.API + 'redeemable';
 export class LoyaltyPointsService {
   userLoyaltyPoints$: Observable<number> = this.store.select('loyaltyPoints');
   loyaltyPointBalance: LoyaltyPointBalance;
-  existingTiers: Array<LoyaltyTier> = [];
 
   constructor(
     private http: HttpClient,
@@ -47,7 +46,10 @@ export class LoyaltyPointsService {
 
     return this.http
       .get<any>(apiUrl, request)
-      .pipe(catchError(handleError('getRedeemed')));
+      .pipe(
+        catchError(handleError('getRedeemed')),
+        tap((r) => console.log('GET REDEEMED', r)),
+      );
   }
 
   getRewards(request: any): Observable<any> {
@@ -95,17 +97,17 @@ export class LoyaltyPointsService {
       });
   }
 
-  getExistingTiers(): Observable<any> {
-    const apiUrl = `${LOYATLY_POINTS_TIER_API}/index`;
+  saveFeedback(feedbackText: string, ledgerRecordId: string) {
+    const apiUrl = `${FEEDBACK_API}/store`;
 
-    return this.http.get<any>(apiUrl).pipe(
-      tap(existingTiers => {
-        existingTiers.data.forEach(tier => {
-          tier.entranceValue = tier.lp_entrance;
-          this.existingTiers.push(tier);
-        });
-      }),
-      catchError(handleError('existingTiers'))
-    );
+    return this.http.post<any>(apiUrl, {feedback_text: feedbackText, ledger_id: ledgerRecordId})
+      .pipe(catchError(handleError('saveFeedbackService')));
+  }
+
+  updateFeedback(feedbackText: string, feedbackId: string) {
+    const apiUrl = `${FEEDBACK_API}/update/${feedbackId}`;
+
+    return this.http.patch<any>(apiUrl, {feedback_text: feedbackText})
+      .pipe(catchError(handleError('updateFeedback')));
   }
 }

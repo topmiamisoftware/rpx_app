@@ -5,7 +5,7 @@
     <div class='card-header'>
       <span class='sb-text-light-green-gradient'>{{ balance.from_business.name }}</span>
 
-      <img *ngIf="balance.from_business.spotbie_user.user_type == 1" [src]="'assets/images/home_imgs/find-places-to-eat.svg'" />
+      <img *ngIf="balance.from_business.spotbie_user.user_type === 1" [src]="'assets/images/home_imgs/find-places-to-eat.svg'" />
       <img *ngIf="balance.from_business.spotbie_user.user_type === 2" [src]="'assets/images/home_imgs/find-places-for-shopping.svg'" />
       <img *ngIf="balance.from_business.spotbie_user.user_type === 3" [src]="'assets/images/home_imgs/find-events.svg'" />
     </div>
