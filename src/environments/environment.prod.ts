@@ -1,5 +1,5 @@
 const baseUrl = 'https://spotbie.com/';
-const apiEndpoint = 'https://ec98-2601-586-cd00-7900-fddd-889b-e3df-4951.ngrok-free.app/api/';
+const apiEndpoint = 'https://eee2-2601-586-cd00-7900-45fa-9200-5c73-40a.ngrok-free.app/api/';
 
 export const environment = {
   production: true,
