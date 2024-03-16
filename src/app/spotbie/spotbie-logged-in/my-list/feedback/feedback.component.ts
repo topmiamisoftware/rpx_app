@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import {IonicModule, ModalController} from "@ionic/angular";
 import {LoyaltyPointsService} from "../../../../services/loyalty-points/loyalty-points.service";
 import {Feedback} from "../../../../models/feedback";
-import {square} from "ionicons/icons";
 import {FormBuilder, FormsModule, ReactiveFormsModule, UntypedFormGroup, Validators} from "@angular/forms";
 import {BehaviorSubject} from "rxjs";
 import {CommonModule} from "@angular/common";

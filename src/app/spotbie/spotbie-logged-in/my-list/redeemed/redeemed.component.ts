@@ -106,8 +106,6 @@ export class RedeemedComponent implements OnInit {
   }
 
   async leaveFeedback(redeemedItem: Redeemable) {
-    console.log('redeemed ITEM', redeemedItem);
-
     const modal = await this.modalCtrl.create({
       component: FeedbackComponent,
       componentProps: {
