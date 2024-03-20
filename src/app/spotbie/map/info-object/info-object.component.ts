@@ -217,9 +217,13 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
 
     let displayAddress = '';
 
-    this.infoObject$.getValue().location.display_address.forEach(element => {
-      displayAddress = displayAddress + ' ' + element;
-    });
+    if (this.infoObject$.getValue().location?.display_address) {
+      this.infoObject$.getValue().location.display_address.forEach(element => {
+        displayAddress = displayAddress + ' ' + element;
+      });
+    } else {
+      displayAddress = this.infoObject$.getValue().address;
+    }
 
     if (confirmNav) {
       await AppLauncher.openUrl({
