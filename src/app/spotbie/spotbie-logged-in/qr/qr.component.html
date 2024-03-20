@@ -18,9 +18,13 @@
           <div class="success-msg spotbie-text-gradient text-center text-uppercase pt-4 mb-4">
             You've earned<br/>
             <span class='sb-text-light-green-gradient'>
-            {{ (userLoyaltyPoints$ | async) | number:'1.0':'en-US' }}
-          </span>
-            <br/>loyalty points
+              {{ (userLoyaltyPoints$ | async) | number:'1.0':'en-US' }}
+            </span>
+            <br/>loyalty points<br/><br/>
+            <span class='sb-text-light-green-gradient'>
+              {{ (dollarValue$ | async) | currency : 'USD' }}
+            </span>
+            <br/>dollar value
           </div>
 
           <div class="sb-earnedPoints animated fadeOutUp">

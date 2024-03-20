@@ -38,6 +38,7 @@ export class QrComponent implements OnInit {
   @ViewChild('sbSpentPoints') sbSpentPoints: ElementRef;
 
   userLoyaltyPoints$ = new BehaviorSubject<number>(0);
+  dollarValue$ = new BehaviorSubject<number>(0);
   rewardPrompted$ = new BehaviorSubject<boolean>(false);
   qrWidth$ = new BehaviorSubject<number>(0);
   scanSuccess$ = new BehaviorSubject<boolean>(false);
@@ -155,6 +156,7 @@ export class QrComponent implements OnInit {
     if (resp.success) {
       this.awarded$.next(true);
       this.userLoyaltyPoints$.next(resp.redeemable.amount);
+      this.dollarValue$.next(resp.redeemable.dollar_value);
     } else {
       confirm(resp.message);
       this.closeQrUser();
