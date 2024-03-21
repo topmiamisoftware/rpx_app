@@ -2,7 +2,7 @@
     <img class="spotbie-ad-image" src="{{ ad.images_mobile }}" />
 
     <div class='sb-ad-bottom' *ngIf="(businessReady$ | async) && (business$ | async) as business">
-        <span class='spotbie-text-gradient sb-sponsoredName text-uppercase'>{{ ad.name }}</span>
+        <span class='spotbie-text-gradient sb-sponsoredName text-uppercase'>{{ business.name }}</span>
 
         <span class='sb-text-light-green-gradient sb-totalRewards text-uppercase' style="font-size: 1rem;">{{ totalRewards }} REWARDS</span>
 

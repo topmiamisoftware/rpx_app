@@ -17,17 +17,15 @@
   max-height: 100%;
   min-width: 100%;
   max-width: 100%;
-  right: 0%;
+  right: 0;
   min-height: unset;
   height: unset;
-  background: #1c1924c9!important;
 }
 .sb-mobileAdWrapper .spotbie-ad-image{
   position: relative;
   left: 0;
   right: 0;
-  max-height: 100%;
-  min-width: 100%;
+  max-height: 320px;
   max-width: 100%;
   box-shadow: unset;
 }
@@ -54,7 +52,6 @@
   right: unset;
   left: unset;
   margin: 0 auto;
-  margin-top: 0px;
 }
 .sb-mobileAdWrapper .sb-sponsored{
   padding-top: 20px;
@@ -73,12 +70,10 @@
   margin-top: 10px;
 }
 .sb-mobileAdWrapper .sb-perDollar{
-  margin-right: 0px;
+  margin-right: 0;
 }
 .sb-mobileAdWrapper .sb-ad-bottom{
   position:relative;
-  position: relative;
-  background-color: #1c1924!important;
   padding-top: 15px;
   padding-bottom: 15px;
   background-color: rgb(28 25 36) !important;
@@ -91,9 +86,7 @@
   left: 0;
   right: 0;
   height: auto;
-  width: 100%;
   max-width: 100%;
-  min-width: 100%;
 }
 .spotbie-white-iconImg{
   position: absolute;
@@ -172,8 +165,6 @@
     position: relative;
     left: 0;
     right: 0;
-    width: 100%;
-    min-width: 100%;
     box-shadow: unset;
     background-color: #26232e !important;
     background-size: contain !important;
@@ -201,7 +192,6 @@
     right: unset;
     left: unset;
     margin: 0 auto;
-    margin-top: 0px;
   }
   .sb-sponsored{
     padding-top: 20px;
@@ -224,8 +214,6 @@
   }
   .sb-ad-bottom{
     position:relative;
-    position: relative;
-    background-color: #1c1924!important;
     padding-top: 15px;
     padding-bottom: 15px;
     background-color: rgb(28 25 36) !important;
@@ -234,6 +222,6 @@
 @media (max-width: 420px) {
   .sb-mobileAdWrapper .spotbie-ad-image,
   .spotbie-ad-image{
-    min-width: 100%;
+    max-width: 100%;
   }
 }

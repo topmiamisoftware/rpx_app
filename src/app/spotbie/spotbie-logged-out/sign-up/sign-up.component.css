@@ -145,7 +145,8 @@ h2 strong.sep-two {
 }
 .spotbie-button{
   background: linear-gradient(90deg,#35a99fa4,#64e56fc9);
-  border: 1px solid #428c67
+  border: 1px solid #428c67;
+  max-width: 100%;
 }
 .sb-scroll{
   min-width: 100%;

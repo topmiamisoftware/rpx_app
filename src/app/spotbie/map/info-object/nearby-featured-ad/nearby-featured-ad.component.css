@@ -5,7 +5,6 @@
     margin-bottom: 5px;
     margin-left: 2px;
     margin-right: 2px;
-    min-height: 274px;
     background-repeat: no-repeat !important;
     background-size: contain !important;
     background-position: center !important;
@@ -52,15 +51,10 @@
     font-size: .5rem;
 }
 .spotbie-ad-image{
-    position: relative;
-    margin: 0 auto;
-    max-width: 100%;
-    min-height: 400px;
-    height: 400px;
-    max-height: 400px;    
-    background-repeat: no-repeat!important;
-    background-size: contain !important;
-    background-position: center!important; 
+  position: relative;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 320px;
 }
 .spotbie-white-iconImg{
     position: absolute;
@@ -96,11 +90,6 @@
 .spotbie-ad-wrapper-header{
     position: relative;
     display: inline-block;
-    max-width: 400px;
-    min-width: 400px;
-    height: 400px;
-    max-height: 400px;
-    min-height: 400px;
     margin-left: 2px;
     margin-right: 2px;     
 }
@@ -152,12 +141,7 @@
         max-width: 100%;
     }
 }
-@media (max-width: 460px) { 
-    .spotbie-ad-image{
-        width: 100%;
-        min-width: 100%;
-        max-width: 100%;
-    }
+@media (max-width: 460px) {
     .spotbie-ad-wrapper-header{
         width: 98%;
         min-width: 98%;

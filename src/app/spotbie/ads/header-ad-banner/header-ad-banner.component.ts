@@ -48,16 +48,13 @@ export class HeaderAdBannerComponent implements OnInit {
   isDesktop = false;
   link: string;
   displayAd$ = new BehaviorSubject(false);
-  whiteIconSvg = 'assets/images/home_imgs/spotbie-white-icon.svg';
   distance = 0;
   totalRewards = 0;
   categoriesListFriendly: string[] = [];
-  adIsOpen = false;
   communityMemberOpen = false;
   currentCategoryList: Array<string> = [];
   categoryListForUi: string = null;
   loyaltyPointBalance: LoyaltyPointBalance;
-  adTypeWithId = false;
   genericAdImage: string = PLACE_TO_EAT_AD_IMAGE;
   genericAdImageMobile: string = PLACE_TO_EAT_AD_IMAGE_MOBILE;
   switchAdInterval: any = false;

@@ -52,20 +52,14 @@ export class NearbyFeaturedAdComponent implements OnInit {
   ad$: BehaviorSubject<Ad | null> = new BehaviorSubject<Ad>(null);
   link: string;
   displayAd: boolean = false;
-  whiteIconSvg = 'assets/images/home_imgs/spotbie-white-icon.svg';
   distance: number = 0;
   totalRewards: number = 0;
   categoriesListFriendly: string[] = [];
-  adIsOpen: boolean = false;
-  rewardMenuOpen: boolean = false;
   isMobile: boolean = false;
   currentCategoryList: Array<string> = [];
-  categoryListForUi: string = null;
   loyaltyPointBalance: any;
-  adTypeWithId: boolean = false;
-  adList: Array<Ad> = [];
   genericAdImage: string = PLACE_TO_EAT_AD_IMAGE;
-  business$ = new BehaviorSubject(null);
+  business$ = new BehaviorSubject<Business>(null);
   businessReady$ = new BehaviorSubject(false);
   switchAdInterval: any = false;
 
@@ -217,10 +211,5 @@ export class NearbyFeaturedAdComponent implements OnInit {
   ngOnInit(): void {
     this.isMobile = this.deviceDetectorService.isMobile();
     this.getNearByFeatured();
-  }
-
-  ngOnDestroy(): void {
-    clearInterval(this.switchAdInterval);
-    this.switchAdInterval = false;
   }
 }
