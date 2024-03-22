@@ -16,12 +16,6 @@
       </div>
 
       <div class='mb-2'>
-              <span [ngClass]="getLpStyle(balance.balance)">
-                  {{ balance.balance | number:'1.0':'en-US' }}
-              </span> Loyalty Points
-      </div>
-
-      <div class='mb-2'>
                   <span [ngClass]="getLpStyle(balance.balance_aggregate)">
                       {{ balance.balance_aggregate | number:'1.0':'en-US' }}
                   </span> All Time LP
