@@ -1,20 +1,20 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { AdsService } from '../ads.service';
-import { Business } from '../../../models/business';
-import { getDistanceFromLatLngInMiles } from '../../../helpers/measure-units.helper';
-import { Ad } from '../../../models/ad';
-import { DeviceDetectorService } from 'ngx-device-detector';
+import {Component, Input, OnInit} from '@angular/core';
+import {AdsService} from '../ads.service';
+import {Business} from '../../../models/business';
+import {getDistanceFromLatLngInMiles} from '../../../helpers/measure-units.helper';
+import {Ad} from '../../../models/ad';
+import {DeviceDetectorService} from 'ngx-device-detector';
 import {
   FOOD_CATEGORIES,
   SHOPPING_CATEGORIES,
   EVENT_CATEGORIES,
 } from '../../map/map_extras/map_extras';
-import { AllowedAccountTypes } from '../../../helpers/enum/account-type.enum';
-import { InfoObjectType } from '../../../helpers/enum/info-object-type.enum';
-import { LoyaltyPointBalance } from '../../../models/loyalty-point-balance';
-import { AppLauncher } from '@capacitor/app-launcher';
-import { BehaviorSubject } from 'rxjs';
-import {Preferences} from "@capacitor/preferences";
+import {AllowedAccountTypes} from '../../../helpers/enum/account-type.enum';
+import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
+import {LoyaltyPointBalance} from '../../../models/loyalty-point-balance';
+import {AppLauncher} from '@capacitor/app-launcher';
+import {BehaviorSubject} from 'rxjs';
+import {Preferences} from '@capacitor/preferences';
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/header_banner_in_house.jpg';
@@ -235,7 +235,7 @@ export class HeaderAdBannerComponent implements OnInit {
     if (this.business) {
       this.communityMemberOpen = true;
     } else {
-      await AppLauncher.openUrl({ url: 'https://spotbie.com/business' });
+      await AppLauncher.openUrl({url: 'https://spotbie.com/business'});
     }
     return;
   }

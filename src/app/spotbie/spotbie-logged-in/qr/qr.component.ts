@@ -19,7 +19,7 @@ import {
   IOSSettings,
   NativeSettings,
 } from 'capacitor-native-settings';
-import {Camera} from "@capacitor/camera";
+import {Camera} from '@capacitor/camera';
 
 @Component({
   selector: 'app-qr',

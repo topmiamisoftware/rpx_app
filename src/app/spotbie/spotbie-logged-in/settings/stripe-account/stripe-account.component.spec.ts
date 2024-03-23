@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { StripeAccountComponent } from './stripe-account.component';
+import {StripeAccountComponent} from './stripe-account.component';
 
 describe('StripeAccountComponent', () => {
   let component: StripeAccountComponent;
@@ -8,9 +8,8 @@ describe('StripeAccountComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ StripeAccountComponent ]
-    })
-    .compileComponents();
+      declarations: [StripeAccountComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

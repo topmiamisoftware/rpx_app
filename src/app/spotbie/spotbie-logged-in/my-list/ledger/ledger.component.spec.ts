@@ -1,7 +1,7 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {IonicModule} from '@ionic/angular';
 
-import { LedgerComponent } from './ledger.component';
+import {LedgerComponent} from './ledger.component';
 
 describe('LedgerComponent', () => {
   let component: LedgerComponent;
@@ -9,8 +9,8 @@ describe('LedgerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ LedgerComponent ],
-      imports: [IonicModule.forRoot()]
+      declarations: [LedgerComponent],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LedgerComponent);

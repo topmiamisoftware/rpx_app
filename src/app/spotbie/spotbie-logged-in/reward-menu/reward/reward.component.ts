@@ -7,9 +7,9 @@ import {
   Output,
 } from '@angular/core';
 import {Reward} from '../../../../models/reward';
-import {Preferences} from "@capacitor/preferences";
-import { LoyaltyTier } from '../../../../models/loyalty-point-tier.balance';
-import {Business} from "../../../../models/business";
+import {Preferences} from '@capacitor/preferences';
+import {LoyaltyTier} from '../../../../models/loyalty-point-tier.balance';
+import {Business} from '../../../../models/business';
 
 @Component({
   selector: 'app-reward',

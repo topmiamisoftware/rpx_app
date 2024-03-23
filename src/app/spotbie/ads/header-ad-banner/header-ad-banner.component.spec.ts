@@ -1,6 +1,6 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { HeaderAdBannerComponent } from './header-ad-banner.component';
+import {HeaderAdBannerComponent} from './header-ad-banner.component';
 
 describe('HeaderAdBannerComponent', () => {
   let component: HeaderAdBannerComponent;
@@ -8,9 +8,8 @@ describe('HeaderAdBannerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ HeaderAdBannerComponent ]
-    })
-    .compileComponents();
+      declarations: [HeaderAdBannerComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

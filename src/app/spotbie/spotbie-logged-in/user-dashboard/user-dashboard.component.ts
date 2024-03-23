@@ -7,14 +7,14 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { LoyaltyPointsComponent } from '../loyalty-points/loyalty-points.component';
-import { QrComponent } from '../qr/qr.component';
-import { RedeemableComponent } from '../my-list/redeemable/redeemable.component';
-import { RewardMenuComponent } from '../reward-menu/reward-menu.component';
-import { Platform } from '@ionic/angular';
-import { BehaviorSubject } from "rxjs";
-import {BarcodeScanner} from "@capacitor-community/barcode-scanner";
-import {Router} from "@angular/router";
+import {LoyaltyPointsComponent} from '../loyalty-points/loyalty-points.component';
+import {QrComponent} from '../qr/qr.component';
+import {RedeemableComponent} from '../my-list/redeemable/redeemable.component';
+import {RewardMenuComponent} from '../reward-menu/reward-menu.component';
+import {Platform} from '@ionic/angular';
+import {BehaviorSubject} from 'rxjs';
+import {BarcodeScanner} from '@capacitor-community/barcode-scanner';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -36,8 +36,7 @@ export class UserDashboardComponent {
   scannerStarted$ = new BehaviorSubject<boolean>(false);
   isMobile$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private platform: Platform,
-              private router: Router) {
+  constructor(private platform: Platform, private router: Router) {
     this.isMobile$.next(this.platform.is('mobile'));
   }
 
@@ -57,7 +56,7 @@ export class UserDashboardComponent {
   }
 
   closeQrScanner() {
-     BarcodeScanner.stopScan().then(_ => this.scannerStarted$.next(false));
+    BarcodeScanner.stopScan().then(_ => this.scannerStarted$.next(false));
   }
 
   spawnCategories(category: number) {

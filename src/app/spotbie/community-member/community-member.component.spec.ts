@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { CommunityMemberComponent } from './community-member.component';
+import {CommunityMemberComponent} from './community-member.component';
 
 describe('CommunityMemberComponent', () => {
   let component: CommunityMemberComponent;
@@ -8,9 +8,8 @@ describe('CommunityMemberComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CommunityMemberComponent ]
-    })
-    .compileComponents();
+      declarations: [CommunityMemberComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

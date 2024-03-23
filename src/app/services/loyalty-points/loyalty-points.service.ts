@@ -44,12 +44,10 @@ export class LoyaltyPointsService {
   getRedeemed(request: any): Observable<any> {
     const apiUrl = `${REDEEMABLE_API}/lp-redeemed?page=${request.page}`;
 
-    return this.http
-      .get<any>(apiUrl, request)
-      .pipe(
-        catchError(handleError('getRedeemed')),
-        tap((r) => console.log('GET REDEEMED', r)),
-      );
+    return this.http.get<any>(apiUrl, request).pipe(
+      catchError(handleError('getRedeemed')),
+      tap(r => console.log('GET REDEEMED', r))
+    );
   }
 
   getRewards(request: any): Observable<any> {
@@ -100,14 +98,19 @@ export class LoyaltyPointsService {
   saveFeedback(feedbackText: string, ledgerRecordId: string) {
     const apiUrl = `${FEEDBACK_API}/store`;
 
-    return this.http.post<any>(apiUrl, {feedback_text: feedbackText, ledger_id: ledgerRecordId})
+    return this.http
+      .post<any>(apiUrl, {
+        feedback_text: feedbackText,
+        ledger_id: ledgerRecordId,
+      })
       .pipe(catchError(handleError('saveFeedbackService')));
   }
 
   updateFeedback(feedbackText: string, feedbackId: string) {
     const apiUrl = `${FEEDBACK_API}/update/${feedbackId}`;
 
-    return this.http.patch<any>(apiUrl, {feedback_text: feedbackText})
+    return this.http
+      .patch<any>(apiUrl, {feedback_text: feedbackText})
       .pipe(catchError(handleError('updateFeedback')));
   }
 }

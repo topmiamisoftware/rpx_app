@@ -1,31 +1,41 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {Pipe, PipeTransform} from '@angular/core';
 
-const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+const monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 @Pipe({
-  name: 'dateFormat'
+  name: 'dateFormat',
 })
 export class DateFormatPipe implements PipeTransform {
-
   transform(d: Date): string {
-
-    const format_date = monthNames[d.getMonth()] + ' ' + (d.getDate() + 1) + ', ' + d.getFullYear();
+    const format_date =
+      monthNames[d.getMonth()] +
+      ' ' +
+      (d.getDate() + 1) +
+      ', ' +
+      d.getFullYear();
 
     return format_date;
-
   }
-
 }
 
 @Pipe({
-  name: 'timeFormat'
+  name: 'timeFormat',
 })
 export class TimeFormatPipe implements PipeTransform {
-
   transform(timex: string): string {
-
     const time = timex.split(':'); // convert to array
 
     // fetch
@@ -37,18 +47,16 @@ export class TimeFormatPipe implements PipeTransform {
     let timeValue;
 
     if (hours > 0 && hours <= 12) {
-      timeValue= '' + hours;
+      timeValue = '' + hours;
     } else if (hours > 12) {
-      timeValue= '' + (hours - 12);
+      timeValue = '' + (hours - 12);
     } else if (hours == 0) {
-      timeValue= '12';
+      timeValue = '12';
     }
 
-    timeValue += (minutes < 10) ? ':0' + minutes : ':' + minutes;  // get minutes
-    timeValue += (hours >= 12) ? ' PM' : ' AM';  // get AM/PM
+    timeValue += minutes < 10 ? ':0' + minutes : ':' + minutes; // get minutes
+    timeValue += hours >= 12 ? ' PM' : ' AM'; // get AM/PM
 
     return timeValue;
-
   }
-
 }

@@ -1,15 +1,13 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { LoyaltyPointsModule } from '../loyalty-points/loyalty-points.module';
-import { RewardMenuModule } from '../reward-menu/reward-menu.module';
-import { RouterModule } from '@angular/router';
-import { QrModule } from '../qr/qr.module';
-import { UserDashboardComponent } from './user-dashboard.component';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {LoyaltyPointsModule} from '../loyalty-points/loyalty-points.module';
+import {RewardMenuModule} from '../reward-menu/reward-menu.module';
+import {RouterModule} from '@angular/router';
+import {QrModule} from '../qr/qr.module';
+import {UserDashboardComponent} from './user-dashboard.component';
 
 @NgModule({
-  declarations: [
-    UserDashboardComponent
-  ],
+  declarations: [UserDashboardComponent],
   imports: [
     CommonModule,
     LoyaltyPointsModule,
@@ -17,8 +15,6 @@ import { UserDashboardComponent } from './user-dashboard.component';
     RouterModule,
     QrModule,
   ],
-  exports: [
-    UserDashboardComponent
-  ]
+  exports: [UserDashboardComponent],
 })
-export class UserDashboardModule { }
+export class UserDashboardModule {}

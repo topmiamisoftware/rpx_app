@@ -1,4 +1,4 @@
-import { Business } from './business';
+import {Business} from './business';
 import {LoyaltyTier} from './loyalty-point-tier.balance';
 
 export class InfoObject {

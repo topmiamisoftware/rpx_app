@@ -6,7 +6,7 @@ import {BusinessMenuServiceService} from '../../services/spotbie-logged-in/busin
 import {InfoObject} from '../../models/info-object';
 import {BehaviorSubject} from 'rxjs';
 import {filter, tap} from 'rxjs/operators';
-import {LoyaltyTier} from "../../models/loyalty-point-tier.balance";
+import {LoyaltyTier} from '../../models/loyalty-point-tier.balance';
 
 @Component({
   selector: 'app-community-member',

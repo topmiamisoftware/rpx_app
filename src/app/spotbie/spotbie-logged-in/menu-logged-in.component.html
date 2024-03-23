@@ -6,32 +6,62 @@
   </ion-header>
   <ion-content class="ion-padding" color="primary">
     <ion-list>
-      <ion-item class="ion-padding-top ion-padding-bottom" color="primary" lines="full" (click)="home()">
+      <ion-item
+        class="ion-padding-top ion-padding-bottom"
+        color="primary"
+        lines="full"
+        (click)="home()"
+      >
         <ion-icon name="home" slot="start"></ion-icon>
         HOME
       </ion-item>
 
-      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="spawnCategories(1)">
+      <ion-item
+        class="ion-padding-bottom"
+        color="primary"
+        lines="full"
+        (click)="spawnCategories(1)"
+      >
         <ion-icon name="pizza" slot="start"></ion-icon>
         PLACES TO EAT
       </ion-item>
 
-      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="spawnCategories(2)">
+      <ion-item
+        class="ion-padding-bottom"
+        color="primary"
+        lines="full"
+        (click)="spawnCategories(2)"
+      >
         <ion-icon name="pricetags" slot="start"></ion-icon>
         SHOPPING
       </ion-item>
 
-      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="spawnCategories(3)">
+      <ion-item
+        class="ion-padding-bottom"
+        color="primary"
+        lines="full"
+        (click)="spawnCategories(3)"
+      >
         <ion-icon name="glasses" slot="start"></ion-icon>
         EVENTS
       </ion-item>
 
-      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="openSettings()">
+      <ion-item
+        class="ion-padding-bottom"
+        color="primary"
+        lines="full"
+        (click)="openSettings()"
+      >
         <ion-icon name="cog" slot="start"></ion-icon>
         SETTINGS
       </ion-item>
 
-      <ion-item class="ion-padding-bottom" color="primary" lines="full" (click)="logOut()">
+      <ion-item
+        class="ion-padding-bottom"
+        color="primary"
+        lines="full"
+        (click)="logOut()"
+      >
         <ion-icon name="power" slot="start"></ion-icon>
         LOG OUT
       </ion-item>
@@ -41,21 +71,26 @@
 
 <div class="ion-page" id="main-content">
   <ion-header>
-    <ion-toolbar id='ionToolbarLoggedIn' class="safe--area" color="tertiary">
+    <ion-toolbar id="ionToolbarLoggedIn" class="safe--area" color="tertiary">
       <ion-buttons slot="start">
         <ion-menu-button auto-hide="false"></ion-menu-button>
       </ion-buttons>
       <ion-buttons slot="end">
         <ion-button (click)="toggleLoyaltyPoints()">
-          <span class='sb-loyalty-points'>{{ (userLoyaltyPoints$ | async) | number:'1.0':'en-US' }}</span>
+          <span class="sb-loyalty-points">{{
+            userLoyaltyPoints$ | async | number : '1.0' : 'en-US'
+          }}</span>
         </ion-button>
 
         <ion-button (click)="toggleLoyaltyPoints()">
-          <img class='sb-loyalty-points' src="assets/images/spotbie-loyalty-points.svg" />
+          <img
+            class="sb-loyalty-points"
+            src="assets/images/spotbie-loyalty-points.svg"
+          />
         </ion-button>
 
         <ion-button (click)="toggleQRScanner()">
-          <img class='sb-qr' src="assets/images/spotbie-qr.svg" />
+          <img class="sb-qr" src="assets/images/spotbie-qr.svg" />
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
@@ -65,6 +100,10 @@
     <!--<app-event-menu *ngIf="eventMenuOpen"></app-event-menu>-->
     <app-map #spotbieMap *ngIf="mapApp$ | async"></app-map>
 
-    <app-settings *ngIf="settingsWindow$ | async" #spotbieSettings (closeWindowEvt)="closeSettings()"></app-settings>
+    <app-settings
+      *ngIf="settingsWindow$ | async"
+      #spotbieSettings
+      (closeWindowEvt)="closeSettings()"
+    ></app-settings>
   </ion-content>
 </div>

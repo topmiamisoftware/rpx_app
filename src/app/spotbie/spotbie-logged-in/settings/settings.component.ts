@@ -16,9 +16,9 @@ import {UserauthService} from '../../../services/userauth.service';
 import {Router} from '@angular/router';
 import {BehaviorSubject} from 'rxjs';
 import {Preferences} from '@capacitor/preferences';
-import {logOutCallback} from "../../../helpers/logout-callback";
-import { AlertDialogComponent } from '../../../helpers/alert/alert.component';
-import { MatDialog } from '@angular/material/dialog';
+import {logOutCallback} from '../../../helpers/logout-callback';
+import {AlertDialogComponent} from '../../../helpers/alert/alert.component';
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-settings',
@@ -120,7 +120,9 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    this.currentPasswordInfoText$.next('Great, now enter your current password.');
+    this.currentPasswordInfoText$.next(
+      'Great, now enter your current password.'
+    );
     this.savePasswordBool$.next(true);
 
     const currentPasswordValidators = [Validators.required];
@@ -175,7 +177,7 @@ export class SettingsComponent implements OnInit {
                     to stop receiving text messages once you consent. Msg. frequency varies. Msg and data rates may apply.`,
         alertLinkText: 'View terms and conditions.',
         alertLink: 'https://spotbie.com/terms',
-        alertTitle: 'SMS Policy'
+        alertTitle: 'SMS Policy',
       },
       enterAnimationDuration: '0ms',
       exitAnimationDuration: '0ms',

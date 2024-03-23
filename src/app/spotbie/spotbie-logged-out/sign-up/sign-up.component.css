@@ -1,15 +1,15 @@
-.spotbie-register-info{
+.spotbie-register-info {
   position: relative;
   margin: 0 auto;
   margin-top: 10px;
   margin-bottom: 40px;
 }
-.spobie-register-holder{
+.spobie-register-holder {
   position: relative;
   margin: 0 auto;
   margin-top: 40px;
 }
-.spotbie-successful-register{
+.spotbie-successful-register {
   position: relative;
   margin: 0 auto;
   text-align: center;
@@ -17,7 +17,7 @@
   font-size: 32px;
   line-height: 70px;
 }
-.signUpBox{
+.signUpBox {
   position: relative;
   margin: 0 auto;
   padding: 20px;
@@ -28,20 +28,20 @@
   border-radius: 20px;
   overflow-y: scroll;
 }
-.displayTableName{
+.displayTableName {
   position: relative;
   text-align: center;
   margin-left: 10px;
   margin-right: 10px;
   margin-bottom: 15px;
 }
-.signUpButtons{
+.signUpButtons {
   position: relative;
   margin: 0 auto;
   text-align: center;
   display: block;
 }
-.signUpInput{
+.signUpInput {
   position: relative;
   border-radius: 10px;
   margin: unset;
@@ -49,9 +49,9 @@
   margin-bottom: 5px !important;
   padding: 10px;
   font-size: 20px;
-  background-color: rgba(0,0,0,.23);
+  background-color: rgba(0, 0, 0, 0.23);
   border: 0;
-  color: #8BC34A;
+  color: #8bc34a;
   letter-spacing: 1px;
   width: 96%;
   min-width: 96%;
@@ -59,25 +59,25 @@
   border: 1px solid #3c3c3c;
   text-align: left;
 }
-.signUpTerms{
+.signUpTerms {
   font-size: 15px;
   text-align: center;
   padding-bottom: 20px;
   margin-top: 30px;
 }
-.signUpTable{
+.signUpTable {
   position: relative;
   margin: 0 auto;
   table-layout: fixed;
   margin-bottom: 20px;
 }
-.signUpTable td{
+.signUpTable td {
   width: 50%;
   min-width: 50%;
   max-width: 50%;
 }
 
-h1{
+h1 {
   font-family: sitka-italic, cursive;
   font-size: 103px;
   height: 180px;
@@ -85,7 +85,7 @@ h1{
   margin-bottom: 0px;
   letter-spacing: -11px;
 }
-h2{
+h2 {
   position: absolute;
   right: 364px;
   font-size: 30px;
@@ -110,60 +110,59 @@ h2 strong.sep-two {
   margin-left: 15px;
   margin-top: 17px;
 }
-.fa-info{
+.fa-info {
   margin-left: 8px;
   position: relative;
   font-size: 14px;
 }
-.fa-eye::before{
+.fa-eye::before {
   display: none;
 }
-.fa-eye{
+.fa-eye {
   cursor: pointer;
   position: absolute;
   top: 23%;
   right: 4%;
   color: #474747;
 }
-.sb-login-top-padding{
+.sb-login-top-padding {
   padding-top: 60px !important;
 }
-.spotbie-overlay-window{
+.spotbie-overlay-window {
   padding-bottom: 80px;
   background-color: var(--ion-color-primary-shade);
   z-index: 97 !important;
   overflow-y: scroll;
 }
-.sb-signUpGeneralInstructions{
+.sb-signUpGeneralInstructions {
   margin: 0 auto;
   max-width: 440px;
   text-align: center;
   padding-bottom: 10px;
   margin-top: 100px;
-  font-size: .7rem;
+  font-size: 0.7rem;
   text-align: left;
 }
-.spotbie-button{
-  background: linear-gradient(90deg,#35a99fa4,#64e56fc9);
+.spotbie-button {
+  background: linear-gradient(90deg, #35a99fa4, #64e56fc9);
   border: 1px solid #428c67;
   max-width: 100%;
 }
-.sb-scroll{
+.sb-scroll {
   min-width: 100%;
   width: 100%;
   max-width: 100%;
 }
 /**WIDTH MEDIA QUERIES */
 @media (max-width: 1650px) {
-  .sb-signUpGeneralInstructions{
-    margin-top: 100px!important;
+  .sb-signUpGeneralInstructions {
+    margin-top: 100px !important;
   }
 }
 @media (max-width: 1300px) {
-
 }
 @media (max-width: 1200px) {
-  .displayTableName{
+  .displayTableName {
     width: 45%;
     min-width: 45%;
     max-width: 45%;
@@ -172,25 +171,25 @@ h2 strong.sep-two {
 @media (max-width: 1024px) {
 }
 @media (max-width: 900px) {
-  .signUpButtons{
+  .signUpButtons {
     width: 80%;
     min-width: 80%;
     max-width: 80%;
   }
 }
 @media (max-width: 768px) {
-  .sb-signUpGeneralInstructions{
-    margin-top: 40px!important;
+  .sb-signUpGeneralInstructions {
+    margin-top: 40px !important;
   }
 }
 @media (max-width: 700px) {
-  .spotbie-flash-card{
+  .spotbie-flash-card {
     border-radius: 0px;
   }
-  h1{
+  h1 {
     font-size: 80px;
   }
-  h2{
+  h2 {
     right: 0px;
     left: 0px;
     margin: 0 auto;
@@ -202,16 +201,15 @@ h2 strong.sep-two {
   }
 }
 @media (max-width: 600px) {
-
 }
 @media (max-width: 560px) {
-  .spotbieSignUpButton{
+  .spotbieSignUpButton {
     width: 90%;
     min-width: 90%;
     max-width: 90%;
     margin-bottom: 15px;
   }
-  .displayTableName{
+  .displayTableName {
     position: relative;
     display: block;
     width: 92%;
@@ -221,46 +219,46 @@ h2 strong.sep-two {
 }
 
 @media (max-width: 460px) {
-  h1{
+  h1 {
     font-size: 58px;
     height: 120px;
     max-height: 120px;
   }
-  h2{
+  h2 {
     font-size: 16px;
   }
-  .spotbie-flash-card{
+  .spotbie-flash-card {
     padding-top: 20px;
   }
-  .spotbie-log-in-picture{
+  .spotbie-log-in-picture {
     height: 250px;
     min-height: 250px;
     max-height: 250px;
   }
-  .sb-logo{
+  .sb-logo {
     max-width: 175px;
     width: 175px;
     min-width: 175px;
     max-height: 55px;
     min-height: 55px;
   }
-  .spotbie-overlay-window{
+  .spotbie-overlay-window {
     padding-top: 80px !important;
   }
 }
 @media (max-width: 420px) {
-  #sign_up_general_instructions{
+  #sign_up_general_instructions {
     font-size: 11px;
     line-height: 18px;
   }
 }
 @media (max-width: 360px) {
-  h1{
+  h1 {
     height: 115px;
     max-height: 115px;
     margin-top: 0px;
   }
-  .spotbie-flash-card{
+  .spotbie-flash-card {
     margin-top: 44px;
     padding-top: 10px;
     padding-bottom: 20px;
@@ -270,11 +268,8 @@ h2 strong.sep-two {
 }
 
 @media (max-width: 320px) {
-
 }
 @media (max-width: 220px) {
-
 }
 @media (max-width: 120px) {
-
 }

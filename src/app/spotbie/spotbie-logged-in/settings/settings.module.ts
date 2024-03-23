@@ -9,7 +9,7 @@ import {IConfig, NgxMaskDirective, NgxMaskPipe, provideNgxMask} from 'ngx-mask';
 import {SettingsComponent} from './settings.component';
 import {HelperModule} from '../../../helpers/helper.module';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatDialogModule} from "@angular/material/dialog";
+import {MatDialogModule} from '@angular/material/dialog';
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 

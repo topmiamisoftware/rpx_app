@@ -5,8 +5,8 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {NgIf} from '@angular/common';
-import {IonicModule} from "@ionic/angular";
-import {AppLauncher} from "@capacitor/app-launcher";
+import {IonicModule} from '@ionic/angular';
+import {AppLauncher} from '@capacitor/app-launcher';
 
 @Component({
   selector: 'app-alert',

@@ -1,11 +1,7 @@
-import {
-  Component,
-  HostListener,
-  ChangeDetectionStrategy,
-} from '@angular/core';
-import { VersionCheckService } from './services/version-check.service';
-import { environment } from '../environments/environment.prod';
-import { SpotbieMetaService } from './services/meta/spotbie-meta.service';
+import {Component, HostListener, ChangeDetectionStrategy} from '@angular/core';
+import {VersionCheckService} from './services/version-check.service';
+import {environment} from '../environments/environment.prod';
+import {SpotbieMetaService} from './services/meta/spotbie-meta.service';
 import {
   spotbieMetaDescription,
   spotbieMetaTitle,

@@ -13,7 +13,7 @@ import {Reward} from '../../../../models/reward';
 import {RewardCreatorService} from '../../../../services/spotbie-logged-in/business-menu/reward-creator/reward-creator.service';
 import {environment} from '../../../../../environments/environment';
 import * as spotbieGlobals from '../../../../globals';
-import {Preferences} from "@capacitor/preferences";
+import {Preferences} from '@capacitor/preferences';
 
 const REWARD_MEDIA_UPLOAD_API_URL = `${spotbieGlobals.API}reward/upload-media`;
 const REWARD_MEDIA_MAX_UPLOAD_SIZE = 25e6;
@@ -56,7 +56,7 @@ export class RewardCreatorComponent implements OnInit {
   constructor(
     private formBuilder: UntypedFormBuilder,
     private rewardCreatorService: RewardCreatorService,
-    private http: HttpClient,
+    private http: HttpClient
   ) {}
 
   get rewardType() {
@@ -105,9 +105,13 @@ export class RewardCreatorComponent implements OnInit {
 
     if (this.reward) {
       this.rewardCreatorForm.get('rewardType').setValue(this.reward.type);
-      this.rewardCreatorForm.get('rewardValue').setValue(this.reward.point_cost);
+      this.rewardCreatorForm
+        .get('rewardValue')
+        .setValue(this.reward.point_cost);
       this.rewardCreatorForm.get('rewardName').setValue(this.reward.name);
-      this.rewardCreatorForm.get('rewardDescription').setValue(this.reward.description);
+      this.rewardCreatorForm
+        .get('rewardDescription')
+        .setValue(this.reward.description);
       this.rewardCreatorForm.get('rewardImage').setValue(this.reward.images);
       this.rewardUploadImage = this.reward.images;
 

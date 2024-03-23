@@ -10,9 +10,9 @@ import {LoyaltyPointsService} from '../../../../services/loyalty-points/loyalty-
 import {Redeemable} from '../../../../models/redeemable';
 import {BehaviorSubject} from 'rxjs';
 import {Router} from '@angular/router';
-import {Preferences} from "@capacitor/preferences";
-import {filter} from "rxjs/operators";
-import {LoadingController} from "@ionic/angular";
+import {Preferences} from '@capacitor/preferences';
+import {filter} from 'rxjs/operators';
+import {LoadingController} from '@ionic/angular';
 
 @Component({
   selector: 'app-redeemable',

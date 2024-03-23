@@ -2,9 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {Redeemable} from '../../../../models/redeemable';
 import {LoyaltyPointsService} from '../../../../services/loyalty-points/loyalty-points.service';
-import {LoadingController, ModalController} from "@ionic/angular";
-import {filter} from "rxjs/operators";
-import {FeedbackComponent} from "../feedback/feedback.component";
+import {LoadingController, ModalController} from '@ionic/angular';
+import {filter} from 'rxjs/operators';
+import {FeedbackComponent} from '../feedback/feedback.component';
 
 @Component({
   selector: 'app-redeemed',
@@ -112,15 +112,17 @@ export class RedeemedComponent implements OnInit {
         feedback: redeemedItem?.feedback,
         ledgerId: redeemedItem?.loyalty_point_ledger?.id,
         businessName: redeemedItem.business.name,
-      }
+      },
     });
     modal.present();
 
-    const { data, role } = await modal.onWillDismiss();
+    const {data, role} = await modal.onWillDismiss();
 
     if (role === 'feedback_sent' || role === 'feedback_updated') {
       // Need to update the redeemableItem
-      const newList = this.lpRedeemedList$.getValue().filter((item) => item.uuid !== redeemedItem.uuid);
+      const newList = this.lpRedeemedList$
+        .getValue()
+        .filter(item => item.uuid !== redeemedItem.uuid);
 
       if (role === 'feedback_sent') {
         redeemedItem.feedback = data.feedback;
@@ -128,10 +130,7 @@ export class RedeemedComponent implements OnInit {
         redeemedItem.feedback.feedback_text = data.feedback.feedback_text;
       }
 
-      this.lpRedeemedList$.next([
-        redeemedItem,
-        ...newList
-      ]);
+      this.lpRedeemedList$.next([redeemedItem, ...newList]);
     }
   }
 }

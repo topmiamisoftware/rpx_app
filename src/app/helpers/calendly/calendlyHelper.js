@@ -1,37 +1,29 @@
-export const spawnCalendly = function(title, address, callbackFn){
+export const spawnCalendly = function (title, address, callbackFn) {
+  setTimeout(() => {
+    Calendly.initInlineWidget({
+      url: 'https://calendly.com/spotbie-demos/45min',
+      parentElement: document.getElementById('calendlyEl'),
+      prefill: {
+        customAnswers: {
+          a2: title,
+          a3: address,
+        },
+      },
+      utm: {},
+    });
 
-    setTimeout(()=>{
+    callbackFn();
+  }, 500);
+};
 
-        Calendly.initInlineWidget({
-            url: 'https://calendly.com/spotbie-demos/45min',
-            parentElement: document.getElementById('calendlyEl'),
-            prefill: {
-                customAnswers: {
-                    a2: title,
-                    a3: address
-                }
-            },
-            utm: {}
-        });
+export const spawnCalendlyNormal = function (callbackFn) {
+  setTimeout(() => {
+    Calendly.initInlineWidget({
+      url: 'https://calendly.com/spotbie-demos/45min',
+      parentElement: document.getElementById('calendlyEl'),
+      utm: {},
+    });
 
-        callbackFn()
-
-    }, 500)
-
-}
-
-export const spawnCalendlyNormal = function(callbackFn){
-
-    setTimeout(()=>{
-
-        Calendly.initInlineWidget({
-            url: 'https://calendly.com/spotbie-demos/45min',
-            parentElement: document.getElementById('calendlyEl'),
-            utm: {}
-        });
-
-        callbackFn()
-
-    }, 500)
-
-}
+    callbackFn();
+  }, 500);
+};

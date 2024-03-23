@@ -24,7 +24,7 @@ import {BehaviorSubject} from 'rxjs';
 import {AppLauncher} from '@capacitor/app-launcher';
 import {Preferences} from '@capacitor/preferences';
 import {Share} from '@capacitor/share';
-import {LoyaltyTier} from "../../../models/loyalty-point-tier.balance";
+import {LoyaltyTier} from '../../../models/loyalty-point-tier.balance';
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 

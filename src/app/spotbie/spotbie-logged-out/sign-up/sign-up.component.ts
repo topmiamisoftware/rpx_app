@@ -26,7 +26,7 @@ import {
 import {AppLauncher} from '@capacitor/app-launcher';
 import {LoadingController} from '@ionic/angular';
 import {Preferences} from '@capacitor/preferences';
-import {ChangeDetection} from "@angular/cli/lib/config/workspace-schema";
+import {ChangeDetection} from '@angular/cli/lib/config/workspace-schema';
 
 @Component({
   selector: 'app-sign-up',

@@ -12,16 +12,26 @@
   </ion-item>
   <ion-item>
     <form [formGroup]="feedbackForm">
-      <ng-container *ngIf="(formSubmitted$ | async) === true && f.feedbackText.errors">
-        <ion-text class="text-warning" *ngIf="f.feedbackText.errors.required">The feedback text is required.</ion-text>
-        <ion-text class="text-warning" *ngIf="f.feedbackText.errors.minlength">The feedback text must be greater than 100.</ion-text>
-        <ion-text class="text-warning" *ngIf="f.feedbackText.errors.maxlength">The feedback text must be less than 1500.</ion-text>
+      <ng-container
+        *ngIf="(formSubmitted$ | async) === true && f.feedbackText.errors"
+      >
+        <ion-text class="text-warning" *ngIf="f.feedbackText.errors.required"
+          >The feedback text is required.</ion-text
+        >
+        <ion-text class="text-warning" *ngIf="f.feedbackText.errors.minlength"
+          >The feedback text must be greater than 100.</ion-text
+        >
+        <ion-text class="text-warning" *ngIf="f.feedbackText.errors.maxlength"
+          >The feedback text must be less than 1500.</ion-text
+        >
       </ng-container>
 
-      <ion-textarea labelPlacement="stacked"
-                    label="Leave us your feedback."
-                    formControlName="feedbackText"
-                    [value]="feedback" placeholder="Your feedback."
+      <ion-textarea
+        labelPlacement="stacked"
+        label="Leave us your feedback."
+        formControlName="feedbackText"
+        [value]="feedback"
+        placeholder="Your feedback."
       ></ion-textarea>
     </form>
   </ion-item>
@@ -30,7 +40,9 @@
       <ion-text>Feedback saved successfully.</ion-text>
     </ng-container>
     <ng-container *ngIf="(formSavedFailed$ | async) === true">
-      <ion-text class="text-warning">Feedback could not be saved, please try again.</ion-text>
+      <ion-text class="text-warning"
+        >Feedback could not be saved, please try again.</ion-text
+      >
     </ng-container>
     <div>
       <ion-button (click)="confirm()" [strong]="true">Confirm</ion-button>

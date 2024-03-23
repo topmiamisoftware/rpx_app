@@ -16,7 +16,7 @@ import {RewardComponent} from './reward/reward.component';
 import {environment} from '../../../../environments/environment';
 import {BehaviorSubject} from 'rxjs';
 import {Preferences} from '@capacitor/preferences';
-import {LoyaltyTier} from "../../../models/loyalty-point-tier.balance";
+import {LoyaltyTier} from '../../../models/loyalty-point-tier.balance';
 
 @Component({
   selector: 'app-reward-menu',
@@ -81,7 +81,7 @@ export class RewardMenuComponent implements OnInit {
       this.rewards$.next(resp.rewards);
 
       this.userPointToDollarRatio$.next(
-          (resp.loyalty_point_dollar_percent_value) as number
+        resp.loyalty_point_dollar_percent_value as number
       );
 
       this.business$.next(resp.business);
@@ -95,7 +95,11 @@ export class RewardMenuComponent implements OnInit {
   openReward(reward: Reward) {
     reward.link = `${environment.baseUrl}business-menu/${this.qrCodeLink}/${reward.uuid}`;
     this.reward$.next(reward);
-    this.tier$.next(this.businessTiers.find((tier) => tier.id === this.reward$.getValue().tier_id));
+    this.tier$.next(
+      this.businessTiers.find(
+        tier => tier.id === this.reward$.getValue().tier_id
+      )
+    );
     this.rewardApp$.next(true);
   }
 
