@@ -32,6 +32,8 @@
 	<string>SpotBie uses your location to provide you with products, services, features, and events based on their location.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>SpotBie uses your location to provide you with products, services, features, and events based on their location.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SpotBie uses tou camera and photo library to scan QR codes and awarding items or points.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

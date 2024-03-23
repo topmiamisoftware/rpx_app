@@ -40,6 +40,11 @@ div, table, i, td{
     font-display: swap;
 }
 
+.mat-dialog-container{
+  background-color: #23202a;
+  color: white;
+}
+
 .gm-style-iw-c{
     background: linear-gradient(#64e56f, #35a99f);
 }

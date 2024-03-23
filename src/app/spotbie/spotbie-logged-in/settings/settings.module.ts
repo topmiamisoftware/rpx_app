@@ -6,10 +6,10 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatChipsModule} from '@angular/material/chips';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {IConfig, NgxMaskDirective, NgxMaskPipe, provideNgxMask} from 'ngx-mask';
-import {environment} from '../../../../environments/environment';
 import {SettingsComponent} from './settings.component';
 import {HelperModule} from '../../../helpers/helper.module';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatDialogModule} from "@angular/material/dialog";
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 
@@ -25,6 +25,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     MatChipsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
+    MatDialogModule,
     NgxMaskDirective,
     NgxMaskPipe,
   ],

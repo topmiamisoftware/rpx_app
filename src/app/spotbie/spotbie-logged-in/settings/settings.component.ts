@@ -17,6 +17,8 @@ import {Router} from '@angular/router';
 import {BehaviorSubject} from 'rxjs';
 import {Preferences} from '@capacitor/preferences';
 import {logOutCallback} from "../../../helpers/logout-callback";
+import { AlertDialogComponent } from '../../../helpers/alert/alert.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-settings',
@@ -53,7 +55,8 @@ export class SettingsComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private userAuthService: UserauthService,
-    private router: Router
+    private router: Router,
+    public dialog: MatDialog
   ) {}
 
   get username() {
@@ -162,6 +165,32 @@ export class SettingsComponent implements OnInit {
     this.savePasswordBool$.next(false);
   }
 
+  infoSms() {
+    const d = this.dialog.open(AlertDialogComponent, {
+      data: {
+        alertText: `By providing your phone number in the settings form you are agreeing 
+                    to receive recurring promotional and personalized text messages (e.g. promotions going on at
+                    restaurants) from SpotBie Community Members at the phone number you are providing in this settings form.
+                    Consent is not a condition to use other features in the SpotBie Platform. Reply HELP for help and STOP
+                    to stop receiving text messages once you consent. Msg. frequency varies. Msg and data rates may apply.`,
+        alertLinkText: 'View terms and conditions.',
+        alertLink: 'https://spotbie.com/terms',
+        alertTitle: 'SMS Policy'
+      },
+      enterAnimationDuration: '0ms',
+      exitAnimationDuration: '0ms',
+    });
+
+    d.afterClosed().subscribe((result: {continueWithAction: boolean}) => {
+      if (!result.continueWithAction) {
+        this.loading$.next(false);
+        return;
+      }
+
+      this.finishSaveSettings();
+    });
+  }
+
   saveSettings() {
     this.loading$.next(true);
     this.submitted$.next(true);
@@ -173,6 +202,14 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
+    if (this.spotbiePhoneNumber !== '') {
+      this.infoSms();
+    } else {
+      this.finishSaveSettings();
+    }
+  }
+
+  finishSaveSettings() {
     this.user$.next({
       ...this.user$.getValue(),
       username: this.username,
