@@ -1,17 +1,16 @@
 ::-webkit-scrollbar {
   height: 10px;
   width: 10px;
-  background: transparent;
+  background-color: #2b2b2b;
 }
 ::-webkit-scrollbar-thumb {
-  background: transparent;
+  background-color: #64E56E;
 }
-
 ::-webkit-scrollbar-corner {
-  background: transparent;
+  background-color: #64E56E;
 }
 ::-webkit-scrollbar-button {
-  background-color: transparent;
+  background-color: #64E56E;
 }
 .spotbie-top-menu-logged-out {
   position: relative;

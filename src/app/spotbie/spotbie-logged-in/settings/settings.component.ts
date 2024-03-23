@@ -101,7 +101,7 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
     this.loading$.next(true);
-    this.initSettingsForm('personal');
+    this.initSettingsForm();
   }
 
   savePassword(): void {
@@ -322,7 +322,7 @@ export class SettingsComponent implements OnInit {
         .setValue(this.user$.getValue().email);
       this.settingsForm
         .get('spotbiePhoneNumber')
-        .setValue(this.user$.getValue().spotbie_user.phone_number);
+        .setValue(this.user$.getValue().spotbie_user.phone_number?.replace('+1', ''));
     } else {
       console.log('Settings Error: ', settingsResponse);
     }
@@ -361,7 +361,7 @@ export class SettingsComponent implements OnInit {
     this.loading$.next(false);
   }
 
-  private async initSettingsForm(action: string) {
+  private async initSettingsForm() {
     const usernameValidators = [Validators.required, Validators.maxLength(135)];
     const firstNameValidators = [Validators.required, Validators.maxLength(72)];
     const lastNameValidators = [Validators.required, Validators.maxLength(72)];
@@ -383,32 +383,28 @@ export class SettingsComponent implements OnInit {
       spotbiePhoneNumber: ['', phoneValidators],
     };
 
-    switch (action) {
-      case 'personal':
-        this.settingsForm = this.formBuilder.group(settingsFormInputObj, {
-          validators: [
-            ValidateUsername('spotbieUsername'),
-            ValidatePersonName('spotbieFirstName'),
-            ValidatePersonName('spotbieLastName'),
-          ],
-        });
+    this.settingsForm = this.formBuilder.group(settingsFormInputObj, {
+      validators: [
+        ValidateUsername('spotbieUsername'),
+        ValidatePersonName('spotbieFirstName'),
+        ValidatePersonName('spotbieLastName'),
+      ],
+    });
 
-        this.passwordForm = this.formBuilder.group(
-          {
-            spotbiePassword: ['', passwordValidators],
-            spotbieConfirmPassword: ['', passwordConfirmValidators],
-          },
-          {
-            validators: [
-              ValidatePassword('spotbiePassword'),
-              MustMatch('spotbiePassword', 'spotbieConfirmPassword'),
-            ],
-          }
-        );
+    this.passwordForm = this.formBuilder.group(
+      {
+        spotbiePassword: ['', passwordValidators],
+        spotbieConfirmPassword: ['', passwordConfirmValidators],
+      },
+      {
+        validators: [
+          ValidatePassword('spotbiePassword'),
+          MustMatch('spotbiePassword', 'spotbieConfirmPassword'),
+        ],
+      }
+    );
 
-        this.fetchCurrentSettings();
-        break;
-    }
+    this.fetchCurrentSettings();
   }
 
   private fetchCurrentSettings(): any {
