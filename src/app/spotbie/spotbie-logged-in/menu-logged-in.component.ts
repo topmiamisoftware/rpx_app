@@ -96,7 +96,7 @@ export class MenuLoggedInComponent implements AfterViewInit {
 
     this.spotbieMap.openWelcome();
     this.spotbieMap.closeCategories();
-    this.spotbieMap.homeDashboard.closeQrScanner();
+    this.spotbieMap.homeDashboard?.closeQrScanner();
   }
 
   slideMenu() {
