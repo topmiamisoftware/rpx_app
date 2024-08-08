@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.exentriks.spotmee.spotmee;
 
 import com.getcapacitor.BridgeActivity;
 
