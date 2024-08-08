@@ -20,4 +20,5 @@ export class SpotbieUser {
   public phone_confirm_attempts: number = null;
   public created_at: string = null;
   public updated_at: string = null;
+  public sms_opt_in: boolean;
 }

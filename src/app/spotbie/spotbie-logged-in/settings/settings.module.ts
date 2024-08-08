@@ -10,25 +10,27 @@ import {SettingsComponent} from './settings.component';
 import {HelperModule} from '../../../helpers/helper.module';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatDialogModule} from '@angular/material/dialog';
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 
 @NgModule({
   declarations: [SettingsComponent],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    HttpClientModule,
-    HelperModule,
-    RouterModule,
-    MatChipsModule,
-    MatAutocompleteModule,
-    MatFormFieldModule,
-    MatDialogModule,
-    NgxMaskDirective,
-    NgxMaskPipe,
-  ],
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        HttpClientModule,
+        HelperModule,
+        RouterModule,
+        MatChipsModule,
+        MatAutocompleteModule,
+        MatFormFieldModule,
+        MatDialogModule,
+        NgxMaskDirective,
+        NgxMaskPipe,
+        MatSlideToggleModule,
+    ],
   exports: [SettingsComponent],
   providers: [provideNgxMask()],
 })

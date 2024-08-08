@@ -163,6 +163,17 @@
             />
           </td>
         </tr>
+        <tr *ngIf="showSmsOptIn$ | async">
+          <td>
+            <mat-slide-toggle
+                    class="spotbie-text-gradient mt-4"
+                    formControlName="smsOptIn"
+                    (change)="updateSubscribedToSms($event)"
+            >
+              SMS Notifications
+            </mat-slide-toggle>
+          </td>
+        </tr>
         <tr>
           <td>
             <div

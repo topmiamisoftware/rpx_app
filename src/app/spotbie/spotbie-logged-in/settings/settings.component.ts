@@ -51,6 +51,7 @@ export class SettingsComponent implements OnInit {
   currentPasswordInfoText$ = new BehaviorSubject<string>(
     'To complete the change, enter your CURRENT password.'
   );
+  showSmsOptIn$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private formBuilder: FormBuilder,
@@ -74,6 +75,11 @@ export class SettingsComponent implements OnInit {
   get spotbiePhoneNumber() {
     return this.settingsForm.get('spotbiePhoneNumber').value;
   }
+
+  get smsOptIn() {
+    return this.settingsForm.get('smsOptIn').value;
+  }
+
   get f() {
     return this.settingsForm.controls;
   }
@@ -204,7 +210,10 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    if (this.spotbiePhoneNumber !== '') {
+    if (this.spotbiePhoneNumber !== '' &&
+        this.smsOptIn !== '' &&
+        this.smsOptIn == true
+    ) {
       this.infoSms();
     } else {
       this.finishSaveSettings();
@@ -221,6 +230,7 @@ export class SettingsComponent implements OnInit {
         first_name: this.firstName,
         last_name: this.lastName,
         phone_number: this.spotbiePhoneNumber,
+        sms_opt_in: this.smsOptIn
       },
     });
 
@@ -229,15 +239,20 @@ export class SettingsComponent implements OnInit {
         this.saveSettingsCallback(resp);
       },
       error: (error: any) => {
-        if (error.error.errors.email[0] === 'notUnique') {
+        console.log("Where is the error", error);
+
+        let message = '';
+        if (error?.error?.errors?.email[0] === 'notUnique') {
           this.settingsForm.get('spotbieEmail').setErrors({notUnique: true});
+          message = 'E-mail already in use.';
         }
 
-        this.spotbieSettingsInfoText$.next(`
-                    <span class='spotbie-text-gradient spotbie-error'>
-                        There was an error saving.
-                    </span>
-                `);
+        if (error.error?.errors?.phone_number && error.error?.errors?.phone_number[0] === 'notUnique') {
+          this.settingsForm.get('spotbie_phone_number').setErrors({notUnique: true});
+          message = 'Phone already in use.';
+        }
+
+        this.spotbieSettingsInfoText$.next(`There was an error ${message}.`);
 
         this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
@@ -308,6 +323,13 @@ export class SettingsComponent implements OnInit {
 
       this.settingsFormInitiated$.next(true);
 
+      if (settingsResponse.spotbie_user.phone_number === '' ||
+          settingsResponse.spotbie_user.phone_number === null) {
+        this.showSmsOptIn$.next(false);
+      } else {
+        this.showSmsOptIn$.next(true);
+      }
+
       this.settingsForm
         .get('spotbieUsername')
         .setValue(this.user$.getValue().username);
@@ -323,6 +345,9 @@ export class SettingsComponent implements OnInit {
       this.settingsForm
         .get('spotbiePhoneNumber')
         .setValue(this.user$.getValue().spotbie_user.phone_number?.replace('+1', ''));
+      this.settingsForm
+          .get('smsOptIn')
+          .setValue(this.user$.getValue().spotbie_user.sms_opt_in);
     } else {
       console.log('Settings Error: ', settingsResponse);
     }
@@ -381,6 +406,7 @@ export class SettingsComponent implements OnInit {
       spotbieLastName: ['', lastNameValidators],
       spotbieEmail: ['', emailValidators],
       spotbiePhoneNumber: ['', phoneValidators],
+      smsOptIn: ['', [Validators.required]],
     };
 
     this.settingsForm = this.formBuilder.group(settingsFormInputObj, {
@@ -405,6 +431,10 @@ export class SettingsComponent implements OnInit {
     );
 
     this.fetchCurrentSettings();
+  }
+
+  updateSubscribedToSms(evt: any) {
+    this.settingsForm.get('smsOptIn').setValue(evt.checked);
   }
 
   private fetchCurrentSettings(): any {
