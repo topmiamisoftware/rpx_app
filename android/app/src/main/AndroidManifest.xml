@@ -27,6 +27,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyC4Su0B2cBzsSpAF-Kphq_78uR8b5eA4_Q"
         />
+        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui"/>
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
             android:name=".MainActivity"

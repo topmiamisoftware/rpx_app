@@ -1,8 +1,9 @@
 import {
+  ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
-  Input,
+  Input, NgZone,
   OnInit,
   Output,
   ViewChild,
@@ -11,15 +12,17 @@ import {UntypedFormGroup} from '@angular/forms';
 import {Reward} from '../../../models/reward';
 import {LoyaltyPointsService} from '../../../services/loyalty-points/loyalty-points.service';
 import {DeviceDetectorService} from 'ngx-device-detector';
-import {RewardCreatorService} from '../../../services/spotbie-logged-in/business-menu/reward-creator/reward-creator.service';
-import {BehaviorSubject} from 'rxjs';
-import {BarcodeScanner} from '@capacitor-community/barcode-scanner';
 import {
-  AndroidSettings,
-  IOSSettings,
-  NativeSettings,
-} from 'capacitor-native-settings';
-import {Camera} from '@capacitor/camera';
+  RewardCreatorService
+} from '../../../services/spotbie-logged-in/business-menu/reward-creator/reward-creator.service';
+import {BehaviorSubject, distinctUntilKeyChanged, ReplaySubject} from 'rxjs';
+
+import {AndroidSettings, IOSSettings, NativeSettings,} from 'capacitor-native-settings';
+import {Barcode, BarcodeScanner} from "@capacitor-mlkit/barcode-scanning";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {tap} from "rxjs/operators";
+import {setValue} from "../loyalty-points/loyalty-points.actions";
+import {Store} from "@ngrx/store";
 
 @Component({
   selector: 'app-qr',
@@ -42,27 +45,76 @@ export class QrComponent implements OnInit {
   rewardPrompted$ = new BehaviorSubject<boolean>(false);
   qrWidth$ = new BehaviorSubject<number>(0);
   scanSuccess$ = new BehaviorSubject<boolean>(false);
-  awarded$ = new BehaviorSubject<boolean>(false);
+  awarded$ = new BehaviorSubject(false);
+  rewarded$ = new BehaviorSubject(false);
+  awarded: boolean;
+  rewarded: boolean
   reward$ = new BehaviorSubject<Reward>(null);
-  rewarded$ = new BehaviorSubject<boolean>(false);
   pointsCharged$ = new BehaviorSubject<number>(0);
   showEnablePermission$ = new BehaviorSubject<boolean>(false);
+  scannedBarcode$ = new ReplaySubject<Barcode>();
 
   businessLoyaltyPointsForm: UntypedFormGroup;
 
   constructor(
     private loyaltyPointsService: LoyaltyPointsService,
     private deviceDetectorService: DeviceDetectorService,
-    private rewardService: RewardCreatorService
-  ) {}
+    private rewardService: RewardCreatorService,
+    private store: Store,
+    private changeDetectorRef: ChangeDetectorRef,
+    private ngZone: NgZone,
+  ) {
+
+    this.awarded$.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this.awarded = v;
+        this.changeDetectorRef.markForCheck();
+      }),
+    ).subscribe();
+
+    this.rewarded$.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this.rewarded = v;
+        this.changeDetectorRef.markForCheck();
+      }),
+    ).subscribe();
+
+    this.scannedBarcode$
+      .pipe(
+        takeUntilDestroyed(),
+        distinctUntilKeyChanged('rawValue'),
+        tap((barcode) => {
+          // Make all elements in the WebView visible again
+          document.querySelector('body').classList.remove('barcode-scanner-active');
+          document.querySelector('#scannerMiddle').classList.remove('hidden');
+
+          if (barcode) {
+            console.log("The Barcode", barcode);
+            this.scanSuccessHandler(barcode.rawValue);
+          } else {
+            console.log("No Barcode");
+            this.scanErrorHandler(barcode.rawValue);
+          }
+        }),
+      )
+      .subscribe();
+  }
 
   get f() {
     return this.businessLoyaltyPointsForm.controls;
   }
 
   addLp(addLpObj) {
-    this.loyaltyPointsService.addLoyaltyPoints(addLpObj, resp => {
-      this.scanSuccessHandlerCb(resp);
+    this.loyaltyPointsService.addLoyaltyPoints(addLpObj)
+      .subscribe(resp => {
+        console.log("Add Loyalty Points Response", resp);
+        this.scanSuccessHandlerCb(resp);
+        if (resp.success) {
+          const loyaltyPointBalance = resp.loyalty_points;
+          this.store.dispatch(setValue({loyaltyPointBalance}));
+        }
     });
   }
 
@@ -74,8 +126,9 @@ export class QrComponent implements OnInit {
 
   claimRewardCb(resp) {
     if (resp.success) {
-      this.rewarded$.next(true);
+      this.rewarded$.next( true);
       this.reward$.next(resp.reward);
+      this.changeDetectorRef.markForCheck();
       this.pointsCharged$.next(this.reward$.getValue().point_cost);
       this.sbSpentPoints.nativeElement.style.display = 'block';
     } else {
@@ -88,7 +141,7 @@ export class QrComponent implements OnInit {
 
   async checkPermission(): Promise<boolean> {
     // check if user already granted permission
-    let status = await Camera.checkPermissions();
+    let status = await BarcodeScanner.checkPermissions();
 
     console.log('STATUS', status);
 
@@ -115,7 +168,7 @@ export class QrComponent implements OnInit {
       }
 
       // prompt
-      status = await Camera.requestPermissions({permissions: ['camera']});
+      status = await BarcodeScanner.requestPermissions();
       if (status.camera === 'granted') {
         return true;
       }
@@ -152,17 +205,21 @@ export class QrComponent implements OnInit {
     }
   }
 
-  scanSuccessHandlerCb(resp: any) {
+  async scanSuccessHandlerCb(resp: any) {
     if (resp.success) {
       this.awarded$.next(true);
+      this.changeDetectorRef.markForCheck();
+
       this.userLoyaltyPoints$.next(resp.redeemable.amount);
       this.dollarValue$.next(resp.redeemable.dollar_value);
+      this.scanSuccess$.next(true);
     } else {
+      // If for some reason the user is not able to redeem the points, you warn
+      // them here.
       confirm(resp.message);
+      this.scanSuccess$.next(false);
       this.closeQrUser();
     }
-
-    this.scanSuccess$.next(false);
   }
 
   scanErrorHandler(event) {
@@ -176,13 +233,20 @@ export class QrComponent implements OnInit {
     this.checkPermission().then(async granted => {
       if (granted) {
         this.showEnablePermission$.next(false);
-        BarcodeScanner.hideBackground();
-        const result = await BarcodeScanner.startScan();
-        if (result.hasContent) {
-          this.scanSuccessHandler(result.content);
-        } else {
-          this.scanErrorHandler(result.content);
-        }
+        document.querySelector('body')?.classList.add('barcode-scanner-active');
+        document.querySelector('#scannerMiddle').classList.add('hidden');
+
+        const listener = await BarcodeScanner.addListener(
+          'barcodeScanned',
+          async result => {
+            this.ngZone.run(async () => {
+              await listener.remove();
+              this.scannedBarcode$.next(result.barcode);
+            });
+          },
+        );
+
+        await BarcodeScanner.startScan();
       } else {
         alert('Please enable camera access to scan rewards.');
         this.showEnablePermission$.next(true);
@@ -191,12 +255,24 @@ export class QrComponent implements OnInit {
   }
 
   closeQr() {
-    this.rewardPrompted$.next(false);
+    this.stopScan().then(() => {
+      this.rewardPrompted$.next(false);
+    });
   }
 
   closeQrUser() {
-    this.closeQrUserEvt.emit(null);
+    this.stopScan().then(() => {
+      this.closeQrUserEvt.emit(null);
+    });
   }
+
+  async stopScan(): Promise<void> {-
+    // Remove all listeners
+    await BarcodeScanner.removeAllListeners();
+
+    // Stop the barcode scanner
+    await BarcodeScanner.stopScan();
+  };
 
   openAppSettings() {
     NativeSettings.open({

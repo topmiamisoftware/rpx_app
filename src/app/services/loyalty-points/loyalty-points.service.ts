@@ -80,19 +80,12 @@ export class LoyaltyPointsService {
       .pipe(catchError(handleError('saveLoyaltyPoint')));
   }
 
-  addLoyaltyPoints(businessLoyaltyPointsObj: any, callback): any {
+  addLoyaltyPoints(businessLoyaltyPointsObj: any): Observable<any> {
     const apiUrl = `${REDEEMABLE_API}/redeem`;
 
-    this.http
+    return this.http
       .post<any>(apiUrl, businessLoyaltyPointsObj)
-      .pipe(catchError(handleError('saveLoyaltyPoint')))
-      .subscribe(resp => {
-        if (resp.success) {
-          const loyaltyPointBalance = resp.loyalty_points;
-          this.store.dispatch(setValue({loyaltyPointBalance}));
-        }
-        callback(resp);
-      });
+      .pipe(catchError(handleError('saveLoyaltyPoint')));
   }
 
   saveFeedback(feedbackText: string, ledgerRecordId: string) {

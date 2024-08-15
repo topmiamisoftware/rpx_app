@@ -1,19 +1,10 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  OnInit,
-  Output,
-  ViewChild,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Output, ViewChild,} from '@angular/core';
 import {LoyaltyPointsComponent} from '../loyalty-points/loyalty-points.component';
 import {QrComponent} from '../qr/qr.component';
 import {RedeemableComponent} from '../my-list/redeemable/redeemable.component';
 import {RewardMenuComponent} from '../reward-menu/reward-menu.component';
 import {Platform} from '@ionic/angular';
 import {BehaviorSubject} from 'rxjs';
-import {BarcodeScanner} from '@capacitor-community/barcode-scanner';
 import {Router} from '@angular/router';
 
 @Component({
@@ -56,7 +47,7 @@ export class UserDashboardComponent {
   }
 
   closeQrScanner() {
-    BarcodeScanner.stopScan().then(_ => this.scannerStarted$.next(false));
+    this.scannerStarted$.next(false)
   }
 
   spawnCategories(category: number) {

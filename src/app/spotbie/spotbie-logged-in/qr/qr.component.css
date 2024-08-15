@@ -56,9 +56,12 @@ h5 {
   flex-direction: column;
 }
 .scanner-top {
-  min-height: 10vh;
-  max-height: 10vh;
-  height: 10vh;
+  position: fixed;
+  min-height: 16vh;
+  max-height: 16vh;
+  height: 16vh;
+  top: 0;
+  width: 100%;
 }
 .scanner-top,
 .scanner-bottom {
@@ -73,6 +76,18 @@ h5 {
   padding-bottom: 3em;
   padding-top: 3em;
 }
+
+.barcode-scanner-modal {
+  visibility: visible;
+}
+
+@media (prefers-color-scheme: dark) {
+  .barcode-scanner-modal {
+    --background: transparent;
+    --ion-background-color: transparent;
+  }
+}
+
 .fa-exclamation-triangle {
   position: relative;
   color: #ffc107;
@@ -80,12 +95,22 @@ h5 {
   bottom: 4px;
   margin-right: 10px;
 }
+
+.scanner-middle.hidden {
+  visibility: hidden;
+}
+
 .scanner-middle {
   position: relative;
-  min-height: 50vh;
-  height: 50vh;
-  max-height: 50vh;
+  min-height: 74vh;
+  height: 74vh;
+  max-height: 74vh;
   text-align: center;
+  background-color: var(--ion-color-primary);
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 .success-msg {
   font-size: 24px;

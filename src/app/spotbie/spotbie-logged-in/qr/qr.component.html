@@ -1,4 +1,4 @@
-<div>
+<div class="barcode-scanner-modal">
   <ng-container *ngIf="(showEnablePermission$ | async) === false">
     <div class="scanner-top">
       <div>
@@ -15,9 +15,9 @@
       </div>
     </div>
 
-    <div class="scanner-middle">
-      <ng-container *ngIf="(rewarded$ | async) || (awarded$ | async)">
-        <div *ngIf="awarded$ | async">
+    <div id="scannerMiddle" class="scanner-middle">
+      <ng-container *ngIf="rewarded === true || awarded === true">
+        <div *ngIf="awarded === true">
           <h2 class="sb-text-light-green-gradient mt-4 mb-4">SUCCESS</h2>
 
           <i class="fas fa-check mb-4"></i>
@@ -45,7 +45,7 @@
           </div>
         </div>
 
-        <div *ngIf="rewarded$ | async">
+        <div *ngIf="rewarded === true">
           <p class="spotbie-text-gradient mt-4 mb-4">
             Reward redeemed successfully. <br />
             Please show your host.
@@ -73,7 +73,7 @@
 
     <div class="scanner-bottom ion-padding">
       <div
-        *ngIf="(awarded$ | async) === false && (rewarded$ | async) === false"
+        *ngIf="awarded === false && rewarded === false"
       >
         <p class="sb-helpInfo spotbie-text-gradient text-center text-uppercase">
           Ask for<br />the<br /><span class="sb-text-light-green-gradient"
