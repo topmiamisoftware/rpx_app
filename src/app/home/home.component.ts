@@ -25,7 +25,7 @@ export class HomeComponent implements OnInit {
     const isLoggedIn = ret.value;
 
     if (isLoggedIn === '1') {
-      this.router.navigate(['/user-home']);
+      window.location.href = '/user-home';
     }
   }
 
