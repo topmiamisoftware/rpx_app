@@ -104,15 +104,15 @@ h5 {
 
 .scanner-middle {
   position: relative;
-  min-height: 74vh;
-  height: 74vh;
-  max-height: 74vh;
+  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   text-align: center;
   background-color: var(--ion-color-primary);
   display: flex;
   align-items: center;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 .success-msg {
   font-size: 24px;
