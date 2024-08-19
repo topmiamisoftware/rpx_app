@@ -200,10 +200,12 @@ export class SettingsComponent implements OnInit {
   }
 
   saveSettings() {
+    console.log("SAVE SETTINGS");
     this.loading$.next(true);
     this.submitted$.next(true);
 
-    if (this.settingsForm.invalid) {
+    if (this.settingsForm.errors) {
+      console.log("SAVE SETTINGS INVALID", this.settingsForm.errors);
       this.loading$.next(false);
       this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
@@ -239,20 +241,18 @@ export class SettingsComponent implements OnInit {
         this.saveSettingsCallback(resp);
       },
       error: (error: any) => {
-        console.log("Where is the error", error);
-
         let message = '';
-        if (error?.error?.errors?.email[0] === 'notUnique') {
+        if (error.error?.errors?.email && error?.error?.errors?.email[0] === 'notUnique') {
           this.settingsForm.get('spotbieEmail').setErrors({notUnique: true});
-          message = 'E-mail already in use.';
+          message = 'E-mail already in use';
         }
 
         if (error.error?.errors?.phone_number && error.error?.errors?.phone_number[0] === 'notUnique') {
-          this.settingsForm.get('spotbie_phone_number').setErrors({notUnique: true});
-          message = 'Phone already in use.';
+          this.settingsForm.get('spotbiePhoneNumber').setErrors({notUnique: true});
+          message = 'Phone already in use';
         }
 
-        this.spotbieSettingsInfoText$.next(`There was an error ${message}.`);
+        this.spotbieSettingsInfoText$.next(`${message}.`);
 
         this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
@@ -320,6 +320,9 @@ export class SettingsComponent implements OnInit {
         spotbie_user: settingsResponse.spotbie_user,
         uuid: settingsResponse.user.hash,
       });
+
+
+      console.log("POPULATE SETTINGS", settingsResponse);
 
       this.settingsFormInitiated$.next(true);
 

@@ -1,18 +1,15 @@
 <div class="barcode-scanner-modal">
   <ng-container *ngIf="(showEnablePermission$ | async) === false">
     <div class="scanner-top">
-      <div>
+      <ion-text
+        class="spotbie-text-gradient sb-scanQrTitle text-center text-uppercase mt-5 pt-5"
+      >
         <img
           class="sb-qrTitleImage"
           src="../../../../assets/images/qr/spotbie-qr.svg"
         />
-
-        <h5
-          class="spotbie-text-gradient sb-scanQrTitle text-center text-uppercase mt-5 pt-5"
-        >
-          SCAN AND EARN
-        </h5>
-      </div>
+        SCAN AND EARN
+      </ion-text>
     </div>
 
     <div id="scannerMiddle" class="scanner-middle">

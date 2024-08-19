@@ -266,7 +266,12 @@ export class QrComponent implements OnInit {
     });
   }
 
-  async stopScan(): Promise<void> {-
+  async stopScan(): Promise<void> {
+    // Make all elements in the WebView visible again
+    document.querySelector('body').classList.remove('barcode-scanner-active');
+    document.querySelector('#scannerMiddle').classList.remove('hidden');
+
+
     // Remove all listeners
     await BarcodeScanner.removeAllListeners();
 

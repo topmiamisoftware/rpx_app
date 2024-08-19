@@ -28,7 +28,6 @@
 .sb-qrTitleImage {
   position: relative;
   max-width: 50px;
-  margin-right: 10px;
 }
 .sb-helpInfo {
   width: 100%;
@@ -57,16 +56,19 @@ h5 {
 }
 .scanner-top {
   position: fixed;
-  min-height: 16vh;
-  max-height: 16vh;
-  height: 16vh;
   top: 0;
   width: 100%;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 .scanner-top,
 .scanner-bottom {
   background-color: var(--ion-color-primary);
   text-align: center;
+  display: grid;
+  align-content: center;
+  justify-content: stretch;
+  align-items: center;
 }
 .scanner-bottom {
   position: fixed;
