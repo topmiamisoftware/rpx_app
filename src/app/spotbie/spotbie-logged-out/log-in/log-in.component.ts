@@ -143,7 +143,8 @@ export class LogInComponent implements OnInit {
         });
       }
 
-      this.router.navigate(['/user-home']);
+      window.location.href = '/user-home';
+
       this.loading$.next(false);
     } else {
       this.spotbieSignUpIssues.nativeElement.scrollIntoView({
