@@ -200,12 +200,10 @@ export class SettingsComponent implements OnInit {
   }
 
   saveSettings() {
-    console.log("SAVE SETTINGS");
     this.loading$.next(true);
     this.submitted$.next(true);
 
     if (this.settingsForm.errors) {
-      console.log("SAVE SETTINGS INVALID", this.settingsForm.errors);
       this.loading$.next(false);
       this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
