@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {DeviceDetectorService} from 'ngx-device-detector';
 import {AllowedAccountTypes} from '../../../../helpers/enum/account-type.enum';
@@ -30,7 +30,7 @@ const FEATURED_BANNER_TIMER_INTERVAL = 16000;
   templateUrl: './nearby-featured-ad.component.html',
   styleUrls: ['./nearby-featured-ad.component.css'],
 })
-export class NearbyFeaturedAdComponent implements OnInit {
+export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
   @Input() lat: number;
   @Input() lng: number;
   @Input() set business(business: Business) {
@@ -69,6 +69,16 @@ export class NearbyFeaturedAdComponent implements OnInit {
     private router: Router,
     private businessService: BusinessMenuServiceService
   ) {}
+
+  ngOnInit(): void {
+    this.isMobile = this.deviceDetectorService.isMobile();
+    this.getNearByFeatured();
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.switchAdInterval);
+    this.switchAdInterval = null;
+  }
 
   async getNearByFeatured() {
     let adId = null;
@@ -206,10 +216,5 @@ export class NearbyFeaturedAdComponent implements OnInit {
         this.business$.getValue().qr_code_link
       }`,
     });
-  }
-
-  ngOnInit(): void {
-    this.isMobile = this.deviceDetectorService.isMobile();
-    this.getNearByFeatured();
   }
 }
