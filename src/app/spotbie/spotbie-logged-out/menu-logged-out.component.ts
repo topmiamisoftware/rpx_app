@@ -11,6 +11,7 @@ import {BehaviorSubject} from 'rxjs';
 import {MapComponent} from '../map/map.component';
 import {NavigationEnd, Router} from '@angular/router';
 import {filter} from 'rxjs/operators';
+import {Capacitor} from "@capacitor/core";
 
 @Component({
   selector: 'app-menu-logged-out',
@@ -58,14 +59,19 @@ export class MenuLoggedOutComponent {
 
   home() {
     this.menuCtrl.close('main-menu');
-    this.signUpWindow$.next(false);
-    this.logInWindow$.next(true);
-    this.appMap.map$.next(false);
-    this.appMap.searchResults$.next([]);
-    this.appMap.showSearchResults$.next(false);
 
-    if (this.onForgotPassword$.getValue()) {
-      this.router.navigate(['/home']);
+    if (Capacitor.isNativePlatform()) {
+      this.signUpWindow$.next(false);
+      this.logInWindow$.next(true);
+      this.appMap.map$.next(false);
+      this.appMap.searchResults$.next([]);
+      this.appMap.showSearchResults$.next(false);
+
+      if (this.onForgotPassword$.getValue()) {
+        this.router.navigate(['/home']);
+      }
+    } else {
+      window.open('https://spotbie.com', '_self');
     }
   }
 }
