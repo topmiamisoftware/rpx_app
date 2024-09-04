@@ -2,7 +2,7 @@
   position: relative;
   text-align: center;
   margin: 0 auto;
-  min-height: 600px;
+  max-height: 600px;
   background-repeat: no-repeat !important;
   background-size: contain !important;
   background-position: center !important;
@@ -17,10 +17,9 @@
 .spotbie-ad-wrapper-header.sb-mobileAdWrapper {
   position: relative;
   margin: 0 auto;
-  max-width: 600px;
-  min-width: 600px;
-  width: 600px;
-  right: 0%;
+  max-width: 400px;
+  min-width: 400px;
+  width: 400px;
   min-height: unset;
   height: unset;
 }
@@ -29,8 +28,18 @@
   left: 0;
   right: 0;
   max-width: 100%;
+  max-height: 370px;
   box-shadow: unset;
 }
+
+.spotbie-ad-image {
+  position: relative;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 600px;
+  box-shadow: unset;
+}
+
 .sb-mobileAdWrapper .sb-categoryList {
   text-align: center;
 }
@@ -85,16 +94,7 @@
 .fa-map-marker-alt {
   font-size: 0.5rem;
 }
-.spotbie-ad-image {
-  position: absolute;
-  left: 0;
-  right: 0;
-  margin-left: 0;
-  max-height: 320px;
-  background-repeat: no-repeat !important;
-  background-size: cover !important;
-  background-position: center !important;
-}
+
 .spotbie-white-iconImg {
   position: absolute;
   top: 0;
@@ -122,14 +122,6 @@
   font-size: 0.7rem;
   background-color: rgb(51 47 62);
 }
-@media (max-width: 1100px) {
-  .spotbie-ad-wrapper-header {
-    max-width: 55%;
-    min-width: 55%;
-    width: 55%;
-    right: 6%;
-  }
-}
 @media (max-width: 1024px) {
   .spotbie-ad-wrapper-header.sb-mobileAdWrapper,
   .spotbie-ad-wrapper-header {
@@ -138,7 +130,7 @@
     max-width: 100%;
     min-width: 100%;
     width: 100%;
-    right: 0;
+    right: 0%;
     min-height: unset;
     height: unset;
   }
@@ -149,6 +141,8 @@
     position: relative;
     left: 0;
     right: 0;
+    min-width: 100%;
+    max-width: 100%;
     box-shadow: unset;
     background-color: #26232e !important;
     background-size: contain !important;
@@ -206,6 +200,7 @@
 @media (max-width: 420px) {
   .sb-mobileAdWrapper .spotbie-ad-image,
   .spotbie-ad-image {
+    min-width: 100%;
     height: auto;
   }
 }

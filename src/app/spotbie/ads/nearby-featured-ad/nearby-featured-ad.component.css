@@ -9,9 +9,8 @@
   background-repeat: no-repeat !important;
   background-size: contain !important;
   background-position: center !important;
-  max-width: 30%;
-  min-width: 30%;
-  width: 30%;
+  max-width: 100%;
+  min-width: 100%;
   background-color: rgb(28 25 36) !important;
   cursor: pointer;
   z-index: 9;

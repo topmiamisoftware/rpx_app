@@ -1,28 +1,58 @@
-<div class="spotbie-ad-wrapper-header" *ngIf="ad" (click)="openAd()">
-  <img class="spotbie-ad-image" [src]="ad.images | safe" *ngIf="ad.id !== 2" />
+<div class="spotbie-ad-wrapper-header" *ngIf="ad !== null" (click)="openAd()">
+  <img
+    class="spotbie-ad-image"
+    src="{{ ad.images }}"
+    *ngIf="!editMode && ad.id != 2"
+  />
+  <img
+    class="spotbie-ad-image"
+    src="{{ genericAdImage }}"
+    *ngIf="editMode && ad.id == 2"
+  />
+  <img
+    class="spotbie-ad-image"
+    src="{{ ad.images }}"
+    *ngIf="editMode && ad.id != 2"
+  />
 
-  <div class="sb-ad-bottom" *ngIf="businessReady && business">
+  <div class="sb-ad-bottom" *ngIf="businessReady && business !== null">
     <span class="spotbie-text-gradient sb-sponsoredName text-uppercase">{{
-      business.name
-    }}</span>
+        business.name
+      }}</span>
 
+    <br />
     <span
       class="sb-text-light-green-gradient sb-totalRewards text-uppercase"
       style="font-size: 1rem"
-      >{{ totalRewards }} REWARDS</span
+    >{{ totalRewards }} REWARDS</span
     >
 
+    <br />
     <span class="sb-text-light-green-gradient sb-distanceMiles text-uppercase">
       <i class="fas fa-map-marker-alt"></i>
-      {{ distance | number : '1.1-2' : 'en-US' }} miles
+      {{ distance | number: '1.1-2' : 'en-US' }} miles
+    </span>
+
+    <br />
+    <span
+      class="sb-text-light-green-gradient sb-perDollar text-uppercase"
+      style="font-size: 1rem"
+      *ngIf="!editMode"
+    >
+      {{
+        business.loyalty_point_dollar_percent_value / 100 | currency: 'USD'
+      }}
+      per dollar
     </span>
 
     <span
       class="sb-text-light-green-gradient sb-perDollar text-uppercase"
-      style="font-size: 1.5rem"
+      style="font-size: 1rem"
+      *ngIf="editMode"
     >
       {{
-        business.loyalty_point_dollar_percent_value / 100 | currency : 'USD'
+        loyaltyPointBalance.loyalty_point_dollar_percent_value / 100
+          | currency: 'USD'
       }}
       per dollar
     </span>
@@ -35,9 +65,10 @@
   [lat]="lat"
   [lng]="lng"
   [accountType]="accountType"
+  [eventsClassification]="eventsClassification"
   [categories]="categories"
   [qrCodeLink]="business.qr_code_link"
   [editMode]="false"
   (closeWindowEvt)="closeRewardMenu()"
-  *ngIf="communityMemberOpen"
+  *ngIf="(rewardMenuOpen$ | async) === true"
 ></app-community-member>

@@ -15,6 +15,7 @@ import {AdsService} from '../ads.service';
 import {AppLauncher} from '@capacitor/app-launcher';
 import {getRandomInt} from '../../../helpers/numbers.helper';
 import {Preferences} from '@capacitor/preferences';
+import {BehaviorSubject} from "rxjs";
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
@@ -40,7 +41,7 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
   @Input() eventsClassification: number = null;
 
   link: string;
-  displayAd = false;
+  displayAd$ = new BehaviorSubject( false);
   whiteIconSvg = 'assets/images/home_imgs/spotbie-white-icon.svg';
   distance = 0;
   totalRewards = 0;
@@ -49,6 +50,7 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
   communityMemberOpen = false;
   isMobile = false;
   currentCategoryList: Array<string> = [];
+  rewardMenuOpen$ = new BehaviorSubject(false);
   categoryListForUi: string = null;
   loyaltyPointBalance: LoyaltyPointBalance;
   adTypeWithId = false;
@@ -193,7 +195,7 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
         this.distance = 5;
       }
 
-      this.displayAd = true;
+      this.displayAd$.next(true);
 
       if (!this.switchAdInterval) {
         this.switchAdInterval = setInterval(() => {
@@ -225,23 +227,20 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
     AppLauncher.openUrl({url: 'https://spotbie.com/business'});
   }
 
-  switchAd() {
-    this.getNearByFeatured();
-  }
-
-  async openAd() {
-    if (this.business !== null) {
-      this.communityMemberOpen = true;
-    } else {
-      await AppLauncher.openUrl({url: 'https://spotbie.com/business'});
-    }
-    return;
-  }
-
   updateAdImage(image = '') {
     if (image !== '') {
       this.ad.images = image;
       this.genericAdImage = image;
     }
+  }
+
+
+  switchAd() {
+    this.getNearByFeatured();
+  }
+
+  openAd(): void {
+    this.rewardMenuOpen$.next(true);
+    // this.router.navigate([`/business-menu/${this.business.qr_code_link}`])
   }
 }
