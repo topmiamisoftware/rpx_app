@@ -1,5 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
+import {Ad} from "../../../../models/ad";
+import {Capacitor} from "@capacitor/core";
 
 @Component({
   selector: 'app-nearby-ads-three',
@@ -18,8 +20,15 @@ export class NearbyAdsThreeComponent implements OnInit {
   accountType$: BehaviorSubject<number | string | null> = new BehaviorSubject(
     null
   );
+  public adList: Ad[];
 
   constructor() {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    if (Capacitor.isNativePlatform()) {
+      this.adList = [new Ad()];
+    } else {
+      this.adList = [new Ad(), new Ad(), new Ad()];
+    }
+  }
 }
