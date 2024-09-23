@@ -113,7 +113,7 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
           break;
       }
     } else {
-      accountType = getRandomInt(1, 3).toString();
+      accountType = this.accountType;
 
       switch (this.accountType) {
         case 1:
