@@ -1178,6 +1178,7 @@ export class MapComponent implements OnInit, AfterViewInit {
 
       this.communityMemberList$.next(communityMemberList);
 
+      clearInterval(this.getSpotBieCommunityMemberListInterval);
       this.getSpotBieCommunityMemberListInterval = setInterval(() => {
         const searchObjSb = {
           loc_x: this.lat$.getValue(),
