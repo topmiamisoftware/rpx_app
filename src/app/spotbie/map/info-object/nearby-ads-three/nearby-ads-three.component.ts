@@ -12,6 +12,7 @@ export class NearbyAdsThreeComponent implements OnInit {
   @Input() lat: number = null;
   @Input() lng: number = null;
   @Input() set accountType(accountType: number | string) {
+    console.log("Account Type", accountType);
     this.accountType$.next(accountType);
   }
   @Input() eventsClassification: number = null;

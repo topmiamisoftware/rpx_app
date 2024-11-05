@@ -1,7 +1,7 @@
 PODS:
   - Capacitor (6.1.2):
     - CapacitorCordova
-  - CapacitorApp (6.0.0):
+  - CapacitorApp (6.0.1):
     - Capacitor
   - CapacitorAppLauncher (6.0.1):
     - Capacitor
@@ -182,7 +182,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
-  CapacitorApp: 9d53aec7101f7b030a950c5bdc4df8612576b279
+  CapacitorApp: 0bc633b4eae40a1f32cd2834788fad3bc42da6a1
   CapacitorAppLauncher: ca97e232064f293cc23a0083f237af74a2976add
   CapacitorCamera: 3b77b3e8311b98220de65e63445c0e4d0b30ce3a
   CapacitorCordova: f48c89f96c319101cd2f0ce8a2b7449b5fb8b3dd
@@ -213,4 +213,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 0fe002cc4d8ce25216509b5c52021432d81d9aca
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.15.2

@@ -90,45 +90,18 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.editMode) {
-      if (!this.ad$.getValue()) {
-        const ad = new Ad();
-        ad.id = 2;
-        this.ad$.next(ad);
-        adId = ad.id;
-      } else {
-        adId = this.ad$.getValue().id;
-      }
-
-      const retAccType = await Preferences.get({key: 'spotbie_userType'});
-      accountType = retAccType.value;
-
-      switch (accountType) {
-        case 1:
-          this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
-          break;
-        case 2:
-          this.genericAdImage = SHOPPING_AD_IMAGE;
-          break;
-        case 3:
-          this.genericAdImage = EVENTS_AD_IMAGE;
-          this.categories = this.eventsClassification;
-          break;
-      }
-    } else {
-      accountType = getRandomInt(1, 3).toString();
-      switch (this.accountType$.getValue()) {
-        case 1:
-          this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
-          break;
-        case 2:
-          this.genericAdImage = SHOPPING_AD_IMAGE;
-          break;
-        case 3:
-          this.genericAdImage = EVENTS_AD_IMAGE;
-          this.categories = this.eventsClassification;
-          break;
-      }
+    accountType = this.accountType$.getValue();
+    switch (this.accountType$.getValue()) {
+      case 1:
+        this.genericAdImage = PLACE_TO_EAT_AD_IMAGE;
+        break;
+      case 2:
+        this.genericAdImage = SHOPPING_AD_IMAGE;
+        break;
+      case 3:
+        this.genericAdImage = EVENTS_AD_IMAGE;
+        this.categories = this.eventsClassification;
+        break;
     }
 
     const nearByFeaturedObj = {
