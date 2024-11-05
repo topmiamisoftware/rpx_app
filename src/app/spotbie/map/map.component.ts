@@ -1178,22 +1178,20 @@ export class MapComponent implements OnInit, AfterViewInit {
 
       this.communityMemberList$.next(communityMemberList);
 
-      if (this.getSpotBieCommunityMemberListInterval) {
-        this.getSpotBieCommunityMemberListInterval = setInterval(() => {
-          const searchObjSb = {
-            loc_x: this.lat$.getValue(),
-            loc_y: this.lng$.getValue(),
-            categories: JSON.stringify(this.numberCategories$.getValue()),
-          };
+      this.getSpotBieCommunityMemberListInterval = setInterval(() => {
+        const searchObjSb = {
+          loc_x: this.lat$.getValue(),
+          loc_y: this.lng$.getValue(),
+          categories: JSON.stringify(this.numberCategories$.getValue()),
+        };
 
-          // Retrieve the SpotBie Community Member Results
-          this.locationService
-            .getSpotBieCommunityMemberList(searchObjSb)
-            .subscribe(resp => {
-              this.getSpotBieCommunityMemberListCb(resp);
-            });
-        }, SBCM_INTERVAL);
-      }
+        // Retrieve the SpotBie Community Member Results
+        this.locationService
+          .getSpotBieCommunityMemberList(searchObjSb)
+          .subscribe(resp => {
+            this.getSpotBieCommunityMemberListCb(resp);
+          });
+      }, SBCM_INTERVAL);
     }
   }
 
