@@ -15,7 +15,7 @@
         (click)="openReward(reward)"
       ></div>
 
-      <h6 *ngIf="reward.type === 0">
+      <h6 *ngIf="reward.type === 0 || reward.type === 2">
         <span class="spotbie-text-gradient">
           {{ reward.name }}
         </span>
