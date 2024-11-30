@@ -125,10 +125,11 @@ export class UserauthService {
     );
   }
 
-  setPassResetPin(emailOrPhone: string): Observable<any> {
+  setPassResetPin(emailOrPhone: string, using_phone_number: boolean = false): Observable<any> {
     const resetPasswordApi = `${USER_API}/send-pass-email`;
     const setPassResetObj = {
       email: emailOrPhone,
+      using_phone_number,
     };
 
     return this.http.post<any>(resetPasswordApi, setPassResetObj).pipe(
@@ -175,17 +176,20 @@ export class UserauthService {
 
   deactivateAccount(
     password: string,
+    deactivation_type: boolean,
     is_social_account: boolean
   ): Observable<any> {
     const resetPasswordApi = `${USER_API}/deactivate`;
-    const passResetObj = {
-      _method: 'DELETE',
-      password,
-      is_social_account,
+    const passResetReq = {
+      body: {
+        password,
+        deactivation_type,
+        is_social_account,
+      }
     };
 
     return this.http
-      .post<any>(resetPasswordApi, passResetObj)
+      .delete<any>(resetPasswordApi, passResetReq)
       .pipe(catchError(handleError('deactivateAccount')));
   }
 }
