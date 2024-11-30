@@ -2,9 +2,13 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {UntypedFormGroup, UntypedFormBuilder, Validators} from '@angular/forms';
 import {UserauthService} from '../../../services/userauth.service';
 import {BehaviorSubject} from 'rxjs';
+import {tap} from "rxjs/operators";
 
 const DEF_INC_PASS_OR_EM_MSG = 'Enter your e-mail address.';
 const DEF_PIN_PASS_OR_EM_MSG = 'Check your e-mail for a reset link.';
+
+const DEF_INC_PASS_OR_PH_MSG = 'Enter your phone number.';
+const DEF_PIN_PASS_OR_PH_MSG = 'Check your phone for a reset link.';
 
 @Component({
   selector: 'app-forgot-password',
@@ -24,11 +28,14 @@ export class ForgotPasswordComponent implements OnInit {
 
   pinReadyMsg$ = new BehaviorSubject<string>(DEF_PIN_PASS_OR_EM_MSG);
   emailOrPhError$ = new BehaviorSubject<string>(DEF_INC_PASS_OR_EM_MSG);
+  usePhoneNumber$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private formBuilder: UntypedFormBuilder,
     private userAuthService: UserauthService
-  ) {}
+  ) {
+
+  }
 
   get spotbieEmailOrPh() {
     return this.passwordResetForm.get('spotbieEmailOrPh').value;
@@ -47,6 +54,27 @@ export class ForgotPasswordComponent implements OnInit {
     this.stepOne$.next(true);
   }
 
+  usePhoneNumber() {
+    this.usePhoneNumber$.next(!this.usePhoneNumber$.getValue());
+
+    if (this.usePhoneNumber$.getValue() === true) {
+      this.emailOrPhError$.next(DEF_INC_PASS_OR_PH_MSG);
+      this.pinReadyMsg$.next(DEF_PIN_PASS_OR_PH_MSG);
+    } else {
+      this.emailOrPhError$.next(DEF_INC_PASS_OR_EM_MSG);
+      this.pinReadyMsg$.next(DEF_PIN_PASS_OR_EM_MSG);
+    }
+
+    const spotbieEmailOrPhValidators = [
+      Validators.required,
+      Validators.maxLength(130),
+    ];
+
+    this.passwordResetForm = this.formBuilder.group({
+      spotbieEmailOrPh: ['', spotbieEmailOrPhValidators],
+    });
+  }
+
   setPassResetPin(): void {
     this.loading$.next(true);
     this.passResetSubmitted$.next(true);
@@ -57,7 +85,7 @@ export class ForgotPasswordComponent implements OnInit {
     }
 
     this.userAuthService
-      .setPassResetPin(this.spotbieEmailOrPh)
+      .setPassResetPin(this.spotbieEmailOrPh, this.usePhoneNumber$.getValue())
       .subscribe(resp => {
         this.startPassResetCb(resp);
       });
@@ -83,13 +111,11 @@ export class ForgotPasswordComponent implements OnInit {
         this.emailOrPhError$.next(
           'You have sent too many password reset requests, please try again later.'
         );
-      } else if (httpResponse.status === 'social_account') {
-        this.emailOrPhError$.next('You signed up with social media.');
       } else {
         this.emailOrPhError$.next('E-mail address not found.');
       }
     } else {
-      this.emailOrPhError$.next('I e-mail address.');
+      this.emailOrPhError$.next('Invalid e-mail address.');
     }
 
     this.getLinkMessage.nativeElement.style.display = 'none';
