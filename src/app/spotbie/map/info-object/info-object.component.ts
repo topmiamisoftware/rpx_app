@@ -1,21 +1,10 @@
-import {
-  Component,
-  OnInit,
-  Input,
-  Output,
-  EventEmitter,
-  AfterViewInit,
-} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output,} from '@angular/core';
 import {InfoObjectServiceService} from './info-object-service.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {DateFormatPipe, TimeFormatPipe} from '../../../pipes/date-format.pipe';
 import {SpotbieMetaService} from '../../../services/meta/spotbie-meta.service';
 import {setYelpRatingImage} from '../../../helpers/info-object-helper';
-import {
-  spotbieMetaDescription,
-  spotbieMetaTitle,
-  spotbieMetaImage,
-} from '../../../constants/spotbie';
+import {spotbieMetaDescription, spotbieMetaImage, spotbieMetaTitle,} from '../../../constants/spotbie';
 import {InfoObject} from '../../../models/info-object';
 import {environment} from '../../../../environments/environment';
 import {Ad} from '../../../models/ad';
@@ -25,6 +14,8 @@ import {AppLauncher} from '@capacitor/app-launcher';
 import {Preferences} from '@capacitor/preferences';
 import {Share} from '@capacitor/share';
 import {LoyaltyTier} from '../../../models/loyalty-point-tier.balance';
+import {Capacitor} from "@capacitor/core";
+import {ToastController} from "@ionic/angular";
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
@@ -40,6 +31,9 @@ const SPOTBIE_META_IMAGE = spotbieMetaImage;
 export class InfoObjectComponent implements OnInit, AfterViewInit {
   @Input() set info_object(infoObject: InfoObject) {
     this.accountType = infoObject.user_type;
+    if (infoObject?.business?.photo) {
+      infoObject.photo = infoObject.business.photo;
+    }
     this.infoObject$.next(infoObject);
   }
   @Input() ad: Ad;
@@ -73,7 +67,8 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     private infoObjectService: InfoObjectServiceService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private spotbieMetaService: SpotbieMetaService
+    private spotbieMetaService: SpotbieMetaService,
+    private toastSvc: ToastController
   ) {}
 
   getFullScreenModeClass() {
@@ -118,6 +113,7 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   }
 
   private pullInfoObjectCallback(httpResponse: any): void {
+    console.log("PULL INFO OBJECT CALLBACK", httpResponse);
     if (httpResponse.success) {
       const infoObject = httpResponse.data as InfoObject;
       infoObject.type_of_info_object_category = this.infoObjectCategory;
@@ -234,13 +230,24 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     return;
   }
 
-  share() {
-    Share.share({
-      title: this.infoObjectTitle,
-      text: this.infoObjectDescription,
-      url: this.infoObjectLink,
-      dialogTitle: 'Share Spot...',
-    });
+  async share() {
+    if (Capacitor.isNativePlatform()) {
+      Share.share({
+        title: this.infoObjectTitle,
+        text: this.infoObjectDescription,
+        url: this.infoObjectLink,
+        dialogTitle: 'Share Spot...',
+      });
+    } else {
+      await navigator.clipboard.writeText(this.infoObjectLink);
+      const toast = await this.toastSvc.create({
+        message: 'SpotBie Community Member location copied.',
+        duration: 1500,
+        position: 'bottom',
+      });
+
+      await toast.present();
+    }
   }
 
   getIconStyle() {
@@ -377,7 +384,7 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
 
     const p =
       this.isLoggedIn$.getValue() === '0' || !this.isLoggedIn$.getValue()
-        ? document.getElementById('ionToolbarLoggedOut').offsetHeight
+        ? 20
         : document.getElementById('ionToolbarLoggedIn').offsetHeight;
 
     closeButton.style.top = p + 'px';
