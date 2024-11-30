@@ -100,6 +100,9 @@ export class SettingsComponent implements OnInit {
   get deactivationPassword() {
     return this.deactivationForm.get('spotbieDeactivationPassword').value;
   }
+  get deactivationType() {
+    return this.deactivationForm.get('spotbie_deactivation_type').value;
+  }
   get h() {
     return this.deactivationForm.controls;
   }
@@ -270,11 +273,14 @@ export class SettingsComponent implements OnInit {
 
     this.deactivationForm = this.formBuilder.group({
       spotbieDeactivationPassword: ['', deactivationPasswordValidator],
+      spotbie_deactivation_type: ['', [Validators.required]],
     });
 
     this.deactivationForm
       .get('spotbieDeactivationPassword')
       .setValue('123456789');
+    this.deactivationForm.get('spotbie_deactivation_type').setValue(false);
+
   }
 
   deactivateAccount() {
@@ -299,9 +305,10 @@ export class SettingsComponent implements OnInit {
     }
 
     const deactivationPassword = this.deactivationPassword;
+    const deactivationType = this.deactivationType;
 
     this.userAuthService
-      .deactivateAccount(deactivationPassword, this.isSocialAccount$.getValue())
+      .deactivateAccount(deactivationPassword, deactivationType, this.isSocialAccount$.getValue())
       .subscribe(resp => {
         this.deactivateCallback(resp);
       });
@@ -436,6 +443,12 @@ export class SettingsComponent implements OnInit {
 
   updateSubscribedToSms(evt: any) {
     this.settingsForm.get('smsOptIn').setValue(evt.checked);
+  }
+
+  updateSpotBieDeactivationType() {
+    this.deactivationForm.get('spotbie_deactivation_type').setValue(
+      !this.deactivationType
+    );
   }
 
   private fetchCurrentSettings(): any {

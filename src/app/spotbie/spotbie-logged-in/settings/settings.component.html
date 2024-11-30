@@ -367,10 +367,10 @@
   class="spotbie-overlay-window d-flex flex-column align-content-center justify-content-center align-items-center"
   *ngIf="(accountDeactivation$ | async) && (isSocialAccount$ | async) === false"
 >
-  <h5 class="spotbie-text-gradient">DEACTIVATE ACCOUNT</h5>
-
   <form [formGroup]="deactivationForm">
     <div class="spotbie-toast-input-box">
+      <h5 class="spotbie-text-gradient">DEACTIVATE ACCOUNT</h5>
+
       <div
         *ngIf="
           (deactivationSubmitted$ | async) &&
@@ -399,6 +399,17 @@
         formControlName="spotbieDeactivationPassword"
         autocomplete="false"
       />
+
+      <div class="mt-4 mb-1">
+        Would you like to permanently delete your account?
+      </div>
+
+      <input type="hidden"
+             formControlName="spotbie_deactivation_type"
+      />
+      <mat-slide-toggle [style.color]="'#fff'"
+                        (change)="updateSpotBieDeactivationType()"
+      ></mat-slide-toggle>
 
       <div
         class="spotbie-button spotbie-button-mini text-uppercase"
