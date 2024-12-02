@@ -217,8 +217,11 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
       this.infoObject$.getValue().location.display_address.forEach(element => {
         displayAddress = displayAddress + ' ' + element;
       });
-    } else {
+    } else if(this.infoObject$.getValue()?.address) {
       displayAddress = this.infoObject$.getValue().address;
+    } else {
+      console.log('THE DISPLAY ADDRESS', displayAddress, this.infoObject$.getValue());
+      displayAddress = this.infoObject$.getValue().business.address;
     }
 
     if (confirmNav) {
