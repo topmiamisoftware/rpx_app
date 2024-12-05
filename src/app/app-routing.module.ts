@@ -18,16 +18,34 @@ const routes: Routes = [
         './spotbie/spotbie-logged-out/forgot-password/forgot-password.module'
       ).then(m => m.ForgotPasswordModule),
   },
-  {
-    path: 'user-home',
-    loadChildren: () =>
-      import('./user-home/user-home.module').then(m => m.UserHomeModule),
-    canActivate: [LoginGuardServiceService],
-  },
   {path: 'business-menu/:qrCode/:rewardUuid', component: RewardMenuComponent},
   {path: 'business-menu/:qrCode', component: RewardMenuComponent},
   {
-    path: 'community',
+    path: 'settings',
+    loadChildren: () =>
+      import('./spotbie/spotbie-logged-in/settings/settings.module').then(
+        m => m.SettingsModule
+      ),
+    canActivate: [LoginGuardServiceService],
+  },
+  {
+    path: 'my-friends',
+    loadChildren: () =>
+      import('./spotbie/spotbie-logged-in/my-friends/my-friends.module').then(
+        m => m.MyFriendsModule
+      ),
+    canActivate: [LoginGuardServiceService],
+  },
+  {
+    path: 'user-home',
+    loadChildren: () =>
+      import('./spotbie/spotbie-logged-in/menu-logged-in.module').then(
+        m => m.MenuLoggedInModule
+      ),
+    canActivate: [LoginGuardServiceService],
+  },
+  {
+   path: 'community',
     loadChildren: () =>
       import('./spotbie/community-member/community-member.module').then(
         m => m.CommunityMemberModule
@@ -78,6 +96,7 @@ const routes: Routes = [
           ).then(m => m.RedeemedModule),
       },
     ],
+    canActivate: [LoginGuardServiceService],
   },
   {path: 'login-success', redirectTo: '/user-home', pathMatch: 'full'},
   {path: '', redirectTo: '/home', pathMatch: 'full'},

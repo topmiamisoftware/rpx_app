@@ -17,8 +17,8 @@ export class BalancesComponent implements OnInit {
   balanceList$ = new BehaviorSubject<Array<LoyaltyPointBalance>>([]);
   balanceListPage$ = new BehaviorSubject<number>(1);
   balanceListTotal$ = new BehaviorSubject<number>(0);
-  loadMore$ = new BehaviorSubject<boolean>(false);
   loading$ = new BehaviorSubject<boolean>(false);
+  showLoadMore$ = new BehaviorSubject<boolean>(true);
   loader: HTMLIonLoadingElement;
 
   constructor(
@@ -61,25 +61,12 @@ export class BalancesComponent implements OnInit {
     this.loyaltyPointsService.getBalanceList(getBalanceListObj).subscribe({
       next: resp => {
         const balanceListData: LoyaltyPointBalance[] = resp.balanceList.data;
-        this.balanceListTotal$.next(balanceListData.length);
-
-        const currentPage = resp.balanceList.current_page;
-        const lastPage = resp.balanceList.last_page;
-
-        this.balanceListPage$.next(currentPage);
-
-        this.balanceListPage$.getValue() === lastPage
-          ? this.loadMore$.next(false)
-          : this.loadMore$.next(true);
-
-        balanceListData.forEach((lpBalance: LoyaltyPointBalance) => {
-          this.balanceList$.next([...this.balanceList$.getValue(), lpBalance]);
-        });
-
+        this.balanceList$.next([...this.balanceList$.getValue(), ...balanceListData]);
+        this.showLoadMore$.next(!(resp.balanceList.current_page === resp.balanceList.last_page));
         this.loading$.next(false);
       },
       error: error => {
-        console.log('getLedger', error);
+        console.log('getBalanceList', error);
       },
     });
   }

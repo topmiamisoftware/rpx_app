@@ -54,6 +54,10 @@ export class UserDashboardComponent {
     this.spawnCategoriesEvt.emit(category);
   }
 
+  findPeople() {
+    this.router.navigate(['/my-friends']);
+  }
+
   closeAll() {
     //Close all the windows in the dashboard
     this.loyaltyPointsApp.closeThis();

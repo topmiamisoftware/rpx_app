@@ -15,7 +15,8 @@ import {Preferences} from '@capacitor/preferences';
 import {Share} from '@capacitor/share';
 import {LoyaltyTier} from '../../../models/loyalty-point-tier.balance';
 import {Capacitor} from "@capacitor/core";
-import {ToastController} from "@ionic/angular";
+import {ModalController, ToastController} from "@ionic/angular";
+import {MeetUpWizardComponent} from "../../spotbie-logged-in/my-meet-ups/meet-up-wizard/meet-up-wizard.component";
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
@@ -68,7 +69,8 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private spotbieMetaService: SpotbieMetaService,
-    private toastSvc: ToastController
+    private toastSvc: ToastController,
+    private modalCtrl: ModalController,
   ) {}
 
   getFullScreenModeClass() {
@@ -220,7 +222,6 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     } else if(this.infoObject$.getValue()?.address) {
       displayAddress = this.infoObject$.getValue().address;
     } else {
-      console.log('THE DISPLAY ADDRESS', displayAddress, this.infoObject$.getValue());
       displayAddress = this.infoObject$.getValue().business.address;
     }
 
@@ -283,6 +284,18 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
       style = {color: '#332f3e'};
     }
     return style;
+  }
+
+  async startWizard() {
+    console.log("this.infoObject$.getValue()", this.infoObject$.getValue());
+    const wizardModal = await this.modalCtrl.create({
+      component: MeetUpWizardComponent,
+      componentProps: {
+        business_id: this.infoObject$.getValue().id
+      }
+    });
+
+    wizardModal.present();
   }
 
   getOverlayWindowStyling(): string {

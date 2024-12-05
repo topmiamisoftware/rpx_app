@@ -20,6 +20,13 @@
       </div>
     </div>
 
+    <div class="sb-dashboardWrapper">
+      <app-my-meet-ups
+        (findPeopleEvt)="findPeople()"
+        (spawnCategoriesEvt)="spawnCategories($event)"
+      ></app-my-meet-ups>
+    </div>
+
     <div class="sb-dashboardWrapper" #qrCodeAppAnchor>
       <img
         src="assets/images/spotbie-qr.svg"

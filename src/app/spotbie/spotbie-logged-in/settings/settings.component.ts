@@ -32,8 +32,6 @@ export class SettingsComponent implements OnInit {
   @ViewChild('spotbieDeactivationInfo') spotbieAccountDeactivationInfo;
   @ViewChild('spotbieSettingsWindow') spotbieSettingsWindow;
 
-  @Output() closeWindowEvt = new EventEmitter();
-
   settingsForm: FormGroup;
   passwordForm: FormGroup;
   savePasswordBool$ = new BehaviorSubject<boolean>(false);
@@ -58,7 +56,16 @@ export class SettingsComponent implements OnInit {
     private userAuthService: UserauthService,
     private router: Router,
     public dialog: MatDialog
-  ) {}
+  ) {
+    console.log('COMPONENT CONST');
+  }
+
+  ngOnInit(): void {
+    console.log('COMPONENT INIT');
+    this.router.routeReuseStrategy.shouldReuseRoute = () => false;
+    this.loading$.next(true);
+    this.initSettingsForm();
+  }
 
   get username() {
     return this.settingsForm.get('spotbieUsername').value;
@@ -105,12 +112,6 @@ export class SettingsComponent implements OnInit {
   }
   get h() {
     return this.deactivationForm.controls;
-  }
-
-  ngOnInit(): void {
-    this.router.routeReuseStrategy.shouldReuseRoute = () => false;
-    this.loading$.next(true);
-    this.initSettingsForm();
   }
 
   savePassword(): void {
@@ -245,15 +246,15 @@ export class SettingsComponent implements OnInit {
         let message = '';
         if (error.error?.errors?.email && error?.error?.errors?.email[0] === 'notUnique') {
           this.settingsForm.get('spotbieEmail').setErrors({notUnique: true});
-          message = 'E-mail already in use';
+          message = 'E-mail already in use.';
         }
 
-        if (error.error?.errors?.phone_number && error.error?.errors?.phone_number[0] === 'notUnique') {
+        if (error.error) {
           this.settingsForm.get('spotbiePhoneNumber').setErrors({notUnique: true});
-          message = 'Phone already in use';
+          message = error.error.error;
         }
 
-        this.spotbieSettingsInfoText$.next(`${message}.`);
+        this.spotbieSettingsInfoText$.next(`${message}`);
 
         this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
@@ -315,7 +316,7 @@ export class SettingsComponent implements OnInit {
   }
 
   closeWindow() {
-    this.closeWindowEvt.emit();
+    this.router.navigate(['/user-home']);
   }
 
   private populateSettings(settingsResponse: any) {

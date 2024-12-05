@@ -50,7 +50,7 @@
     class="mt-4 mb-4"
     color="secondary"
     size="small"
-    *ngIf="showLoadMore()"
+    *ngIf="(showLoadMore$ | async) === true"
     (click)="loadMoreItems()"
   >
     LOAD MORE

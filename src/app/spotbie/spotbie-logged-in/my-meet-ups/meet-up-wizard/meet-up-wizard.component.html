@@ -1,0 +1,85 @@
+<ion-header class="my-list-header">
+  <ion-toolbar color="light">
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">Close</ion-button>
+    </ion-buttons>
+    <ion-title>MEET UP WIZARD</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="d-grid text-center">
+  <p class="p-3 mt-4 mb-4">
+    Welcome to the Meet Up Wizard. Pick a restaurant, a time, some friends, and go create a shared experience.
+  </p>
+  <form [formGroup]="meetUpForm">
+    <ion-grid class="sb-inputWithIconWrapper">
+      <ion-row>
+        <ion-col>
+          <div
+            *ngIf="submitted$ | async"
+            class="spotbie-invalid-feedback spotbie-text-gradient spotbie-error text-uppercase"
+          >
+            <div
+              *ngIf="f.meetUpName.errors?.required"
+            >
+              Meet up name is required.
+            </div>
+
+            <div *ngIf="f.meetUpName.errors?.wrongLength">
+              Max length is 35 characters.
+            </div>
+
+            <div *ngIf="f.meetUpName.errors?.illegalChars">
+              Only contain letters, numbers, and underscores.
+            </div>
+          </div>
+
+          <input
+            class="sb-input"
+            type="text"
+            formControlName="meetUpName"
+            placeholder="Meet up name"
+          />
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <div
+            *ngIf="submitted$ | async"
+            class="spotbie-invalid-feedback spotbie-text-gradient spotbie-error text-uppercase"
+          >
+            <div
+              *ngIf="f.meetUpDescription.errors?.required"
+            >
+              Meet up description is required.
+            </div>
+
+            <div *ngIf="f.meetUpDescription.errors?.wrongLength">
+              Max length is 35 characters.
+            </div>
+
+            <div *ngIf="f.meetUpDescription.errors?.illegalChars">
+              Only contain letters, numbers, and underscores.
+            </div>
+          </div>
+
+          <textarea
+            class="spotbie-textarea"
+            type="text"
+            formControlName="meetUpDescription"
+            placeholder="Enter a meet up description..."
+          ></textarea>
+        </ion-col>
+      </ion-row>
+
+
+
+      <ion-row>
+        <ion-col>
+          <ion-button (click)="submitMeetUp()">
+            SUBMIT
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+</ion-content>

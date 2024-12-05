@@ -74,7 +74,7 @@ body {
   overflow-x: hidden;
   overflow-y: hidden;
   font-family: Gotham-Book !important;
-  background-color: transparent !important;
+  background-color: var(--ion-background-color);
 }
 
 a {

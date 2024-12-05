@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable, of} from 'rxjs';
 import {catchError, tap} from 'rxjs/operators';
 import {handleError} from '../helpers/error-helper';
 import {User} from '../models/user';
@@ -19,7 +19,8 @@ export class UserauthService {
   userRememberMeToken: string;
   userTimezone: string;
   route: string;
-  userProfile: User;
+  userProfile: User = new User();
+  myId$ = new Observable();
 
   constructor(private http: HttpClient) {}
 
@@ -29,6 +30,7 @@ export class UserauthService {
 
     return new Promise((resolve, reject) => {
       this.http.post<any>(loginApi, checkLoginObject).subscribe(resp => {
+        this.myId$ = of(resp.user_id);
         if (resp.message === '1') {
           resolve(resp);
         } else {

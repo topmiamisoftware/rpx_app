@@ -2,31 +2,35 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {HttpClientModule} from '@angular/common/http';
-import {MenuLoggedInComponent} from './menu-logged-in.component';
 import {SpotbiePipesModule} from '../../spotbie-pipes/spotbie-pipes.module';
-import {RouterModule} from '@angular/router';
+import {RouterModule, Routes} from '@angular/router';
 import {HelperModule} from '../../helpers/helper.module';
 import {MapModule} from '../map/map.module';
-import {SettingsModule} from './settings/settings.module';
 import {IonicModule} from '@ionic/angular';
-//import { EventMenuModule } from './event-menu/event-menu.module';
+import {MenuLoggedInComponent} from "./menu-logged-in.component";
+import {MenuLoggedInBarComponent} from "./menu-logged-in-bar/menu-logged-in-bar.component";
+
+const routes: Routes = [
+  {path: '', component: MenuLoggedInComponent}
+];
 
 @NgModule({
-  declarations: [MenuLoggedInComponent],
+  declarations: [
+    MenuLoggedInComponent,
+    MenuLoggedInBarComponent
+  ],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     SpotbiePipesModule,
-    RouterModule,
     HelperModule,
     MapModule,
-    SettingsModule,
-    RouterModule,
+    RouterModule.forChild(routes),
     IonicModule.forRoot(),
     //EventMenuModule
   ],
-  exports: [MenuLoggedInComponent],
+  exports: [],
 })
 export class MenuLoggedInModule {}

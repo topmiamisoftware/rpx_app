@@ -1,6 +1,6 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {RouterModule} from '@angular/router';
+import {RouterModule, Routes} from '@angular/router';
 import {HttpClientModule} from '@angular/common/http';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatChipsModule} from '@angular/material/chips';
@@ -14,23 +14,28 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 
+const routes: Routes = [
+  {path: '', component: SettingsComponent}
+];
+
 @NgModule({
   declarations: [SettingsComponent],
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        HttpClientModule,
-        HelperModule,
-        RouterModule,
-        MatChipsModule,
-        MatAutocompleteModule,
-        MatFormFieldModule,
-        MatDialogModule,
-        NgxMaskDirective,
-        NgxMaskPipe,
-        MatSlideToggleModule,
-    ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    HttpClientModule,
+    HelperModule,
+    RouterModule,
+    MatChipsModule,
+    MatAutocompleteModule,
+    MatFormFieldModule,
+    MatDialogModule,
+    NgxMaskDirective,
+    NgxMaskPipe,
+    MatSlideToggleModule,
+    RouterModule.forChild(routes),
+  ],
   exports: [SettingsComponent],
   providers: [provideNgxMask()],
 })

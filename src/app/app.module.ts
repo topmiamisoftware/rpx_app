@@ -5,7 +5,6 @@ import {AppRoutingModule} from './app-routing.module';
 import {HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
 import {AppComponent} from './app.component';
 import {HomeModule} from './home/home.module';
-import {UserHomeModule} from './user-home/user-home.module';
 import {UrlSanitizerPipe} from './pipes/url-sanitizer.pipe';
 import {VersionCheckService} from './services/version-check.service';
 import {HelperModule} from './helpers/helper.module';
@@ -16,7 +15,8 @@ import {UserauthService} from './services/userauth.service';
 import {StoreModule} from '@ngrx/store';
 import {loyaltyPointsReducer} from './spotbie/spotbie-logged-in/loyalty-points/loyalty-points.reducer';
 import {RouteReuseStrategy} from '@angular/router';
-import {MyList} from './spotbie/spotbie-logged-in/my-list/my-list.component';
+import {MyList} from "./spotbie/spotbie-logged-in/my-list/my-list.component";
+import {MenuLoggedInModule} from "./spotbie/spotbie-logged-in/menu-logged-in.module";
 
 @NgModule({
   declarations: [AppComponent, UrlSanitizerPipe, MyList],
@@ -26,7 +26,7 @@ import {MyList} from './spotbie/spotbie-logged-in/my-list/my-list.component';
     AppRoutingModule,
     HttpClientModule,
     HomeModule,
-    UserHomeModule,
+    MenuLoggedInModule,
     HelperModule,
     BrowserAnimationsModule,
     StoreModule.forRoot({

@@ -2,15 +2,11 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {HomeComponent} from './home.component';
 import {RouterModule, Routes} from '@angular/router';
-import {MenuModule} from '../spotbie/menu.module';
 import {SpotbiePipesModule} from '../spotbie-pipes/spotbie-pipes.module';
 import {MapModule} from '../spotbie/map/map.module';
 import {HelperModule} from '../helpers/helper.module';
 import {MenuLoggedOutModule} from '../spotbie/spotbie-logged-out/menu-logged-out.module';
 import {WelcomeModule} from '../spotbie/welcome/welcome.module';
-import {MenuLoggedInModule} from '../spotbie/spotbie-logged-in/menu-logged-in.module';
-import {MenuLoggedInComponent} from '../spotbie/spotbie-logged-in/menu-logged-in.component';
-// import {TestModeModule} from '../spotbie/test-mode/test-mode.module';
 import {IonicModule} from '@ionic/angular';
 
 const routes: Routes = [{path: '', component: HomeComponent}];
@@ -19,17 +15,14 @@ const routes: Routes = [{path: '', component: HomeComponent}];
   declarations: [HomeComponent],
   imports: [
     CommonModule,
-    MenuLoggedInModule,
     MenuLoggedOutModule,
-    MenuModule,
     SpotbiePipesModule,
     MapModule,
     HelperModule,
     WelcomeModule,
-    // TestModeModule,
     IonicModule,
     RouterModule.forChild(routes),
   ],
-  exports: [HomeComponent, MenuLoggedInComponent, MenuLoggedOutModule],
+  exports: [HomeComponent, MenuLoggedOutModule],
 })
 export class HomeModule {}

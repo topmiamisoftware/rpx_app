@@ -2,6 +2,7 @@ import {Component, OnInit, AfterViewInit} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {NavigationEnd, Router} from '@angular/router';
 import {filter} from 'rxjs/operators';
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-my-list',
@@ -13,7 +14,10 @@ export class MyList implements OnInit, AfterViewInit {
 
   constructor(private router: Router) {
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(
+        takeUntilDestroyed(),
+        filter(event => event instanceof NavigationEnd)
+      )
       .subscribe(event => {
         const navEnd = event as NavigationEnd;
         this.setPageTitle(navEnd);
@@ -40,15 +44,13 @@ export class MyList implements OnInit, AfterViewInit {
 
   setTopMargin() {
     const toolbarHeight =
-      document.getElementsByClassName('my-list-header')[0].clientHeight;
+      document.getElementsByClassName('my-list-header')[0]?.clientHeight;
 
     const a = document.getElementsByClassName('redeemWindowNavMargin');
 
     for (let i = 0; i < a.length; i++) {
       (a[i] as HTMLElement).style.marginTop = toolbarHeight - 5 + 'px';
     }
-
-    console.log('toolbarHeight', toolbarHeight);
   }
 
   ngOnInit(): void {}
