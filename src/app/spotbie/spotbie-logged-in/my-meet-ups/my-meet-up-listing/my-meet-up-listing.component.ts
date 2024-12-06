@@ -23,8 +23,15 @@ export class MyMeetUpListingComponent  implements OnInit {
     }
   }
 
+  @Input() set latestMeetUp(latestMeetUp: { data: MeetUp[] }) {
+    if (latestMeetUp.data) {
+      this.latestMeetUp$ = of(latestMeetUp);
+    }
+  }
+
   loading$= new BehaviorSubject(false);
   meetUpListing$: Observable<{ data: MeetUp[] }> = new Observable(null);
+  latestMeetUp$: Observable<{ data: MeetUp[] }> = new Observable(null);
   friendListing$: Observable<any> = new Observable(null);
   myUserId;
 

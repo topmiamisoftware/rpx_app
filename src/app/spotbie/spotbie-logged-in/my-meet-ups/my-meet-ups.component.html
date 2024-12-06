@@ -1,25 +1,36 @@
-<div class="">
-  <h3 class="mb-5">LET'S MEET UP!</h3>
+<div>
+  <h3 class="mb-3">
+    MEET UP
+    <ng-container *ngIf="latestMeetUp$() as latestMessage">
+      @ {{ latestMessage.name }}
+    </ng-container>
+  </h3>
 
   <ion-grid>
     <ion-row>
-      <ion-col (click)="findPeople()">
-        <ion-icon name="people"></ion-icon>
-        FIND PEOPLE
-      </ion-col>
-      <ion-col (click)="myMeetUps()">
-        <ion-icon name="calendar"></ion-icon>
-        MY MEET UPS
+      <ion-col>
+        <div style="text-align: center;" class="mb-3">
+          <ion-button (click)="startWizard()" id="startMyMeetUps">
+            <ion-icon name="fast-food" slot="end"></ion-icon>
+            START
+          </ion-button>
+        </div>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col>
-        <div style="text-align: center;">
-          <ion-button (click)="startWizard()">
-            <ion-icon name="people" slot="end"></ion-icon>
-            MEET UP
-          </ion-button>
-        </div>
+        <ion-button (click)="findPeople()">
+          <ion-icon name="people" slot="end"></ion-icon>
+          FIND PEOPLE
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-button (click)="myMeetUpsModal()">
+          <ion-icon name="calendar" slot="end"></ion-icon>
+          MY MEET UPS
+        </ion-button>
       </ion-col>
     </ion-row>
   </ion-grid>

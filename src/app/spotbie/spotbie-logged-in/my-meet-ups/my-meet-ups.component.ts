@@ -1,5 +1,4 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {faEye} from "@fortawesome/free-solid-svg-icons";
+import {Component, EventEmitter, OnInit, Output, signal} from '@angular/core';
 import {ModalController} from "@ionic/angular";
 import {MeetupService} from "./services/meetup.service";
 import {MyMeetUpListingComponent} from "./my-meet-up-listing/my-meet-up-listing.component";
@@ -14,6 +13,9 @@ export class MyMeetUpsComponent  implements OnInit {
   @Output() findPeopleEvt = new EventEmitter(null);
   @Output() spawnCategoriesEvt = new EventEmitter(null);
 
+  latestMeetUp$ = signal(null);
+  meetUpList$ = signal(null);
+
   constructor(
     private modalCtrl: ModalController,
     private meetUpService: MeetupService
@@ -23,26 +25,31 @@ export class MyMeetUpsComponent  implements OnInit {
     this.findPeopleEvt.emit();
   }
 
-  async myMeetUps() {
-    this.meetUpService.myMeetUps().subscribe(async (resp: any) => {
-      const modal = await this.modalCtrl.create({
-        component: MyMeetUpListingComponent,
-        componentProps: {
-          meetUpListing: resp.meetUpListing
-        }
-      });
-
-      modal.present();
+  async myMeetUpsModal() {
+    const modal = await this.modalCtrl.create({
+      component: MyMeetUpListingComponent,
+      componentProps: {
+        meetUpListing: this.meetUpList$(),
+        latestMeetUp: this.latestMeetUp$()
+      },
     });
+
+    modal.present();
   }
 
   async startWizard() {
     this.spawnCategoriesEvt.emit(1);
   }
 
-  ngOnInit() {
-
+  myMeetUps() {
+    this.meetUpService.myMeetUps().subscribe(async (resp: any) => {
+      const theMeetUps = resp.meetUpListing.data;
+      this.latestMeetUp$.set(theMeetUps[0]);
+      this.meetUpList$.set(theMeetUps);
+    });
   }
 
-  protected readonly faEye = faEye;
+  ngOnInit() {
+      this.myMeetUps();
+  }
 }

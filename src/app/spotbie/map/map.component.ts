@@ -7,7 +7,7 @@ import {
   OnInit,
   Output,
   ViewChild,
-  ChangeDetectionStrategy,
+  ChangeDetectionStrategy, signal,
 } from '@angular/core';
 import {
   metersToMiles,
@@ -115,7 +115,6 @@ export class MapComponent implements OnInit, AfterViewInit {
   showSearchResults$ = new BehaviorSubject<boolean>(false);
   showSearchBox$ = new BehaviorSubject<boolean>(false);
   locationFound$ = new BehaviorSubject<boolean>(false);
-  sliderRight: boolean = false;
   catsUp$ = new BehaviorSubject<boolean>(false);
   showNoResultsBox$ = new BehaviorSubject<boolean>(false);
   showMobilePrompt2$ = new BehaviorSubject<boolean>(false);
@@ -143,7 +142,6 @@ export class MapComponent implements OnInit, AfterViewInit {
   numberCategories$ = new BehaviorSubject<number>(null);
   bottomBannerCategories$ = new BehaviorSubject<number>(null);
   infoObject$: any = new BehaviorSubject(null);
-  currentMarker: any;
   categories: any;
   myFavoritesWindow = {open: false};
   updateDistanceTimeout: any;
@@ -155,6 +153,8 @@ export class MapComponent implements OnInit, AfterViewInit {
   eventsClassification$ = new BehaviorSubject<number>(null);
   getSpotBieCommunityMemberListInterval: any = false;
   currentCategoryList: any;
+
+  pauseAdPolling$ = signal(false);
 
   constructor(
     private locationService: LocationService,
@@ -203,6 +203,7 @@ export class MapComponent implements OnInit, AfterViewInit {
             });
             this.cmSearchResultsMarkers.push(newMarker);
           });
+          this.pauseAdPolling$.set(false);
         })
       )
       .subscribe();

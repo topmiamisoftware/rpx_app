@@ -291,7 +291,7 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     const wizardModal = await this.modalCtrl.create({
       component: MeetUpWizardComponent,
       componentProps: {
-        business_id: this.infoObject$.getValue().id
+        business: this.infoObject$.getValue(),
       }
     });
 

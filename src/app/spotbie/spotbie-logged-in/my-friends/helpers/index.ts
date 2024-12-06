@@ -17,3 +17,18 @@ export function normalizeProfile(profileList: [], myUserId) {
 
   return normalizedProfileList;
 }
+
+export function normalizeProfileFromSearch(profileList: []) {
+  debugger;
+  const normalizedProfileList = [];
+
+  profileList.forEach((profile: any) => {
+    let user_profile = profile;
+    normalizedProfileList.push({
+      ...profile,
+      user_profile,
+    });
+  });
+
+  return normalizedProfileList;
+}

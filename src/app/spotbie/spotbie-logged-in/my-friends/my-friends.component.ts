@@ -8,7 +8,6 @@ import {getRandomInt} from "../../../helpers/numbers.helper";
 import {UserauthService} from "../../../services/userauth.service";
 import {filter, tap} from "rxjs/operators";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {Redeemable} from "../../../models/redeemable";
 import {normalizeProfile} from "./helpers";
 
 @Component({
@@ -175,7 +174,7 @@ export class MyFriendsComponent {
 
     this.friendshipService.getMyFriends()
       .subscribe(resp => {
-        let dataWithCorrectProfiles = normalizeProfile(resp.friendList.data, this.myUserId);
+        const dataWithCorrectProfiles= normalizeProfile(resp.friendList.data, this.myUserId);
         this.loading$.next(false);
         this.myFriendListing$ = of(dataWithCorrectProfiles);
       });

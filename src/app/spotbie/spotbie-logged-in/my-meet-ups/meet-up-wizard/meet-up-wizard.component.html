@@ -3,13 +3,36 @@
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()">Close</ion-button>
     </ion-buttons>
-    <ion-title>MEET UP WIZARD</ion-title>
+    <ion-title>MEET UP</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content class="d-grid text-center">
   <p class="p-3 mt-4 mb-4">
-    Welcome to the Meet Up Wizard. Pick a restaurant, a time, some friends, and go create a shared experience.
+    Pick a spot, a time, some friends, and go create a shared experience.
   </p>
+
+  <p>Meet up @ {{ business.name }}</p>
+
+  <div class="whosGoingWrapper mt-3 mb-3">
+    <div *ngFor="let p of meetUpFriendList$(); trackBy: identify" (click)="actionSheet(p)">
+      <ion-avatar aria-hidden="true" slot="start">
+        <img [src]="p.user_profile.spotbie_user.default_picture" />
+      </ion-avatar>
+    </div>
+  </div>
+
+  <ion-datetime-button class="mb-3" datetime="datetime"></ion-datetime-button>
+
+  <ion-modal [keepContentsMounted]="true">
+    <ng-template>
+      <ion-datetime
+        [min]="minDateValue$()"
+        id="datetime"
+        (ionChange)="setDate($event)"
+      ></ion-datetime>
+    </ng-template>
+  </ion-modal>
+
   <form [formGroup]="meetUpForm">
     <ion-grid class="sb-inputWithIconWrapper">
       <ion-row>
@@ -71,7 +94,33 @@
         </ion-col>
       </ion-row>
 
+      <ion-row>
+        <ion-col>
+          <input class="sb-input" (keyup)="searchFriends($event)" placeholder="Search..."  />
+        </ion-col>
+      </ion-row>
 
+      <ion-row>
+        <ion-col>
+          <ng-container *ngIf="(myFriendListing$ | async)?.length > 0">
+            <ion-list>
+              <ion-item class="pt-2 pb-2" *ngFor="let friend of (myFriendListing$ | async)">
+                <ion-avatar aria-hidden="true" slot="start">
+                  <img [src]="friend.user_profile.spotbie_user.default_picture" />
+                </ion-avatar>
+
+                <ion-label>
+                  {{ friend.user_profile.spotbie_user.first_name }} {{ friend.user_profile.spotbie_user.last_name }}
+                </ion-label>
+
+                <ion-button slot="end" (click)="addToMeetUp(friend, friend.user_profile.spotbie_user.first_name)">
+                  <ion-icon name="add-circle-outline" size="medium"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
+          </ng-container>
+        </ion-col>
+      </ion-row>
 
       <ion-row>
         <ion-col>

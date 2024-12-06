@@ -13,11 +13,6 @@ const MEETUP_API = `${environment.apiEndpoint}meet-ups`;
 })
 export class MeetupService {
 
-  // This will store the third-party API search results.
-  searchResults$ = new BehaviorSubject([]);
-  // This will store the third-party API search results.
-  communityMemberList$ = new BehaviorSubject<Array<Business>>([]);
-
   constructor(
     private httpClient: HttpClient
   ) { }
