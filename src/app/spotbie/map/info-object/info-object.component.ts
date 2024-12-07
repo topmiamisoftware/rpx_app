@@ -115,7 +115,6 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   }
 
   private pullInfoObjectCallback(httpResponse: any): void {
-    console.log("PULL INFO OBJECT CALLBACK", httpResponse);
     if (httpResponse.success) {
       const infoObject = httpResponse.data as InfoObject;
       infoObject.type_of_info_object_category = this.infoObjectCategory;

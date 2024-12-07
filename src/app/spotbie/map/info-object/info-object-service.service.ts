@@ -14,13 +14,13 @@ const PULL_INFO_EVENT_API = `${spotbieGlobals.API}surroundings/get-event`;
 export class InfoObjectServiceService {
   constructor(private http: HttpClient) {}
 
-  public pullInfoObject(infoObjRequest: any): Observable<any> {
+  pullInfoObject(infoObjRequest: any): Observable<any> {
     return this.http
       .post<any>(PULL_INFO_API, infoObjRequest)
       .pipe(catchError(handleError('pullInfoObject')));
   }
 
-  public pullEventObject(infoObjRequest: any): Observable<any> {
+  pullEventObject(infoObjRequest: any): Observable<any> {
     return this.http
       .post<any>(PULL_INFO_EVENT_API, infoObjRequest)
       .pipe(catchError(handleError('pullEventObject')));

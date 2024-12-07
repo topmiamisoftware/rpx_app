@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 
 import {ErrorHandlerComponent} from './error-handler.component';
 
@@ -6,7 +6,7 @@ describe('ErrorHandlerComponent', () => {
   let component: ErrorHandlerComponent;
   let fixture: ComponentFixture<ErrorHandlerComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ErrorHandlerComponent],
     }).compileComponents();

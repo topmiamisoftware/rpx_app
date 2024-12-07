@@ -1,12 +1,12 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {UserauthService} from "../../../services/userauth.service";
-import {DeviceDetectorService} from "ngx-device-detector";
 import {LoyaltyPointsService} from "../../../services/loyalty-points/loyalty-points.service";
 import {Router} from "@angular/router";
 import {MenuController} from "@ionic/angular";
 import {logOutCallback} from "../../../helpers/logout-callback";
 import {Preferences} from "@capacitor/preferences";
 import {AllowedAccountTypes} from "../../../helpers/enum/account-type.enum";
+import {Capacitor} from "@capacitor/core";
 
 @Component({
   selector: 'app-menu-logged-in-bar',
@@ -33,14 +33,13 @@ export class MenuLoggedInBarComponent  implements OnInit {
 
   constructor(
     private userAuthService: UserauthService,
-    private deviceService: DeviceDetectorService,
     private loyaltyPointsService: LoyaltyPointsService,
     private router: Router,
     private menuCtrl: MenuController
   ) {
-    this.isMobile = this.deviceService.isMobile();
-    this.isDesktop = this.deviceService.isDesktop();
-    this.isTablet = this.deviceService.isTablet();
+    this.isMobile = Capacitor.isNativePlatform();
+    this.isDesktop = !Capacitor.isNativePlatform();
+    this.isTablet = Capacitor.isNativePlatform();
 
     this.init();
   }
