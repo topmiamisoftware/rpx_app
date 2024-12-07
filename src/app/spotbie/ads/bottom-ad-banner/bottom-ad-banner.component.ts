@@ -1,21 +1,17 @@
 import {Component, Input, OnDestroy, OnInit, signal} from '@angular/core';
-import {DeviceDetectorService} from 'ngx-device-detector';
 import {AllowedAccountTypes} from '../../../helpers/enum/account-type.enum';
 import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
 import {getDistanceFromLatLngInMiles} from '../../../helpers/measure-units.helper';
 import {Ad} from '../../../models/ad';
 import {Business} from '../../../models/business';
 import {LoyaltyPointsService} from '../../../services/loyalty-points/loyalty-points.service';
-import {
-  EVENT_CATEGORIES,
-  FOOD_CATEGORIES,
-  SHOPPING_CATEGORIES,
-} from '../../map/map_extras/map_extras';
+import {EVENT_CATEGORIES, FOOD_CATEGORIES, SHOPPING_CATEGORIES,} from '../../map/map_extras/map_extras';
 import {AdsService} from '../ads.service';
 import {getRandomInt} from '../../../helpers/numbers.helper';
 import {BehaviorSubject} from 'rxjs';
 import {Preferences} from '@capacitor/preferences';
 import {AppLauncher} from '@capacitor/app-launcher';
+import {Capacitor} from "@capacitor/core";
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/footer_banner_in_house.jpg';
@@ -69,7 +65,6 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
 
   constructor(
     private adsService: AdsService,
-    private deviceDetectorService: DeviceDetectorService,
     private loyaltyPointsService: LoyaltyPointsService
   ) {
     this.loyaltyPointsService.userLoyaltyPoints$.subscribe(
@@ -275,14 +270,11 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.isDesktop = this.deviceDetectorService.isDesktop();
-    if (!this.isMobile) {
-      this.isMobile =
-        this.deviceDetectorService.isMobile() ||
-        this.deviceDetectorService.isTablet();
-    } else {
-      this.isDesktop = false;
-    }
+    this.isDesktop = !Capacitor.isNativePlatform();
+    this.isMobile = Capacitor.isNativePlatform();
+    // *TODO**
+    // Add this.isTablet -- to display more ads in tablets that have the real estate;
+
     this.getBottomHeader();
   }
 

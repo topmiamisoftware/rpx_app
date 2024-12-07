@@ -1,5 +1,4 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {DeviceDetectorService} from 'ngx-device-detector';
 import {AllowedAccountTypes} from '../../../helpers/enum/account-type.enum';
 import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
 import {getDistanceFromLatLngInMiles} from '../../../helpers/measure-units.helper';
@@ -13,9 +12,9 @@ import {
 } from '../../map/map_extras/map_extras';
 import {AdsService} from '../ads.service';
 import {AppLauncher} from '@capacitor/app-launcher';
-import {getRandomInt} from '../../../helpers/numbers.helper';
 import {Preferences} from '@capacitor/preferences';
 import {BehaviorSubject} from "rxjs";
+import {Capacitor} from "@capacitor/core";
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
@@ -42,30 +41,25 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
 
   link: string;
   displayAd$ = new BehaviorSubject( false);
-  whiteIconSvg = 'assets/images/home_imgs/spotbie-white-icon.svg';
   distance = 0;
   totalRewards = 0;
   categoriesListFriendly: string[] = [];
-  adIsOpen = false;
   communityMemberOpen = false;
   isMobile = false;
   currentCategoryList: Array<string> = [];
   rewardMenuOpen$ = new BehaviorSubject(false);
-  categoryListForUi: string = null;
   loyaltyPointBalance: LoyaltyPointBalance;
   adTypeWithId = false;
-  adList: Array<Ad> = [];
   genericAdImage: string = PLACE_TO_EAT_AD_IMAGE;
   businessReady = false;
   switchAdInterval: any = false;
 
   constructor(
     private adsService: AdsService,
-    private deviceDetectorService: DeviceDetectorService
   ) {}
 
   ngOnInit(): void {
-    this.isMobile = this.deviceDetectorService.isMobile();
+    this.isMobile = Capacitor.isNativePlatform();
     this.getNearByFeatured();
   }
 
@@ -84,7 +78,7 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
     const needleElement = document.getElementsByClassName('sb-closeButton');
 
     if (needleElement.length > 1) {
-      //There's a componenet aside from the infoObjectWindow
+      //There's a component aside from the infoObjectWindow
       return; //bounce this request
     }
 

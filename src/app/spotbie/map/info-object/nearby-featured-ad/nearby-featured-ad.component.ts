@@ -1,22 +1,14 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {Router} from '@angular/router';
-import {DeviceDetectorService} from 'ngx-device-detector';
 import {AllowedAccountTypes} from '../../../../helpers/enum/account-type.enum';
 import {InfoObjectType} from '../../../../helpers/enum/info-object-type.enum';
 import {getDistanceFromLatLngInMiles} from '../../../../helpers/measure-units.helper';
 import {Ad} from '../../../../models/ad';
 import {Business} from '../../../../models/business';
 import {AdsService} from '../../../ads/ads.service';
-import {
-  EVENT_CATEGORIES,
-  FOOD_CATEGORIES,
-  SHOPPING_CATEGORIES,
-} from '../../map_extras/map_extras';
-import {getRandomInt} from '../../../../helpers/numbers.helper';
+import {EVENT_CATEGORIES, FOOD_CATEGORIES, SHOPPING_CATEGORIES,} from '../../map_extras/map_extras';
 import {BehaviorSubject} from 'rxjs';
-import {BusinessMenuServiceService} from '../../../../services/spotbie-logged-in/business-menu/business-menu-service.service';
-import {Preferences} from '@capacitor/preferences';
 import {AppLauncher} from '@capacitor/app-launcher';
+import {Capacitor} from "@capacitor/core";
 
 const PLACE_TO_EAT_AD_IMAGE =
   'assets/images/def/places-to-eat/featured_banner_in_house.jpg';
@@ -65,13 +57,10 @@ export class NearbyFeaturedAdComponent implements OnInit, OnDestroy {
 
   constructor(
     private adsService: AdsService,
-    private deviceDetectorService: DeviceDetectorService,
-    private router: Router,
-    private businessService: BusinessMenuServiceService
   ) {}
 
   ngOnInit(): void {
-    this.isMobile = this.deviceDetectorService.isMobile();
+    this.isMobile = Capacitor.isNativePlatform();
     this.getNearByFeatured();
   }
 

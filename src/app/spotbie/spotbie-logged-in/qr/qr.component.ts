@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -11,18 +11,18 @@ import {
 import {UntypedFormGroup} from '@angular/forms';
 import {Reward} from '../../../models/reward';
 import {LoyaltyPointsService} from '../../../services/loyalty-points/loyalty-points.service';
-import {DeviceDetectorService} from 'ngx-device-detector';
 import {
   RewardCreatorService
 } from '../../../services/spotbie-logged-in/business-menu/reward-creator/reward-creator.service';
 import {BehaviorSubject, distinctUntilKeyChanged, ReplaySubject} from 'rxjs';
 
-import {AndroidSettings, IOSSettings, NativeSettings,} from 'capacitor-native-settings';
+import {AndroidSettings, IOSSettings, NativeSettings} from 'capacitor-native-settings';
 import {Barcode, BarcodeScanner} from "@capacitor-mlkit/barcode-scanning";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {tap} from "rxjs/operators";
 import {setValue} from "../loyalty-points/loyalty-points.actions";
 import {Store} from "@ngrx/store";
+import {Capacitor} from "@capacitor/core";
 
 @Component({
   selector: 'app-qr',
@@ -58,7 +58,6 @@ export class QrComponent implements OnInit {
 
   constructor(
     private loyaltyPointsService: LoyaltyPointsService,
-    private deviceDetectorService: DeviceDetectorService,
     private rewardService: RewardCreatorService,
     private store: Store,
     private changeDetectorRef: ChangeDetectorRef,
@@ -287,7 +286,7 @@ export class QrComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.deviceDetectorService.isMobile()) {
+    if (Capacitor.isNativePlatform()) {
       this.qrWidth$.next(250);
     } else {
       this.qrWidth$.next(450);
