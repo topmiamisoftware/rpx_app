@@ -1,7 +1,9 @@
-import {Component, EventEmitter, OnInit, Output, signal} from '@angular/core';
+import {Component, EventEmitter, OnInit, Output, signal, WritableSignal} from '@angular/core';
 import {ModalController} from "@ionic/angular";
 import {MeetupService} from "./services/meetup.service";
 import {MyMeetUpListingComponent} from "./my-meet-up-listing/my-meet-up-listing.component";
+import {MeetUp} from "./models";
+import {format, parseISO} from "date-fns";
 
 @Component({
   selector: 'app-my-meet-ups',
@@ -13,8 +15,8 @@ export class MyMeetUpsComponent  implements OnInit {
   @Output() findPeopleEvt = new EventEmitter(null);
   @Output() spawnCategoriesEvt = new EventEmitter(null);
 
-  latestMeetUp$ = signal(null);
-  meetUpList$ = signal(null);
+  latestMeetUp$: WritableSignal<MeetUp> = signal(null);
+  meetUpList$: WritableSignal<MeetUp[]> = signal(null);
 
   constructor(
     private modalCtrl: ModalController,
@@ -43,7 +45,7 @@ export class MyMeetUpsComponent  implements OnInit {
 
   myMeetUps() {
     this.meetUpService.myMeetUps().subscribe(async (resp: any) => {
-      const theMeetUps = resp.meetUpListing.data;
+      const theMeetUps: MeetUp[] = normalizeMeetUpList(resp.meetUpListing.data);
       this.latestMeetUp$.set(theMeetUps[0]);
       this.meetUpList$.set(theMeetUps);
     });
@@ -52,4 +54,14 @@ export class MyMeetUpsComponent  implements OnInit {
   ngOnInit() {
       this.myMeetUps();
   }
+}
+
+function normalizeMeetUpList(meetUpList: MeetUp[]): MeetUp[] {
+  return meetUpList.map(a => {
+    const localTime = format(parseISO(a.time), "yyyy-MM-dd HH:mm:ss");
+    return {
+      ...a,
+      time: localTime
+    };
+  });
 }

@@ -19,7 +19,6 @@ export function normalizeProfile(profileList: [], myUserId) {
 }
 
 export function normalizeProfileFromSearch(profileList: []) {
-  debugger;
   const normalizedProfileList = [];
 
   profileList.forEach((profile: any) => {

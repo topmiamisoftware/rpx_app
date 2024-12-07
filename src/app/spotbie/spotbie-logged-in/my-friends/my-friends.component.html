@@ -10,112 +10,126 @@
   <app-loading-screen *ngIf="loading$ | async"></app-loading-screen>
 
   <div class="ion-justify-content-center">
-    <div class="sb-dashboardWrapper mt-2 mb-2">
-      <ng-container *ngIf="(myFriendListing$ | async)?.length > 0 else noFriends">
-        <ion-list>
-          <ion-item class="pt-2 pb-2" *ngFor="let friendship of myFriendListing$ | async; trackBy: identify">
-            <ion-avatar aria-hidden="true" slot="start">
-              <img [src]="friendship.user_profile.spotbie_user.default_picture" />
-            </ion-avatar>
-            <ion-label>
-              {{ friendship.user_profile.spotbie_user.first_name }} {{ friendship.user_profile.spotbie_user.last_name }}
-            </ion-label>
+    <ion-segment value="friends">
+      <ion-segment-button value="friends">
+        <ion-label>Friends</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="people">
+        <ion-label>Find People</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+    <ion-segment-view>
+      <ion-segment-content id="friends">
+        <div class="sb-dashboardWrapper mt-2 mb-2">
+          <ng-container *ngIf="(myFriendListing$ | async)?.length > 0 else noFriends">
+            <ion-list>
+              <ion-item class="pt-2 pb-2" *ngFor="let friendship of myFriendListing$ | async; trackBy: identify">
+                <ion-avatar aria-hidden="true" slot="start">
+                  <img [src]="friendship.user_profile.spotbie_user.default_picture" />
+                </ion-avatar>
+                <ion-label>
+                  {{ friendship.user_profile.spotbie_user.first_name }} {{ friendship.user_profile.spotbie_user.last_name }}
+                </ion-label>
 
-            <ng-container [ngSwitch]="friendship.relationship">
-              <ng-container *ngSwitchCase="FRIENDSHIP_STATUS_E.PENDING">
-                <ng-container *ngIf="friendship.user_id !== myUserId">
-                  <ion-button slot="end" (click)="acceptFriendRequest(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
-                    <ion-icon name="add-circle-outline" slot="end"></ion-icon>
-                    ACCEPT
-                  </ion-button>
-                  <ion-button slot="end" (click)="blockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
-                    <ion-icon name="ban-outline" slot="end"></ion-icon>
-                    BLOCK
-                  </ion-button>
+                <ng-container [ngSwitch]="friendship.relationship">
+                  <ng-container *ngSwitchCase="FRIENDSHIP_STATUS_E.PENDING">
+                    <ng-container *ngIf="friendship.user_id !== myUserId">
+                      <ion-button slot="end" (click)="acceptFriendRequest(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                        <ion-icon name="add-circle-outline" slot="end"></ion-icon>
+                        ACCEPT
+                      </ion-button>
+                      <ion-button slot="end" (click)="blockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                        <ion-icon name="ban-outline" slot="end"></ion-icon>
+                        BLOCK
+                      </ion-button>
+                    </ng-container>
+
+                    <ng-container *ngIf="friendship.user_id === myUserId">
+                      <ion-button slot="end" (click)="removeFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                        <ion-icon name="hourglass" size="small"></ion-icon>
+                      </ion-button>
+                      <ion-button slot="end" (click)="blockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                        <ion-icon name="ban-outline" slot="end"></ion-icon>
+                        BLOCK
+                      </ion-button>
+                    </ng-container>
+                  </ng-container>
+
+                  <ng-container *ngSwitchCase="FRIENDSHIP_STATUS_E.ACCEPTED">
+                    <ion-button slot="end" (click)="removeFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                      <ion-icon name="remove-circle-outline" slot="end"></ion-icon>
+                      REMOVE
+                    </ion-button>
+                    <ion-button slot="end" (click)="blockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                      <ion-icon name="ban-outline" slot="end"></ion-icon>
+                      BLOCK
+                    </ion-button>
+                  </ng-container>
+
+                  <ng-container *ngSwitchCase="FRIENDSHIP_STATUS_E.BLOCKED">
+                    <ion-button slot="end" (click)="unblockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                      <ion-icon name="remove-circle-outline" slot="end"></ion-icon>
+                      UNBLOCK
+                    </ion-button>
+                  </ng-container>
                 </ng-container>
-
-                <ng-container *ngIf="friendship.user_id === myUserId">
-                  <ion-button slot="end" (click)="removeFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
-                    <ion-icon name="hourglass" size="small"></ion-icon>
-                  </ion-button>
-                  <ion-button slot="end" (click)="blockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
-                    <ion-icon name="ban-outline" slot="end"></ion-icon>
-                    BLOCK
-                  </ion-button>
-                </ng-container>
-              </ng-container>
-
-              <ng-container *ngSwitchCase="FRIENDSHIP_STATUS_E.ACCEPTED">
-                <ion-button slot="end" (click)="removeFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
-                  <ion-icon name="remove-circle-outline" slot="end"></ion-icon>
-                  REMOVE
-                </ion-button>
-                <ion-button slot="end" (click)="blockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
-                  <ion-icon name="ban-outline" slot="end"></ion-icon>
-                  BLOCK
-                </ion-button>
-              </ng-container>
-
-              <ng-container *ngSwitchCase="FRIENDSHIP_STATUS_E.BLOCKED">
-                <ion-button slot="end" (click)="unblockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
-                  <ion-icon name="remove-circle-outline" slot="end"></ion-icon>
-                  UNBLOCK
-                </ion-button>
-              </ng-container>
-            </ng-container>
-          </ion-item>
-        </ion-list>
-      </ng-container>
-
-      <ng-template #noFriends>
-        <p class="mt-2 ion-padding">
-          You have no SpotBie friends.
-        </p>
-      </ng-template>
-    </div>
-
-    <div class="sb-dashboardWrapper" style="border-top: 2px solid #e5e6e7;">
-      <div class="mt-5 mb-5">
-        <input class="sb-input" (keyup)="searchFriends($event)" placeholder="Search..." />
-
-        <div (click)="getStarted()">
-          <h6 class="spotbie-text-gradient ion-padding">OR</h6>
-          <h6 class="spotbie-text-gradient ion-padding">MEET NEW PEOPLE</h6>
-
-          <ng-container *ngIf="!(mySearchResultList$ | async) ">
-            <p class="mt-2 ion-padding">
-              Tap here to get started.
-            </p>
-
-            <ion-icon name="people" size="large"></ion-icon>
+              </ion-item>
+            </ion-list>
           </ng-container>
+
+          <ng-template #noFriends>
+            <p class="mt-2 ion-padding">
+              You have no SpotBie friends.
+            </p>
+          </ng-template>
+        </div>
+      </ion-segment-content>
+
+      <ion-segment-content id="people">
+        <div class="sb-dashboardWrapper" style="border-top: 2px solid #e5e6e7;">
+          <div class="mt-5 mb-5">
+            <input class="sb-input" (keyup)="searchFriends($event)" placeholder="Search..." />
+
+            <div (click)="getStarted()">
+              <h6 class="spotbie-text-gradient ion-padding">OR</h6>
+              <h6 class="spotbie-text-gradient ion-padding">MEET NEW PEOPLE</h6>
+
+              <ng-container *ngIf="!(mySearchResultList$ | async) ">
+                <p class="mt-2 ion-padding">
+                  Tap here to get started.
+                </p>
+
+                <ion-icon name="people" size="large"></ion-icon>
+              </ng-container>
+
+              <ng-container *ngIf="(mySearchResultList$ | async)?.length > 0">
+                <p class="mt-2 ion-padding">
+                  {{ quote$() }}
+                </p>
+
+                <ion-icon name="refresh-circle-outline" size="large"></ion-icon>
+              </ng-container>
+            </div>
+          </div>
 
           <ng-container *ngIf="(mySearchResultList$ | async)?.length > 0">
-            <p class="mt-2 ion-padding">
-              {{ quote$() }}
-            </p>
+            <ion-list>
+              <ion-item class="pt-2 pb-2" *ngFor="let friend of (mySearchResultList$ | async)">
+                <ion-avatar aria-hidden="true" slot="start">
+                  <img [src]="friend.spotbie_user.default_picture" />
+                </ion-avatar>
+                <ion-label>
+                  {{ friend.spotbie_user.first_name }} {{ friend.spotbie_user.last_name }}
+                </ion-label>
 
-            <ion-icon name="refresh-circle-outline" size="large"></ion-icon>
+                <ion-button slot="end" (click)="addFriend(friend.id, friend.spotbie_user.first_name)">
+                  <ion-icon name="add-circle-outline" size="medium"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
           </ng-container>
         </div>
-      </div>
-
-      <ng-container *ngIf="(mySearchResultList$ | async)?.length > 0">
-        <ion-list>
-          <ion-item class="pt-2 pb-2" *ngFor="let friend of (mySearchResultList$ | async)">
-            <ion-avatar aria-hidden="true" slot="start">
-              <img [src]="friend.spotbie_user.default_picture" />
-            </ion-avatar>
-            <ion-label>
-              {{ friend.spotbie_user.first_name }} {{ friend.spotbie_user.last_name }}
-            </ion-label>
-
-            <ion-button slot="end" (click)="addFriend(friend.id, friend.spotbie_user.first_name)">
-              <ion-icon name="add-circle-outline" size="medium"></ion-icon>
-            </ion-button>
-          </ion-item>
-        </ion-list>
-      </ng-container>
-    </div>
+      </ion-segment-content>
+    </ion-segment-view>
   </div>
 </ion-content>

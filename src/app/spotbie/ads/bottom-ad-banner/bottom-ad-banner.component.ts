@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit, signal} from '@angular/core';
 import {DeviceDetectorService} from 'ngx-device-detector';
 import {AllowedAccountTypes} from '../../../helpers/enum/account-type.enum';
 import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
@@ -48,6 +48,10 @@ export class BottomAdBannerComponent implements OnInit, OnDestroy {
   @Input() editMode: boolean = false;
   @Input() eventsClassification: number = null;
   @Input() isMobile: boolean = false;
+  @Input() set pauseAdPolling(val : boolean) {
+    this.pauseAdPolling$.set(val);
+  }
+  pauseAdPolling$ = signal(false);
 
   isDesktop: boolean = false;
   link: string;

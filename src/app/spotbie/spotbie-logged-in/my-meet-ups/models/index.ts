@@ -6,7 +6,7 @@ export interface MeetUp {
   business_id: number;
   business: Business;
   updated_at: string;
-  time: Date;
+  time: string;
   name: string;
   description: string;
 }

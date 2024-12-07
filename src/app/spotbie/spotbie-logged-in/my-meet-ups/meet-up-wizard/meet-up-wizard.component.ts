@@ -60,30 +60,31 @@ export class MeetUpWizardComponent  implements OnInit {
   }
 
   async addToMeetUp(friendId, firstName) {
+    if (this.meetUpFriendList$().find(id => id === friendId)) {
+      const a = await this.alertController.create({
+        header: 'Already Added',
+        message: `You have already added ${firstName}.`,
+        buttons: [{
+          text: 'Ok',
+          role: 'confirm',
+        }],
+      });
+
+      await a.present();
+
+      return;
+    }
+
     let alert = await this.alertController.create({
-      header: 'Already Added',
+      header: '',
       message: `Do you really want to add ${firstName} to this meet up?`,
       buttons: [
         {
           text: 'Yes',
           role: 'confirm',
           handler: async (ev) => {
-            if (this.meetUpFriendList$().find(a => a.id === friendId)) {
-              alert = await this.alertController.create({
-                header: 'Already Added',
-                message: `You have already added ${firstName}.`,
-                buttons: [{
-                  text: 'Ok',
-                  role: 'confirm',
-                }],
-              });
-
-              await alert.present();
-            }
-
-            return;
-
             this.meetUpFriendList$.set([...this.meetUpFriendList$(), friendId]);
+            return;
           },
         },
         {
@@ -136,10 +137,7 @@ export class MeetUpWizardComponent  implements OnInit {
         },
         {
           text: 'Cancel',
-          role: 'destructive',
-          data: {
-            action: 'cancel',
-          },
+          role: 'cancel',
         }
       ]
     });
@@ -147,11 +145,13 @@ export class MeetUpWizardComponent  implements OnInit {
     await actionSheet.present();
 
     await actionSheet.onDidDismiss().then((evt) => {
-      if (evt.data.action === 'delete') {
+      if (evt.data?.action === 'delete') {
         this.meetUpFriendList$.set(
           this.meetUpFriendList$().filter((f) => f.id !== friendProfile.id)
         );
       }
+
+      return;
     });
   }
 
@@ -182,7 +182,11 @@ export class MeetUpWizardComponent  implements OnInit {
     const time = this.meetUpDateTime$();
 
     if (!time)  {
-      alert("You need to set a time for this meet up.");
+      this.toastService.create({
+        message: 'You need to pick a time for the.',
+        duration: 5000,
+        position: 'bottom'
+      });
       return;
     }
 

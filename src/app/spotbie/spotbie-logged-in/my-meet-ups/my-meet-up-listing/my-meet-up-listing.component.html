@@ -10,14 +10,12 @@
   <ng-container>
     <p class="mt-2 ion-padding" *ngIf="(friendListing$ | async)?.length === 0">
       Get started by backing out of this page and tapping on "Find People". This will help you find people to go eat or shop with.
-      Make sure you check their IG and other social media before meeting up with somebody from the internet. Always meet
-      in a public place, preferably the arranged location where the SpotBie App says you will meet.
     </p>
 
     <p class="mt-5 mb-5 ion-padding text-uppercase spotbie-text-gradient text-center"
        *ngIf="(friendListing$ | async)?.length > 0"
     >
-     {{ (friendListing$ | async)?.length }} <span style="top: 10px;"><ion-icon name="people" slot="end"></ion-icon> friends</span>
+     {{ (friendListing$ | async)?.length }} <span style="top: 10px;"><ion-icon name="people" slot="end"></ion-icon>friends</span>
     </p>
   </ng-container>
 
