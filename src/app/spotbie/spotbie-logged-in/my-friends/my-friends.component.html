@@ -10,11 +10,11 @@
   <app-loading-screen *ngIf="loading$ | async"></app-loading-screen>
 
   <div class="ion-justify-content-center">
-    <ion-segment value="friends">
-      <ion-segment-button value="friends">
+    <ion-segment>
+      <ion-segment-button value="friends" content-id="friends">
         <ion-label>Friends</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="people">
+      <ion-segment-button value="people" content-id="people">
         <ion-label>Find People</ion-label>
       </ion-segment-button>
     </ion-segment>
@@ -22,7 +22,7 @@
       <ion-segment-content id="friends">
         <div class="sb-dashboardWrapper mt-2 mb-2">
           <ng-container *ngIf="(myFriendListing$ | async)?.length > 0 else noFriends">
-            <ion-list>
+            <ion-list class="friendshipList">
               <ion-item class="pt-2 pb-2" *ngFor="let friendship of myFriendListing$ | async; trackBy: identify">
                 <ion-avatar aria-hidden="true" slot="start">
                   <img [src]="friendship.user_profile.spotbie_user.default_picture" />
@@ -81,39 +81,43 @@
             <p class="mt-2 ion-padding">
               You have no SpotBie friends.
             </p>
+            <h6 class="sb-text-light-green-gradient">How it Works</h6>
+            <p class="ion-padding">
+              First, search for your friend's profiles or invite them through the app. Once you have one or more friends,
+              you'll be able to create <span class="sb-text-light-green-gradient" (click)="meetUpExternal()">meet-ups</span> and
+              <span class="sb-text-light-green-gradient" (click)="sharedExperiencesExternal()">shared-experiences</span> with them.
+            </p>
           </ng-template>
         </div>
       </ion-segment-content>
 
       <ion-segment-content id="people">
         <div class="sb-dashboardWrapper" style="border-top: 2px solid #e5e6e7;">
-          <div class="mt-5 mb-5">
+          <div class="mt-5 mb-5 find-people-wrapper">
             <input class="sb-input" (keyup)="searchFriends($event)" placeholder="Search..." />
 
-            <div (click)="getStarted()">
-              <h6 class="spotbie-text-gradient ion-padding">OR</h6>
-              <h6 class="spotbie-text-gradient ion-padding">MEET NEW PEOPLE</h6>
+            <h6 class="spotbie-text-gradient ion-padding">OR</h6>
 
-              <ng-container *ngIf="!(mySearchResultList$ | async) ">
-                <p class="mt-2 ion-padding">
-                  Tap here to get started.
-                </p>
+            <ng-container *ngIf="!(mySearchResultList$ | async)">
+              <ion-buttons>
+                <ion-button class="get-started" (click)="getStarted()">
+                  <ion-icon name="people" slot="end"></ion-icon>
+                  GET STARTED
+                </ion-button>
+              </ion-buttons>
+            </ng-container>
 
-                <ion-icon name="people" size="large"></ion-icon>
-              </ng-container>
-
-              <ng-container *ngIf="(mySearchResultList$ | async)?.length > 0">
-                <p class="mt-2 ion-padding">
+            <ng-container *ngIf="(mySearchResultList$ | async)?.length > 0">
+              <ion-buttons>
+                <ion-button class="get-started" (click)="getStarted()">
                   {{ quote$() }}
-                </p>
-
-                <ion-icon name="refresh-circle-outline" size="large"></ion-icon>
-              </ng-container>
-            </div>
+                </ion-button>
+              </ion-buttons>
+            </ng-container>
           </div>
 
           <ng-container *ngIf="(mySearchResultList$ | async)?.length > 0">
-            <ion-list>
+            <ion-list class="friendshipList">
               <ion-item class="pt-2 pb-2" *ngFor="let friend of (mySearchResultList$ | async)">
                 <ion-avatar aria-hidden="true" slot="start">
                   <img [src]="friend.spotbie_user.default_picture" />

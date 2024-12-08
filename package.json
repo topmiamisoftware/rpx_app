@@ -63,7 +63,7 @@
     "rxjs": "~7.8.0",
     "stripe-angular": "^1.9.3",
     "tslib": "^2.3.0",
-    "zone.js": "~0.14.10"
+    "zone.js": "~0.14.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.3.11",

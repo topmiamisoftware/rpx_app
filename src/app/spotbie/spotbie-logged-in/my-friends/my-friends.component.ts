@@ -44,6 +44,14 @@ export class MyFriendsComponent {
       .subscribe();
   }
 
+  sharedExperiencesExternal() {
+
+  }
+
+  meetUpExternal() {
+
+  }
+
   identify(index, item: any) {
     return item.id;
   }
@@ -55,15 +63,14 @@ export class MyFriendsComponent {
     }
 
     this.searchTimeout = setTimeout(() => {
-      this.friendshipService.searchForUser(evt.target.value).pipe(
-        tap((_) => this.loading$.next(true)),
-      ).subscribe((resp) => {
-        this.setQuote();
-        this.loading$.next(false);
-        this.mySearchResultList$ = of(resp.matchingUserList);
-        clearTimeout(this.searchTimeout);
-        this.searchTimeout = null;
-      });
+      this.friendshipService.searchForUser(evt.target.value)
+        .subscribe((resp) => {
+          this.setQuote();
+          this.loading$.next(false);
+          this.mySearchResultList$ = of(resp.matchingUserList);
+          clearTimeout(this.searchTimeout);
+          this.searchTimeout = null;
+        });
     }, 2500);
   }
 
@@ -211,16 +218,14 @@ export class MyFriendsComponent {
   }
 
   setQuote() {
-    this.quote$.set(RETRY_QUOTES[getRandomInt(0, RETRY_QUOTES.length - 1)]);
+    this.quote$.set(
+      RETRY_QUOTES[getRandomInt(0, RETRY_QUOTES.length - 1)]
+    );
   }
 }
 
 const RETRY_QUOTES = [
-  'If at first you don\'t succeed, then try, and try again.',
-  'Winners never quit. Quitters never win.',
-  'Try again!',
-  'Show me more!',
-  'This is the way.',
+  'TRY AGAIN',
 ];
 
 

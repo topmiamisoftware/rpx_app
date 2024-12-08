@@ -12,3 +12,26 @@ ion-img {
   cursor: pointer;
   margin: 10px;
 }
+
+.find-people-wrapper {
+  position: relative;
+  margin: 0 auto;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+}
+
+.get-started {
+  --background: #53bf61;
+  --color: white;
+}
+
+.friendshipList {
+  --background: var(--ion-item-background);
+  --color: white;
+
+  ion-item {
+    --background: var(--ion-item-background);
+  }
+}
