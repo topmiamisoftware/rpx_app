@@ -16,28 +16,17 @@ export class MyFriendsService {
     private httpClient: HttpClient,
   ) { }
 
-  declineFriend(friend_id): Observable<any>{
-    const body = {
-      friend_id
-    };
-    return this.httpClient.post(`${FRIENDS_API}/deny-friendship`, body).pipe(
-      catchError(handleError('myMeetUps')),
-    );
-  }
-
   addFriend(friend_id): Observable<any>{
     const body = {
       friend_id
     };
-    return this.httpClient.post(`${FRIENDS_API}/request-friendship`, body).pipe(
-      catchError(handleError('myMeetUps')),
-    );
+    return this.httpClient.post(`${FRIENDS_API}/request-friendship`, body);
   }
 
-  removeFriend(friend_id: string): Observable<any>{
+  removeFriend(friendship_id: string): Observable<any>{
     const options = {
       body: {
-        friend_id
+        friendship_id
       }
     };
     return this.httpClient.delete( `${FRIENDS_API}/delete-friendship/`, options).pipe(
@@ -90,6 +79,5 @@ export class MyFriendsService {
 export enum FRIENDSHIP_STATUS_E {
   PENDING = 0,
   ACCEPTED = 1,
-  DECLINED = 2,
   BLOCKED = 3,
 }

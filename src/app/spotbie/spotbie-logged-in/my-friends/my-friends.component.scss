@@ -13,7 +13,8 @@ ion-img {
   margin: 10px;
 }
 
-.find-people-wrapper {
+#my-friends-wrapper,
+#find-people-wrapper {
   position: relative;
   margin: 0 auto;
   display: grid;
@@ -25,6 +26,12 @@ ion-img {
 .get-started {
   --background: #53bf61;
   --color: white;
+}
+
+.sb-input.search {
+  min-width: 75%;
+  width: 75%;
+  max-width: 75%;
 }
 
 .friendshipList {

@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>MY FRIENDS</ion-title>
+    <ion-title>SPOTBIE FRIENDS</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content>
@@ -11,16 +11,17 @@
 
   <div class="ion-justify-content-center">
     <ion-segment>
-      <ion-segment-button value="friends" content-id="friends">
-        <ion-label>Friends</ion-label>
+      <ion-segment-button value="friends" content-id="friends" id="segment-button-friends">
+        <ion-label>My Friends</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="people" content-id="people">
+      <ion-segment-button value="people" content-id="people" id="segment-button-people">
         <ion-label>Find People</ion-label>
       </ion-segment-button>
     </ion-segment>
+
     <ion-segment-view>
       <ion-segment-content id="friends">
-        <div class="sb-dashboardWrapper mt-2 mb-2">
+        <div class="sb-dashboardWrapper">
           <ng-container *ngIf="(myFriendListing$ | async)?.length > 0 else noFriends">
             <ion-list class="friendshipList">
               <ion-item class="pt-2 pb-2" *ngFor="let friendship of myFriendListing$ | async; trackBy: identify">
@@ -45,7 +46,7 @@
                     </ng-container>
 
                     <ng-container *ngIf="friendship.user_id === myUserId">
-                      <ion-button slot="end" (click)="removeFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                      <ion-button slot="end" (click)="removeFriend(friendship.id, friendship.user_profile.spotbie_user.first_name)">
                         <ion-icon name="hourglass" size="small"></ion-icon>
                       </ion-button>
                       <ion-button slot="end" (click)="blockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
@@ -56,18 +57,18 @@
                   </ng-container>
 
                   <ng-container *ngSwitchCase="FRIENDSHIP_STATUS_E.ACCEPTED">
-                    <ion-button slot="end" (click)="removeFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                    <ion-button slot="end" (click)="removeFriend(friendship.id, friendship.user_profile.spotbie_user.first_name)">
                       <ion-icon name="remove-circle-outline" slot="end"></ion-icon>
                       REMOVE
                     </ion-button>
-                    <ion-button slot="end" (click)="blockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                    <ion-button slot="end" (click)="blockFriend(friendship.id, friendship.user_profile.spotbie_user.first_name)">
                       <ion-icon name="ban-outline" slot="end"></ion-icon>
                       BLOCK
                     </ion-button>
                   </ng-container>
 
                   <ng-container *ngSwitchCase="FRIENDSHIP_STATUS_E.BLOCKED">
-                    <ion-button slot="end" (click)="unblockFriend(friendship.user_profile.id, friendship.user_profile.spotbie_user.first_name)">
+                    <ion-button slot="end" (click)="unblockFriend(friendship.id, friendship.user_profile.spotbie_user.first_name)">
                       <ion-icon name="remove-circle-outline" slot="end"></ion-icon>
                       UNBLOCK
                     </ion-button>
@@ -78,42 +79,45 @@
           </ng-container>
 
           <ng-template #noFriends>
-            <p class="mt-2 ion-padding">
-              You have no SpotBie friends.
-            </p>
-            <h6 class="sb-text-light-green-gradient">How it Works</h6>
-            <p class="ion-padding">
-              First, search for your friend's profiles or invite them through the app. Once you have one or more friends,
-              you'll be able to create <span class="sb-text-light-green-gradient" (click)="meetUpExternal()">meet-ups</span> and
-              <span class="sb-text-light-green-gradient" (click)="sharedExperiencesExternal()">shared-experiences</span> with them.
-            </p>
+            <div id="my-friends-wrapper" class="mt-5 mb-5">
+                <p class="mt-2 ion-padding">
+                  You have no SpotBie friends.
+                </p>
+                <h6 class="sb-text-light-green-gradient">How it Works</h6>
+                <p class="ion-padding">
+                  First, search for your friend's profiles or invite them through the app. Once you have one or more friends,
+                  you'll be able to create <span class="sb-text-light-green-gradient" (click)="meetUpExternal()">meet-ups</span> and
+                  <span class="sb-text-light-green-gradient" (click)="sharedExperiencesExternal()">shared-experiences</span> with them.
+                </p>
+
+                <ion-buttons>
+                  <ion-button class="get-started" (click)="switchSection('people')">
+                    <ion-icon name="people" slot="end"></ion-icon>
+                    FIND PEOPLE
+                  </ion-button>
+                </ion-buttons>
+            </div>
           </ng-template>
         </div>
       </ion-segment-content>
 
       <ion-segment-content id="people">
-        <div class="sb-dashboardWrapper" style="border-top: 2px solid #e5e6e7;">
-          <div class="mt-5 mb-5 find-people-wrapper">
-            <input class="sb-input" (keyup)="searchFriends($event)" placeholder="Search..." />
+        <div class="sb-dashboardWrapper">
+          <div id="find-people-wrapper" class="mt-5 mb-5">
+            <p class="sb-text-light-green-gradient">
+              You can search for friends or import from contacts.
+            </p>
+
+            <input class="sb-input search" (keyup)="searchFriends($event)" placeholder="Search..." />
 
             <h6 class="spotbie-text-gradient ion-padding">OR</h6>
 
-            <ng-container *ngIf="!(mySearchResultList$ | async)">
-              <ion-buttons>
-                <ion-button class="get-started" (click)="getStarted()">
-                  <ion-icon name="people" slot="end"></ion-icon>
-                  GET STARTED
-                </ion-button>
-              </ion-buttons>
-            </ng-container>
-
-            <ng-container *ngIf="(mySearchResultList$ | async)?.length > 0">
-              <ion-buttons>
-                <ion-button class="get-started" (click)="getStarted()">
-                  {{ quote$() }}
-                </ion-button>
-              </ion-buttons>
-            </ng-container>
+            <ion-buttons>
+              <ion-button class="get-started" (click)="getStarted()">
+                <ion-icon name="people" slot="end"></ion-icon>
+                IMPORT CONTACTS
+              </ion-button>
+            </ion-buttons>
           </div>
 
           <ng-container *ngIf="(mySearchResultList$ | async)?.length > 0">
