@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output,} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, signal,} from '@angular/core';
 import {InfoObjectServiceService} from './info-object-service.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {DateFormatPipe, TimeFormatPipe} from '../../../pipes/date-format.pipe';
@@ -57,13 +57,14 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     new BehaviorSubject<InfoObject>(null);
   infoObjectImageUrl: string;
   private infoObjectCategory: number;
-  isLoggedIn$ = new BehaviorSubject<string>(null);
   infoObjectLink: string;
   infoObjectDescription: string;
   infoObjectTitle: string;
   objectCategories: string = '';
   objectDisplayAddress: string;
   eInfoObjectType: any = InfoObjectType;
+
+  isLoggedIn$ = signal(false);
 
   constructor(
     private infoObjectService: InfoObjectServiceService,
@@ -396,22 +397,17 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     // I'm sure there's a better way to do this but I don't have time right now.
     const closeButton = document.getElementById('sb-closeButtonInfoObject');
 
-    const isLoggedInRet = await Preferences.get({key: 'spotbie_loggedIn'});
-    this.isLoggedIn$.next(isLoggedInRet.value);
-
-    const p =
-      this.isLoggedIn$.getValue() === '0' || !this.isLoggedIn$.getValue()
-        ? 20
-        : document.getElementById('ionToolbarLoggedIn').offsetHeight;
-
-    closeButton.style.top = p + 'px';
+    this.userAuthService.myId$.subscribe(() => {
+      this.isLoggedIn$.set(true);
+      const p =
+        !this.isLoggedIn$()
+          ? 20
+          : document.getElementById('ionToolbarLoggedIn').offsetHeight;
+      closeButton.style.top = p + 'px';
+    })
   }
 
   ngOnInit() {
-    this.userAuthService.myId$.subscribe(() => {
-      this.showLoggedIn$.set(true);
-    })
-
     this.loading$.next(true);
 
     const infoObject = this.infoObject$.getValue();

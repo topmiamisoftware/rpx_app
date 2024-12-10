@@ -21,13 +21,14 @@
     </div>
   </div>
 
-  <ion-datetime-button class="mb-3" datetime="datetime"></ion-datetime-button>
+  <ion-datetime-button class="mb-3" datetime="datetime" color="dark"></ion-datetime-button>
 
   <ion-modal [keepContentsMounted]="true">
     <ng-template>
       <ion-datetime
         [min]="minDateValue$()"
         id="datetime"
+        color="dark"
         (ionChange)="setDate($event)"
       ></ion-datetime>
     </ng-template>
@@ -104,7 +105,7 @@
         <ion-col>
           <ng-container *ngIf="(myFriendListing$ | async)?.length > 0">
             <ion-list>
-              <ion-item class="pt-2 pb-2" *ngFor="let friend of (myFriendListing$ | async)">
+              <ion-item class="pt-2 pb-2" *ngFor="let friend of (myFriendListing$ | async)" color="dark">
                 <ion-avatar aria-hidden="true" slot="start">
                   <img [src]="friend.user_profile.spotbie_user.default_picture" />
                 </ion-avatar>
@@ -113,7 +114,7 @@
                   {{ friend.user_profile.spotbie_user.first_name }} {{ friend.user_profile.spotbie_user.last_name }}
                 </ion-label>
 
-                <ion-button slot="end" (click)="addToMeetUp(friend, friend.user_profile.spotbie_user.first_name)">
+                <ion-button color="dark" slot="end" (click)="addToMeetUp(friend, friend.user_profile.spotbie_user.first_name)">
                   <ion-icon name="add-circle-outline" size="medium"></ion-icon>
                 </ion-button>
               </ion-item>

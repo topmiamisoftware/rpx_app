@@ -264,7 +264,7 @@
   --background-focused: #363636;
   --color: #363636;
   --color-checked: #e2e2e2;
-  --indicator-color: #e2e2e2;
+  --indicator-color: #1c1c1c;
 }
 
 .ion-color-tertiary {
@@ -295,4 +295,14 @@ ion-segment-button {
 .alert-title.sc-ion-alert-md{
   color: white !important;
   --color: white !important;
+}
+
+ion-datetime {
+  --background: rgba(234,234,234);
+  --background-rgb: 234,234,234;
+  --title-color: white;
+  --wheel-fade-background-rgb: 234,234,234 !important;
+  --wheel-highlight-background: white !important;
+  color: #242429 !important;
+  border-radius: 16px;
 }

@@ -1,5 +1,5 @@
 <div class="mt-2 mb-2 meetUpWrapper">
-  <ng-container *ngIf="">
+  <ng-container *ngIf="isLoggedIn$()">
     <ion-button (click)="startWizard()">
       <ion-icon name="people" slot="end"></ion-icon>
       MEET UP
