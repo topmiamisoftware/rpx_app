@@ -6,7 +6,7 @@
     <ion-title>MY MEET UPS</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="d-grid">
+<ion-content class="d-grid" color="dark">
   <ng-container>
     <p class="mt-2 ion-padding" *ngIf="(friendListing$ | async)?.length === 0">
       Get started by backing out of this page and tapping on "Find People". This will help you find people to go eat or shop with.
@@ -21,7 +21,7 @@
 
   <ng-template #meetUpListing>
     <ion-list>
-      <ion-item *ngFor="let meetUp of (meetUpListing$ | async).data">
+      <ion-item *ngFor="let meetUp of (meetUpListing$ | async).data" color="dark">
         <ion-img [src]="meetUp.business.photo"></ion-img>
       </ion-item>
     </ion-list>

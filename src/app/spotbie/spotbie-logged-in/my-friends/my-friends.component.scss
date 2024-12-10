@@ -19,7 +19,7 @@ ion-img {
   margin: 0 auto;
   display: grid;
   align-items: center;
-  justify-content: center;
+  justify-content: stretch;
   justify-items: center;
 }
 
@@ -29,13 +29,13 @@ ion-img {
 }
 
 .sb-input.search {
-  min-width: 75%;
-  width: 75%;
-  max-width: 75%;
+  min-width: 85%;
+  width: 85%;
+  max-width: 85%;
 }
 
 .friendshipList {
-  --background: var(--ion-item-background);
+  background: var(--ion-item-background) !important;
   --color: white;
 
   ion-item {

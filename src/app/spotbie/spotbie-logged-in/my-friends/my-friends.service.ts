@@ -79,5 +79,7 @@ export class MyFriendsService {
 export enum FRIENDSHIP_STATUS_E {
   PENDING = 0,
   ACCEPTED = 1,
+  // DENIED = 2, instead we're just deleting off the table if they deny it. Users can choose to block someone when it
+  // gets too annoying.
   BLOCKED = 3,
 }

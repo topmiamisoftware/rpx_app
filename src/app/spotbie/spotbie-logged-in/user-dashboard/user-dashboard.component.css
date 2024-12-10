@@ -2,10 +2,10 @@ h3 {
   line-height: 60px;
 }
 .sb-dashboardWrapper {
-  background-color: var(--ion-color-primary-shade);
+  background-color: #24232DFF;
   position: relative;
   display: block;
-  border-bottom: 8px solid var(--ion-color-primary);
+  border-bottom: 8px solid #32303EFF;
   padding-top: 100px;
   padding-bottom: 100px;
   text-align: center;

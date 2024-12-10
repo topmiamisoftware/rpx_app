@@ -21,6 +21,9 @@
   --background: transparent;
 }
 
+:host ion-content {
+  --background: #242429 !important;
+}
 
 ::-webkit-scrollbar {
   height: 10px;

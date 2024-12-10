@@ -1,8 +1,10 @@
-<div class="mt-2 mb-2" class="meetUpWrapper">
-  <ion-button (click)="startWizard()">
-    <ion-icon name="people" slot="end"></ion-icon>
-    MEET UP
-  </ion-button>
+<div class="mt-2 mb-2 meetUpWrapper">
+  <ng-container *ngIf="">
+    <ion-button (click)="startWizard()">
+      <ion-icon name="people" slot="end"></ion-icon>
+      MEET UP
+    </ion-button>
+  </ng-container>
 </div>
 <div
   *ngIf="infoObject$ | async as infoObject"

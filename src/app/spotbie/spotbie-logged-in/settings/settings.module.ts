@@ -11,6 +11,7 @@ import {HelperModule} from '../../../helpers/helper.module';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {IonicModule} from "@ionic/angular";
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 
@@ -20,22 +21,23 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [SettingsComponent],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    HttpClientModule,
-    HelperModule,
-    RouterModule,
-    MatChipsModule,
-    MatAutocompleteModule,
-    MatFormFieldModule,
-    MatDialogModule,
-    NgxMaskDirective,
-    NgxMaskPipe,
-    MatSlideToggleModule,
-    RouterModule.forChild(routes),
-  ],
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        HttpClientModule,
+        HelperModule,
+        RouterModule,
+        MatChipsModule,
+        MatAutocompleteModule,
+        MatFormFieldModule,
+        MatDialogModule,
+        NgxMaskDirective,
+        NgxMaskPipe,
+        MatSlideToggleModule,
+        RouterModule.forChild(routes),
+        IonicModule,
+    ],
   exports: [SettingsComponent],
   providers: [provideNgxMask()],
 })

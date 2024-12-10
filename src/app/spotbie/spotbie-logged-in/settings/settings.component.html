@@ -1,14 +1,14 @@
 <app-loading-screen *ngIf="loading$ | async"></app-loading-screen>
 
-<div class="spotbie-overlay-window pt-2 pb-5" #spotbieSettingsWindow>
+<ion-content class="pt-2 pb-5" #spotbieSettingsWindow>
   <div class="spotbie-block">
     <div #spotbieSettingsInfoText class="spotbie-text-gradient mt-4 mb-4">
       {{ spotbieSettingsInfoText$ | async }}
     </div>
     <form [formGroup]="settingsForm" *ngIf="settingsFormInitiated$ | async">
-      <table class="spotbie-settings-table">
-        <tr>
-          <td>
+      <ion-grid>
+        <ion-row>
+          <ion-col>
             <div
               *ngIf="
                 (submitted$ | async) && f.spotbieUsername.errors;
@@ -49,10 +49,10 @@
               value="username"
               maxlength="35"
             />
-          </td>
-        </tr>
-        <tr>
-          <td>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
             <div
               *ngIf="
                 (submitted$ | async) && f.spotbieFirstName.errors;
@@ -80,10 +80,10 @@
               value="name"
               maxlength="72"
             />
-          </td>
-        </tr>
-        <tr>
-          <td>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
             <div
               *ngIf="
                 (submitted$ | async) && f.spotbieLastName.errors;
@@ -113,10 +113,10 @@
               value="name"
               maxlength="72"
             />
-          </td>
-        </tr>
-        <tr>
-          <td>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
             <div
               *ngIf="
                 (submitted$ | async) && f.spotbieEmail.errors;
@@ -146,10 +146,10 @@
               value="email"
               maxlength="135"
             />
-          </td>
-        </tr>
-        <tr>
-          <td>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
             <label class="spotbie-input-info spotbie-text-gradient mb-2">
               Phone number.
             </label>
@@ -161,10 +161,10 @@
               placeholder="(555) 555-5555"
               formControlName="spotbiePhoneNumber"
             />
-          </td>
-        </tr>
-        <tr *ngIf="showSmsOptIn$ | async">
-          <td>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="showSmsOptIn$ | async">
+          <ion-col>
             <mat-slide-toggle
                     class="spotbie-text-gradient mt-4"
                     formControlName="smsOptIn"
@@ -172,28 +172,28 @@
             >
               SMS Notifications
             </mat-slide-toggle>
-          </td>
-        </tr>
-        <tr>
-          <td>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
             <div
               class="spotbie-button spotbie-save-settings-button text-uppercase mb-5"
               (click)="saveSettings()"
             >
               Save Settings
             </div>
-          </td>
-        </tr>
-      </table>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </form>
   </div>
 
   <div class="spotbie-block mb-0" *ngIf="settingsFormInitiated$ | async">
     <form [formGroup]="passwordForm">
-      <table class="spotbie-settings-table" id="spotbie-password-table">
+      <ion-grid id="spotbie-password-table">
         <!-- Change Password Block -->
-        <tr>
-          <td>
+        <ion-row>
+          <ion-col>
             <div
               class="spotbie-input-info spotbie-text-gradient spotbie-error mb-2"
               #spotbiePasswordInfoText
@@ -243,10 +243,10 @@
               placeholder="Your new password."
               autocomplete="false"
             />
-          </td>
-        </tr>
-        <tr>
-          <td>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
             <div
               *ngIf="
                 (passwordSubmitted$ | async) && g.spotbieConfirmPassword.errors;
@@ -272,20 +272,20 @@
               placeholder="Confirm your password."
               autocomplete="false"
             />
-          </td>
-        </tr>
-        <tr>
-          <td>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
             <div
               class="spotbie-button spotbie-save-settings-button text-uppercase mb-5"
               (click)="savePassword()"
             >
               CHANGE PASSWORD
             </div>
-          </td>
-        </tr>
+          </ion-col>
+        </ion-row>
         <!-- End Of Change Password Block -->
-      </table>
+      </ion-grid>
 
       <div class="spotbie-overlay-window" *ngIf="savePasswordBool$ | async">
         <div class="sb-closeButton" (click)="cancelPasswordSet()">
@@ -293,26 +293,27 @@
         </div>
 
         <div class="spotbie-toast-input-box">
-          <table class="spotbie-settings-table">
-            <div
-              *ngIf="
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <div
+                  *ngIf="
                 (passwordSubmitted$ | async) && g.spotbieCurrentPassword.errors;
                 else spotbie_current_password_normal
               "
-              class="spotbie-input-info spotbie-text-gradient spotbie-error"
-            >
-              <div *ngIf="g.spotbieCurrentPassword.errors.required">
-                Please enter your current password.
-              </div>
-            </div>
+                  class="spotbie-input-info spotbie-text-gradient spotbie-error"
+                >
+                  <div *ngIf="g.spotbieCurrentPassword.errors.required">
+                    Please enter your current password.
+                  </div>
+                </div>
 
-            <ng-template #spotbie_current_password_normal>
-              <div class="spotbie-input-info mb-2" #currentPasswordInfo>
-                {{ currentPasswordInfoText$ | async }}
-              </div>
-            </ng-template>
-            <tr>
-              <td>
+                <ng-template #spotbie_current_password_normal>
+                  <div class="spotbie-input-info mb-2" #currentPasswordInfo>
+                    {{ currentPasswordInfoText$ | async }}
+                  </div>
+                </ng-template>
+
                 <input
                   class="sb-input"
                   type="password"
@@ -333,35 +334,35 @@
                 >
                   CANCEL
                 </div>
-              </td>
-            </tr>
-          </table>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </div>
       </div>
     </form>
   </div>
 
   <div class="spotbie-block">
-    <table
-      class="spotbie-settings-table"
-      id="spotbie-deactivate-table"
+    <ion-grid id="spotbie-deactivate-table"
       *ngIf="settingsFormInitiated$ | async"
     >
-      <tr>
-        <td
-          class="spotbie-text-gradient text-uppercase deactivate-account pt-4 pb-4"
-          (click)="startDeactivateAccount()"
-        >
-          Deactivate Account
-        </td>
-      </tr>
-    </table>
+      <ion-row>
+        <ion-col>
+          <div class="spotbie-text-gradient text-uppercase deactivate-account pt-4 pb-4" (click)="startDeactivateAccount()" color="primary">
+            Deactivate Account
+          </div>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <div class="mt-5 mb-5 cursor-pointer" (click)="closeWindow()">
+            <span class="spotbie-text-gradient">CLOSE</span>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </div>
-
-  <div class="mt-5 mb-5 cursor-pointer" (click)="closeWindow()">
-    <span class="spotbie-text-gradient">CLOSE</span>
-  </div>
-</div>
+</ion-content>
 
 <div
   class="spotbie-overlay-window d-flex flex-column align-content-center justify-content-center align-items-center"

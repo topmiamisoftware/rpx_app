@@ -73,9 +73,12 @@ export class MyFriendsComponent {
       this.searchTimeout = null;
     }
 
-    this.loading$.next(true);
+    if (evt.target.value === '') {
+      return;
+    }
 
     this.searchTimeout = setTimeout(() => {
+      this.loading$.next(true);
       this.friendshipService.searchForUser(evt.target.value)
         .subscribe((resp) => {
           this.loading$.next(false);
@@ -141,6 +144,86 @@ export class MyFriendsComponent {
             text: 'Cancel',
             role: 'cancel',
           }
+      ]
+    });
+
+    await a.present();
+    return;
+  }
+
+  async cancelRequest(id, firstName){
+    const a = await this.alertController.create({
+      header: `Cancel Request`,
+      message: `Do you want to cancel ${firstName}'s request?`,
+      buttons: [
+        {
+          text: 'Ok',
+          role: 'confirm',
+          handler: async (ev) => {
+            this.ngZone.run(() => {
+              this.loading$.next(true);
+            });
+            this.friendshipService.removeFriend(id)
+              .subscribe(async r => {
+                this.loading$.next(true);
+                const t = await this.toastService.create({
+                  message: `You have cancelled ${firstName}'s friend request.`,
+                  duration: 2500,
+                  position: 'bottom'
+                });
+
+                await t.present();
+                this.ngZone.run(() => {
+                  this.getMyFriends();
+                });
+              });
+            return;
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        }
+      ]
+    });
+
+    await a.present();
+    return;
+  }
+
+  async denyFriendship(id, firstName) {
+    const a = await this.alertController.create({
+      header: `Deny Request`,
+      message: `Do you want to deny ${firstName}'s request?`,
+      buttons: [
+        {
+          text: 'Ok',
+          role: 'confirm',
+          handler: async (ev) => {
+            this.ngZone.run(() => {
+              this.loading$.next(true);
+            });
+            this.friendshipService.removeFriend(id)
+              .subscribe(async r => {
+                this.loading$.next(true);
+                const t = await this.toastService.create({
+                  message: `You have denied ${firstName}'s friend request.`,
+                  duration: 2500,
+                  position: 'bottom'
+                });
+
+                await t.present();
+                this.ngZone.run(() => {
+                  this.getMyFriends();
+                });
+              });
+            return;
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        }
       ]
     });
 
@@ -218,8 +301,8 @@ export class MyFriendsComponent {
         {
           text: 'Cancel',
           role: 'cancel',
-        }
-      ]
+        },
+      ],
     });
 
     await a.present();

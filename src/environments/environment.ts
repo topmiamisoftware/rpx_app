@@ -1,9 +1,9 @@
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
-// const ngrok = "https://1da5-2601-586-cd00-7900-45ff-e2eb-cb49-9481.ngrok-free.app/";
+const ngrok = "https://86ec-2601-586-cd00-7900-d9e1-60a1-ffd1-d49e.ngrok-free.app/";
 // const ngrok = 'https://api.spotbie.com/';
-const ngrok = ' http://localhost:8002/';
+// const ngrok = ' http://localhost:8002/';
 // const baseUrl = 'https://spotbie.com/';
 const baseUrl = 'http://localhost:4200/';
 

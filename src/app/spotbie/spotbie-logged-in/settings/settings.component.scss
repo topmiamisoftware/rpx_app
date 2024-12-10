@@ -2,6 +2,7 @@
   position: relative;
   margin: 0 auto;
   margin-bottom: 20px;
+  text-align: center;
 }
 .spotbie-info-text {
   background-color: transparent;
@@ -11,7 +12,6 @@
 }
 .spotbie-overlay-window {
   padding-bottom: 100px;
-  background: var(--ion-color-primary-shade);
   text-align: center;
   z-index: 98;
 }
@@ -30,17 +30,6 @@
   bottom: 0;
   left: 0%;
   right: 0;
-}
-.spotbie-settings-table {
-  position: relative;
-  margin: 0 auto;
-  width: 90%;
-  max-width: 450px;
-  padding: 20px;
-  border-top-color: unset !important;
-}
-.spotbie-settings-table tr {
-  border-top-color: unset !important;
 }
 .spotbie-place-result td {
   padding: unset;
@@ -155,6 +144,11 @@ agm-map {
   top: 50%;
   text-align: center;
 }
+
+ion-grid {
+  max-width: 520px;
+}
+
 .sb-input {
   min-width: 500px;
   text-align: left;
@@ -348,14 +342,6 @@ textarea {
     padding-right: 1%;
     border-radius: 0;
   }
-  .spotbie-settings-table {
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
-    padding-left: 0%;
-    padding-right: 0%;
-    border-radius: 0;
-  }
   .sb-originPhoto-sm {
     width: 150px;
     min-width: 150px;
@@ -384,8 +370,10 @@ textarea {
   .spotbie-settings-ghost-icon {
     display: none;
   }
+  ion-grid,
   .sb-input {
     min-width: 90%;
+    max-width: 90%;
   }
   .spotbie-input-info {
     margin-top: 0px;
@@ -402,12 +390,6 @@ textarea {
     max-width: 90%;
     width: 90%;
     min-width: 90%;
-  }
-  .spotbie-settings-table td {
-    padding-top: 7px !important;
-  }
-  .spotbie-settings-table td.deactivate-account {
-    padding-top: 30px !important;
   }
   .spotbie-save-settings-button {
     margin-top: 0px;

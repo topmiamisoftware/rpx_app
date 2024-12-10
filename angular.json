@@ -38,7 +38,7 @@
             ],
             "styles": [
               "src/global.scss",
-              "src/theme/variables.scss",
+              "src/variables.scss",
               "src/styles.css",
               "src/custom-theme.scss",
               "./node_modules/font-awesome/css/font-awesome.min.css",
@@ -76,7 +76,7 @@
                 "input": "node_modules/@ionic/angular/css/flex-utils.css"
               },
               {
-                "input": "src/theme/variables.scss"
+                "input": "src/variables.scss"
               }
             ],
             "scripts": []
@@ -164,7 +164,7 @@
               }
             ],
             "styles": [
-              "src/theme/variables.scss",
+              "src/variables.scss",
               "src/global.scss"
             ],
             "scripts": []

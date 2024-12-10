@@ -17,6 +17,7 @@ import {LoyaltyTier} from '../../../models/loyalty-point-tier.balance';
 import {Capacitor} from "@capacitor/core";
 import {ModalController, ToastController} from "@ionic/angular";
 import {MeetUpWizardComponent} from "../../spotbie-logged-in/my-meet-ups/meet-up-wizard/meet-up-wizard.component";
+import {UserauthService} from "../../../services/userauth.service";
 
 const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
@@ -71,6 +72,7 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
     private spotbieMetaService: SpotbieMetaService,
     private toastSvc: ToastController,
     private modalCtrl: ModalController,
+    private userAuthService: UserauthService,
   ) {}
 
   getFullScreenModeClass() {
@@ -406,6 +408,10 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    this.userAuthService.myId$.subscribe(() => {
+      this.showLoggedIn$.set(true);
+    })
+
     this.loading$.next(true);
 
     const infoObject = this.infoObject$.getValue();
