@@ -36,7 +36,8 @@ ion-img {
 
 .importContacts {
   background: #53bf61;
-  color: white;
+  color: white !important;
+  --color: white !important;
 }
 
 .friendshipList {

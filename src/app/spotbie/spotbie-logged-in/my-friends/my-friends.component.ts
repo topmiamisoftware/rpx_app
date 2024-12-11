@@ -10,7 +10,6 @@ import {catchError, filter, tap} from "rxjs/operators";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {normalizeProfile} from "./helpers";
 import {Contacts} from "@capacitor-community/contacts";
-import {handleError} from "../../../helpers/error-helper";
 
 @Component({
   selector: 'app-my-friends',
@@ -30,6 +29,7 @@ export class MyFriendsComponent {
   myUserId;
   searchTimeout;
 
+  showEnablePermissions$ = signal(false);
   quote$ = signal(null);
 
   constructor(
@@ -93,30 +93,56 @@ export class MyFriendsComponent {
 
   }
 
-  async getStarted() {
+  showEnablePermissions() {
+    this.showEnablePermissions$.set(true);
+  }
+
+  requestPermissions() {
+   Contacts.requestPermissions().then((p) => {
+     this.importContacts();
+   });
+  }
+
+  async importContacts(skipCheck = false) {
     this.loading$.next(true);
 
     if (Capacitor.isNativePlatform()) {
-      const retrieveListOfContacts = async () => {
-        const projection = {
-          // Specify which fields should be retrieved.
-          name: true,
-          phones: true,
-          postalAddresses: true,
-        };
-
-        const result = await Contacts.getContacts({
-          projection,
-        });
-
-        console.log("HELLO WORLD", result.contacts);
-        this.hyrdrateContacts(result.contacts);
-      }
+      Contacts.checkPermissions().then((p) => {
+        switch (p.contacts) {
+          case "prompt-with-rationale":
+          case "prompt":
+            this.requestPermissions();
+            break;
+          case "denied":
+            this.showEnablePermissions();
+            break;
+          case "granted":
+            this.finishContactImport();
+            break;
+        }
+      });
     }
   }
 
+  async finishContactImport() {
+    const projection = {
+      // Specify which fields should be retrieved.
+      name: true,
+      phones: true,
+      postalAddresses: true,
+      photo: true
+    };
+
+    const result = await Contacts.pickContact({
+      projection,
+    });
+
+    console.log("HELLO WORLD", result);
+    this.hyrdrateContacts(result);
+  }
+
   hyrdrateContacts(contacts) {
-    this.mySearchResultList$ = of(contacts);
+    //this.mySearchResultList$ = of(contacts);
   }
 
   async unblockFriend(id, firstName) {
