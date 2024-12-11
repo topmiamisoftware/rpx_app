@@ -1155,9 +1155,6 @@ map-marker > img {
     padding-top: 70px;
     padding-bottom: 90px;
   }
-  .spotbie-map {
-    margin-top: 40px !important;
-  }
 }
 @media (max-width: 460px) {
   .spotbie-single-cat {
@@ -1207,6 +1204,9 @@ map-marker > img {
   }
 }
 @media (max-width: 375px) {
+  .spotbie-map {
+    margin-top: 40px !important;
+  }
   .spotbie-search-result-image {
     height: 100px;
     min-height: 100px;

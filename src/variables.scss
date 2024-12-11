@@ -312,6 +312,10 @@ ion-item {
   --inner-padding-top: 10px;
 }
 
+ion-datetime-button::part(native) {
+  background: #d1d1d1;
+}
+
 .alert-wrapper.sc-ion-alert-ios {
   --background: #d1d1d1;
 }
