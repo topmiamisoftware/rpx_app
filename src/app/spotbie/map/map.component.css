@@ -27,6 +27,7 @@
   max-width: 100%;
 }
 .spotbie-map.sb-map-results-open {
+  margin-top: 20px;
   height: 60vh;
   max-height: 60vh;
   min-height: 60vh;
@@ -1003,6 +1004,7 @@ map-marker > img {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
+    margin-top: 90px !important;
   }
   .spotbie-search-result-wrapper {
     text-align: center;
@@ -1047,7 +1049,7 @@ map-marker > img {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-    left: 0%;
+    left: 0;
   }
   .spotbie-sorting {
     font-size: 9px;
@@ -1152,6 +1154,9 @@ map-marker > img {
   .spotbie-categories {
     padding-top: 70px;
     padding-bottom: 90px;
+  }
+  .spotbie-map {
+    margin-top: 40px !important;
   }
 }
 @media (max-width: 460px) {

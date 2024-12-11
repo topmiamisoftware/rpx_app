@@ -20,7 +20,7 @@
     <i class="fa fa-times"></i>
   </div>
 
-  <div class="spotbie-info-object-title" [ngClass]="getFullScreenModeClass()">
+  <div class="spotbie-info-object-title pt-4" [ngClass]="getFullScreenModeClass()">
     <img
       *ngIf="infoObject?.is_community_member"
       class="sb-miniLogoIcon"
@@ -284,6 +284,8 @@
     [categories]="categories"
   >
   </app-nearby-ads-three>
+
+  <div style="margin-top: 90px"></div>
 </ion-content>
 
 <app-loading-screen *ngIf="loading$ | async"></app-loading-screen>

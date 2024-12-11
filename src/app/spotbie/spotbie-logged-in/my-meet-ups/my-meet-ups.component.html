@@ -1,7 +1,6 @@
 <div>
   <h3 class="spotbie-text-gradient mb-3">
-
-    <ng-container *ngIf="latestMeetUp$() as noUpcoming ">
+    <ng-container *ngIf="latestMeetUp$() as noUpcoming else noUpcoming ">
       Upcoming...
     </ng-container>
     <ng-template #noUpcoming>

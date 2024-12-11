@@ -63,7 +63,9 @@ export class MyMeetUpsComponent  implements OnInit {
 
 function normalizeMeetUpList(meetUpList: MeetUp[]): MeetUp[] {
   return meetUpList.map(a => {
-    const localTime = format(parseISO(a.time), "yyyy-MM-dd HH:mm:ss");
+    console.log("The time ", a.time);
+    // const identifier =
+    const localTime = format(parseISO(a.time), "LLL. dd ''yy h:mm");
     return {
       ...a,
       time: localTime

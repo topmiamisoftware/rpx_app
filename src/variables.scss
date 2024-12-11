@@ -306,3 +306,12 @@ ion-datetime {
   color: #242429 !important;
   border-radius: 16px;
 }
+
+ion-item {
+  --inner-padding-bottom: 10px;
+  --inner-padding-top: 10px;
+}
+
+.alert-wrapper.sc-ion-alert-ios {
+  --background: #d1d1d1;
+}

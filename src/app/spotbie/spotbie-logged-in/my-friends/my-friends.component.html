@@ -24,7 +24,7 @@
         <div class="sb-dashboardWrapper">
           <ng-container *ngIf="(myFriendListing$ | async)?.length > 0 else noFriends">
             <ion-list class="friendshipList">
-              <ion-item class="pt-2 pb-2" color="dark" *ngFor="let friendship of myFriendListing$ | async; trackBy: identify">
+              <ion-item class="pt-2 pb-2" color="dark" size="large" *ngFor="let friendship of myFriendListing$ | async; trackBy: identify">
                 <ion-avatar aria-hidden="true" slot="start">
                   <img [src]="friendship.user_profile.spotbie_user.default_picture" />
                 </ion-avatar>
