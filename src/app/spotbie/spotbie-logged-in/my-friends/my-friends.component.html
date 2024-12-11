@@ -129,16 +129,19 @@
             <ion-list class="friendshipList">
               <ion-item class="pt-2 pb-2" color="dark" *ngFor="let importContact of importContactList$()">
                 <ion-avatar aria-hidden="true" slot="start">
-                  <img [src]="importContact.image ?? './../../../assets/images/guest-spotbie-user-01.svg'" />
+                  <img [src]="importContact.image.base64String ?? './../../../assets/images/guest-spotbie-user-01.svg'" />
                 </ion-avatar>
 
                 <ion-label>
                   {{ importContact.name.display }}
                 </ion-label>
 
-                <ion-button slot="end" (click)="inviteContact(importContact)">
-                  <ion-icon name="add-circle-outline" size="medium"></ion-icon>
-                </ion-button>
+                <ion-buttons>
+                  <ion-button (click)="inviteContact(importContact)">
+                    send
+                    <ion-icon name="mail-outline" size="medium" slot="end"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
               </ion-item>
             </ion-list>
           </ng-container>

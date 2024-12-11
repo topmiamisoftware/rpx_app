@@ -127,7 +127,7 @@ export class MyFriendsComponent {
 
                 await t.present();
                 this.ngZone.run(() => {
-                  this.getMyFriends();
+                  this.loading$.next(false);
                 });
               });
             return;
