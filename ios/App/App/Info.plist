@@ -38,6 +38,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>SpotBie uses your camera to scan QR codes and redeem rewards.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>SpotBie uses your contact list to allow you to import contacts onto the app.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>SpotBie uses your location to provide you with products, services, features, and events based on their location.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

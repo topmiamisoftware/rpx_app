@@ -23,12 +23,22 @@ export class MyFriendsService {
     return this.httpClient.post(`${FRIENDS_API}/request-friendship`, body);
   }
 
+  inviteContact(displayName: string, phoneNumber: string): Observable<any>{
+    const body = {
+      phoneNumber,
+      displayName
+    };
+    return this.httpClient.post(`${FRIENDS_API}/invite-contact`, body);
+  }
+
+
   removeFriend(friendship_id: string): Observable<any>{
     const options = {
       body: {
         friendship_id
       }
     };
+
     return this.httpClient.delete( `${FRIENDS_API}/delete-friendship/`, options).pipe(
       catchError(handleError('myMeetUps')),
     );

@@ -1,4 +1,4 @@
-import {Component, ElementRef, NgZone, signal, ViewChild} from '@angular/core';
+import {Component, ElementRef, NgZone, signal, ViewChild, WritableSignal} from '@angular/core';
 import {BehaviorSubject, EMPTY, Observable, of} from "rxjs";
 import {AlertController, ToastController} from "@ionic/angular";
 import {Capacitor} from "@capacitor/core";
@@ -9,7 +9,7 @@ import {UserauthService} from "../../../services/userauth.service";
 import {catchError, filter, tap} from "rxjs/operators";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {normalizeProfile} from "./helpers";
-import {Contacts} from "@capacitor-community/contacts";
+import {ContactPayload, Contacts, PickContactResult} from "@capacitor-community/contacts";
 
 @Component({
   selector: 'app-my-friends',
@@ -22,6 +22,7 @@ export class MyFriendsComponent {
   @ViewChild('segment-friends') segmentFriends: ElementRef;
 
   myFriendListing$ = new Observable<any>(null);
+  importContactList$: WritableSignal<ContactPayload[]> = signal([]);
   mySearchResultList$ = new Observable<any>(null);
   position$ = new BehaviorSubject<Position>(null);
   loading$ = new BehaviorSubject<boolean>(false);
@@ -103,6 +104,46 @@ export class MyFriendsComponent {
    });
   }
 
+  async inviteContact(contact: ContactPayload) {
+    const a = await this.alertController.create({
+      header: `Invite to SpotBie`,
+      message: `Do you want to invite ${contact.name.display} to use SpotBie?`,
+      buttons: [
+        {
+          text: 'Ok',
+          role: 'confirm',
+          handler: async (ev) => {
+            this.ngZone.run(() => {
+              this.loading$.next(true);
+            });
+            this.friendshipService.inviteContact(contact.name.display, contact.phones[0].number)
+              .subscribe(async r => {
+                this.loading$.next(true);
+                const t = await this.toastService.create({
+                  message: `You have invited ${contact.name.display}. Ty! <3`,
+                  duration: 2500,
+                  position: 'bottom'
+                });
+
+                await t.present();
+                this.ngZone.run(() => {
+                  this.getMyFriends();
+                });
+              });
+            return;
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        }
+      ]
+    });
+
+    await a.present();
+    return;
+  }
+
   async importContacts(skipCheck = false) {
     this.loading$.next(true);
 
@@ -130,19 +171,23 @@ export class MyFriendsComponent {
       name: true,
       phones: true,
       postalAddresses: true,
-      photo: true
+      image: true
     };
 
-    const result = await Contacts.pickContact({
+    const result: PickContactResult = await Contacts.pickContact({
       projection,
     });
 
-    console.log("HELLO WORLD", result);
     this.hyrdrateContacts(result);
+    this.loading$.next(false);
   }
 
-  hyrdrateContacts(contacts) {
-    //this.mySearchResultList$ = of(contacts);
+  hyrdrateContacts(contact: PickContactResult) {
+    console.log('Hellowworld', contact);
+    this.importContactList$.set([
+      ...this.importContactList$(),
+      contact.contact
+    ]);
   }
 
   async unblockFriend(id, firstName) {
@@ -471,4 +516,8 @@ const RETRY_QUOTES = [
   'TRY AGAIN',
 ];
 
+function normalizeContactImportList(cList) {
+  return cList.map(c => ({
 
+  }));
+}

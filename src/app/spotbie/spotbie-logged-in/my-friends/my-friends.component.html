@@ -125,6 +125,24 @@
             </div>
           </div>
 
+          <ng-container *ngIf="importContactList$()?.length > 0">
+            <ion-list class="friendshipList">
+              <ion-item class="pt-2 pb-2" color="dark" *ngFor="let importContact of importContactList$()">
+                <ion-avatar aria-hidden="true" slot="start">
+                  <img [src]="importContact.image ?? './../../../assets/images/guest-spotbie-user-01.svg'" />
+                </ion-avatar>
+
+                <ion-label>
+                  {{ importContact.name.display }}
+                </ion-label>
+
+                <ion-button slot="end" (click)="inviteContact(importContact)">
+                  <ion-icon name="add-circle-outline" size="medium"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
+          </ng-container>
+
           <ng-container *ngIf="(mySearchResultList$ | async)?.length > 0">
             <ion-list class="friendshipList">
               <ion-item class="pt-2 pb-2" color="dark" *ngFor="let friend of (mySearchResultList$ | async)">
