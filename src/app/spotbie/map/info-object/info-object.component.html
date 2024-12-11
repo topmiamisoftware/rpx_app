@@ -6,9 +6,9 @@
     </ion-button>
   </ng-container>
 </div>
-<ion-content
-  *ngIf="infoObject$ | async as infoObject"
-  [ngClass]="getOverlayWindowStyling()"
+
+<div  *ngIf="infoObject$ | async as infoObject"
+      [ngClass]="getOverlayWindowStyling()"
 >
   <div
     class="sb-closeButton"
@@ -48,22 +48,22 @@
 
   <div *ngIf="infoObject?.hours">
     <div class="spotbie-info-object-open" *ngIf="!infoObject?.isOpenNow">
-      <span [ngClass]="getFontClasses()">CLOSED </span
-      ><span class="fa fa-circle spotbie-is-closed"></span>
+    <span [ngClass]="getFontClasses()">CLOSED </span
+    ><span class="fa fa-circle spotbie-is-closed"></span>
     </div>
 
     <div class="spotbie-info-object-open" *ngIf="infoObject?.isOpenNow">
-      <span [ngClass]="getFontClasses()">OPEN </span
-      ><span class="fa fa-circle spotbie-is-open"></span>
+    <span [ngClass]="getFontClasses()">OPEN </span
+    ><span class="fa fa-circle spotbie-is-open"></span>
     </div>
   </div>
 
   <div
     class="spotbie-info-object-image-list"
     *ngIf="
-      infoObject?.type_of_info_object !== eInfoObjectType.TicketMaster &&
-      infoObject?.type_of_info_object !== eInfoObjectType.SpotBieCommunity
-    "
+    infoObject?.type_of_info_object !== eInfoObjectType.TicketMaster &&
+    infoObject?.type_of_info_object !== eInfoObjectType.SpotBieCommunity
+  "
   >
     <div
       class="spotbie-info-object-image-thumb"
@@ -75,9 +75,9 @@
   <div
     class="spotbie-info-object-image-list"
     *ngIf="
-      infoObject?.type_of_info_object === eInfoObjectType.SpotBieCommunity &&
-      !ad
-    "
+    infoObject?.type_of_info_object === eInfoObjectType.SpotBieCommunity &&
+    !ad
+  "
   >
     <div
       class="spotbie-info-object-image-thumb"
@@ -88,8 +88,8 @@
   <div
     class="spotbie-info-object-image-list"
     *ngIf="
-      infoObject?.type_of_info_object === eInfoObjectType.SpotBieCommunity && ad
-    "
+    infoObject?.type_of_info_object === eInfoObjectType.SpotBieCommunity && ad
+  "
   >
     <img [src]="ad.images" />
   </div>
@@ -115,19 +115,19 @@
   </div>
 
   <div class="mt-4 mb-4" *ngIf="infoObject?.is_community_member">
-    <span class="spotbie-text-gradient" style="font-size: 0.8rem"
-      >DOLLAR VALUE RATE</span
-    ><br/>
+  <span class="spotbie-text-gradient" style="font-size: 0.8rem"
+  >DOLLAR VALUE RATE</span
+  ><br/>
     <span
       class="sb-text-light-green-gradient mt-4 mb-4"
       style="font-size: 1.8rem"
-      >{{ infoObject?.rewardRate | currency : 'USD' }}</span
+    >{{ infoObject?.rewardRate | currency : 'USD' }}</span
     ><br/>
     <span class="spotbie-text-gradient" style="font-size: 0.8rem">
-      PER DOLLAR SPENT</span
+    PER DOLLAR SPENT</span
     ><br/>
     <span class="sb-text-light-green-gradient mt-4">
-      {{
+    {{
         infoObject?.loyalty_point_dollar_percent_value
           | number : '1.1-2' : 'en-US'
       }}% REWARD RATE</span
@@ -276,16 +276,16 @@
     </div>
   </div>
 
-  <app-nearby-ads-three
-    [lat]="lat"
-    [lng]="lng"
-    [eventsClassification]="eventsClassification"
-    [accountType]="accountType"
-    [categories]="categories"
-  >
-  </app-nearby-ads-three>
+  <!--  <app-nearby-ads-three
+      [lat]="lat"
+      [lng]="lng"
+      [eventsClassification]="eventsClassification"
+      [accountType]="accountType"
+      [categories]="categories"
+    >
+    </app-nearby-ads-three>-->
 
   <div style="margin-top: 90px"></div>
-</ion-content>
+</div>
 
 <app-loading-screen *ngIf="loading$ | async"></app-loading-screen>

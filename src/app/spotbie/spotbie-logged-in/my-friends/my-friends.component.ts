@@ -110,8 +110,13 @@ export class MyFriendsComponent {
         });
 
         console.log("HELLO WORLD", result.contacts);
+        this.hyrdrateContacts(result.contacts);
       }
     }
+  }
+
+  hyrdrateContacts(contacts) {
+    this.mySearchResultList$ = of(contacts);
   }
 
   async unblockFriend(id, firstName) {

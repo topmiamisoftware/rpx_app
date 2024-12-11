@@ -14,10 +14,10 @@
   color: black;
 }
 .communityMemberWindow {
-  --background: #1b1822;
+  background-color: #1b1822;
 }
 .infoObjectWindow {
-  --background: white;
+  background-color: white;
 }
 .spotbie-bgIconLogo {
   min-height: 100vh;
