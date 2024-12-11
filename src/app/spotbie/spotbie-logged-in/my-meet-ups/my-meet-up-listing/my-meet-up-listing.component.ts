@@ -56,6 +56,10 @@ export class MyMeetUpListingComponent  implements OnInit {
 
   }
 
+  getStarted() {
+    this.modalCtrl.dismiss(null, 'get-started');
+  }
+
   getMyFriends() {
     this.myFriendsService.getMyFriends().subscribe(resp => {
       let dataWithCorrectProfiles = normalizeProfile(resp.friendList.data, this.myUserId);

@@ -7,21 +7,28 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="d-grid" color="dark">
-  <ng-container>
-    <p class="mt-2 ion-padding" *ngIf="(friendListing$ | async)?.length === 0">
+  <ng-container *ngIf="(friendListing$ | async)?.length === 0 else meetUpListing">
+    <p class="mt-2 ion-padding">
       Get started by backing out of this page and tapping on "Find People". This will help you find people to go eat or shop with.
     </p>
+  </ng-container>
 
-    <p class="mt-5 mb-5 ion-padding text-uppercase spotbie-text-gradient text-center"
-       *ngIf="(friendListing$ | async)?.length > 0"
-    >
-     {{ (friendListing$ | async)?.length }} <span style="top: 10px;"><ion-icon name="people" slot="end"></ion-icon>friends</span>
+  <ng-container *ngIf="(!(meetUpListing$ | async)?.data?.length) else meetUpListing">
+    <p class="mt-2 ion-padding">
+      Get started by tapping below and using our meet-up wizard.
     </p>
+
+    <div style="text-align: center;" class="mb-3">
+      <ion-button (click)="getStarted()" id="startMyMeetUps">
+        <ion-icon name="fast-food" slot="end"></ion-icon>
+        START
+      </ion-button>
+    </div>
   </ng-container>
 
   <ng-template #meetUpListing>
     <ion-list>
-      <ion-item *ngFor="let meetUp of (meetUpListing$ | async).data" color="dark">
+      <ion-item *ngFor="let meetUp of (meetUpListing$ | async)?.data" color="dark">
         <ion-img [src]="meetUp.business.photo"></ion-img>
       </ion-item>
     </ion-list>
