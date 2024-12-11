@@ -6,17 +6,17 @@
 
       <div class="sb-optionGet" (click)="spawnCategories(1)">
         <img src="assets/images/home_imgs/find-places-to-eat.svg" /><br />
-        <span class="spotbie-text-gradient">FOOD</span>
+        <span class="spotbie-text-gradient">food</span>
       </div>
 
       <div class="sb-optionGet" (click)="spawnCategories(2)">
         <img src="assets/images/home_imgs/find-places-for-shopping.svg" /><br />
-        <span class="spotbie-text-gradient">RETAIL</span>
+        <span class="spotbie-text-gradient">retail</span>
       </div>
 
       <div class="sb-optionGet" (click)="spawnCategories(3)">
         <img src="assets/images/home_imgs/find-events.svg" /><br />
-        <span class="spotbie-text-gradient">EVENTS</span>
+        <span class="spotbie-text-gradient">events</span>
       </div>
     </div>
 
@@ -25,6 +25,14 @@
         (findPeopleEvt)="findPeople()"
         (spawnCategoriesEvt)="spawnCategories($event)"
       ></app-my-meet-ups>
+    </div>
+
+    <div class="sb-dashboardWrapper" #lpAppAnchor>
+      <app-loyalty-points
+        [fullScreenWindow]="false"
+        (openRedeemed)="redeemedLp()"
+        #loyaltyPointsApp
+      ></app-loyalty-points>
     </div>
 
     <div class="sb-dashboardWrapper" #qrCodeAppAnchor>
@@ -38,14 +46,6 @@
         <i class="fas fa-qrcode" style="margin-right: 5px"></i>
         <span class="spotbie-text-gradient">SCAN NOW</span>
       </div>
-    </div>
-
-    <div class="sb-dashboardWrapper" #lpAppAnchor>
-      <app-loyalty-points
-        [fullScreenWindow]="false"
-        (openRedeemed)="redeemedLp()"
-        #loyaltyPointsApp
-      ></app-loyalty-points>
     </div>
   </div>
 </ng-container>

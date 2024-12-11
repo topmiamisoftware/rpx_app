@@ -1,10 +1,10 @@
 <div>
   <h3 class="spotbie-text-gradient mb-3">
     <ng-container *ngIf="latestMeetUp$() as noUpcoming else noUpcoming ">
-      Upcoming...
+      upcoming...
     </ng-container>
     <ng-template #noUpcoming>
-      MEET UP
+      meet up
     </ng-template>
   </h3>
 
@@ -23,7 +23,7 @@
         <div style="text-align: center;" class="mb-3">
           <ion-button (click)="startWizard()" id="startMyMeetUps">
             <ion-icon name="fast-food" slot="end"></ion-icon>
-            START
+            start
           </ion-button>
         </div>
       </ion-col>
@@ -32,7 +32,7 @@
       <ion-col>
         <ion-button (click)="findPeople()">
           <ion-icon name="people" slot="end"></ion-icon>
-          SPOTBIE FRIENDS
+          spotbie friends
         </ion-button>
       </ion-col>
     </ion-row>
@@ -40,7 +40,7 @@
       <ion-col>
         <ion-button (click)="myMeetUpsModal()">
           <ion-icon name="calendar" slot="end"></ion-icon>
-          MY MEET UPS
+          my meet ups
         </ion-button>
       </ion-col>
     </ion-row>

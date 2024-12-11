@@ -7,23 +7,25 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="d-grid" color="dark">
-  <ng-container *ngIf="(friendListing$ | async)?.length === 0 else meetUpListing">
-    <p class="mt-2 ion-padding">
-      Get started by backing out of this page and tapping on "Find People". This will help you find people to go eat or shop with.
-    </p>
-  </ng-container>
-
   <ng-container *ngIf="(!(meetUpListing$ | async)?.data?.length) else meetUpListing">
-    <p class="mt-2 ion-padding">
-      Get started by tapping below and using our meet-up wizard.
-    </p>
+    <ng-container *ngIf="(friendListing$ | async)?.length === 0 else meetUpWizard">
+      <p class="mt-2 ion-padding">
+        Get started by backing out of this page and tapping on "Find People". This will help you find people to go eat or shop with.
+      </p>
+    </ng-container>
 
-    <div style="text-align: center;" class="mb-3">
-      <ion-button (click)="getStarted()" id="startMyMeetUps">
-        <ion-icon name="fast-food" slot="end"></ion-icon>
-        START
-      </ion-button>
-    </div>
+    <ng-template #meetUpWizard>
+      <p class="mt-2 ion-padding text-center">
+        Get started by tapping below and using our meet-up wizard.
+      </p>
+
+      <div style="text-align: center;" class="mb-3">
+        <ion-button (click)="getStarted()" id="startMyMeetUps">
+          <ion-icon name="fast-food" slot="end"></ion-icon>
+          start
+        </ion-button>
+      </div>
+    </ng-template>
   </ng-container>
 
   <ng-template #meetUpListing>

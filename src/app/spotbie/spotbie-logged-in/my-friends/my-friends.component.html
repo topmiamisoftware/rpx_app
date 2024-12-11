@@ -113,6 +113,13 @@
             <div>
               <ng-container *ngIf="showEnablePermissions$() === true">
                 <p>You must enable Contacts Permission to import and invite your contacts.</p>
+
+                <ion-buttons>
+                  <ion-button class="importContacts p-2" (click)="enablePermissions()">
+                    <ion-icon name="people" slot="end"></ion-icon>
+                    ENABLE PERMISSIONS
+                  </ion-button>
+                </ion-buttons>
               </ng-container>
               <ng-container *ngIf="showEnablePermissions$() === false">
                 <ion-buttons>

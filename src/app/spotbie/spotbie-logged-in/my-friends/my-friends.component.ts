@@ -10,6 +10,8 @@ import {catchError, filter, tap} from "rxjs/operators";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {normalizeProfile} from "./helpers";
 import {ContactPayload, Contacts, PickContactResult} from "@capacitor-community/contacts";
+import {AndroidSettings, NativeSettings} from "capacitor-native-settings";
+import {IOSSettings} from "capacitor-native-settings/dist/esm/definitions";
 
 @Component({
   selector: 'app-my-friends',
@@ -142,6 +144,18 @@ export class MyFriendsComponent {
 
     await a.present();
     return;
+  }
+
+  async enablePermissions() {
+    if (Capacitor.getPlatform() === 'ios') {
+      await NativeSettings.openIOS({
+        option: IOSSettings.App,
+      });
+    } else if (Capacitor.getPlatform() === 'android') {
+      await NativeSettings.openAndroid({
+        option: AndroidSettings.Application,
+      });
+    }
   }
 
   async importContacts(skipCheck = false) {
