@@ -1,8 +1,8 @@
 <app-loading-screen *ngIf="loading$ | async"></app-loading-screen>
 
-<ion-content class="pt-2 pb-5" #spotbieSettingsWindow>
-  <div class="spotbie-block">
-    <div #spotbieSettingsInfoText class="spotbie-text-gradient mt-4 mb-4">
+<ion-content class="pt-5 pb-5" #spotbieSettingsWindow>
+  <div class="spotbie-block" style="padding-top: 60px;">
+    <div #spotbieSettingsInfoText class="spotbie-text-gradient mb-4">
       {{ spotbieSettingsInfoText$ | async }}
     </div>
     <form [formGroup]="settingsForm" *ngIf="settingsFormInitiated$ | async">
@@ -401,7 +401,7 @@
         autocomplete="false"
       />
 
-      <div class="mt-4 mb-1">
+      <div class="mt-4 mb-1" style="color: white;">
         Would you like to permanently delete your account?
       </div>
 

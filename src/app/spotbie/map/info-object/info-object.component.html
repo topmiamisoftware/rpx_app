@@ -6,7 +6,7 @@
     </ion-button>
   </ng-container>
 </div>
-<div
+<ion-content
   *ngIf="infoObject$ | async as infoObject"
   [ngClass]="getOverlayWindowStyling()"
 >
@@ -284,6 +284,6 @@
     [categories]="categories"
   >
   </app-nearby-ads-three>
-</div>
+</ion-content>
 
 <app-loading-screen *ngIf="loading$ | async"></app-loading-screen>

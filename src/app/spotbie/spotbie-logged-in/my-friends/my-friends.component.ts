@@ -375,6 +375,9 @@ export class MyFriendsComponent {
     const a = await this.alertController.create({
       header: 'Confirm Request',
       message: `Do you want to add ${firstName} as a friend?`,
+      htmlAttributes: {
+        color: 'dark'
+      },
       buttons:
       [
         {

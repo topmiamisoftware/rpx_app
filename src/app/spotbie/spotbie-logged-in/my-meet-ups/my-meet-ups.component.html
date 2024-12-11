@@ -1,12 +1,20 @@
 <div>
   <h3 class="spotbie-text-gradient mb-3">
-    MEET UP
+
+    <ng-container *ngIf="latestMeetUp$() as noUpcoming ">
+      Upcoming...
+    </ng-container>
+    <ng-template #noUpcoming>
+      MEET UP
+    </ng-template>
   </h3>
 
   <ng-container *ngIf="latestMeetUp$() as latestMeetUp">
-    <div class="pt-2 pb-2">
-      <p>{{ latestMeetUp.name }}</p>
-      <span style="white-space: pre-line">&#64; {{ latestMeetUp.time }}</span>
+    <div>
+      <p class="p-4">
+        {{ latestMeetUp.name }}<br/>
+        <span style="white-space: pre-line">&#64; {{ latestMeetUp.time }}</span>
+      </p>
     </div>
   </ng-container>
 
