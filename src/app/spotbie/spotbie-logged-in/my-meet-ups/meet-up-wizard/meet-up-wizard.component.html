@@ -94,13 +94,28 @@
           ></textarea>
         </ion-col>
       </ion-row>
-
       <ion-row>
         <ion-col>
           <input class="sb-input" (keyup)="searchFriends($event)" placeholder="Search..."  />
         </ion-col>
       </ion-row>
 
+      <ion-row>
+        <ion-col>
+          <div class="sb-text-light-green-gradient">OR</div>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col>
+          <ion-buttons>
+            <ion-button>
+              <ion-icon name="people-fill" slot="end"></ion-icon>
+              IMPORT CONTACTS
+            </ion-button>
+          </ion-buttons>
+        </ion-col>
+      </ion-row>
       <ion-row>
         <ion-col>
           <ng-container *ngIf="(myFriendListing$ | async)?.length > 0">

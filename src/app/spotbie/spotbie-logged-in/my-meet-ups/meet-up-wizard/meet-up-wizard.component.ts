@@ -9,6 +9,7 @@ import {filter, tap} from "rxjs/operators";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {UserauthService} from "../../../../services/userauth.service";
 import {UTCDate} from "@date-fns/utc";
+import {Business} from "../../../../models/business";
 
 
 @Component({
@@ -31,7 +32,7 @@ export class MeetUpWizardComponent  implements OnInit {
     new Date()
   );
   myUserId;
-  business;
+  business: Business;
 
   constructor(
     private modalCtrl: ModalController,
@@ -179,6 +180,8 @@ export class MeetUpWizardComponent  implements OnInit {
     const meet_up_description = this.meetUpDescription;
     const friend_list = this.meetUpFriendList$().map(f => f.id);
     const business_id = this.business.id;
+    const sbcm = this.business.is_community_member;
+
     const time = this.meetUpDateTime$();
 
     if (!time)  {
@@ -196,6 +199,7 @@ export class MeetUpWizardComponent  implements OnInit {
       friend_list,
       business_id,
       time,
+      sbcm
     };
 
     this.meetUpService.createMeetUp(req).subscribe(resp => {

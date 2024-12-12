@@ -39,8 +39,9 @@ export class MyMeetUpsComponent  implements OnInit {
     await modal.present();
 
     modal.addEventListener('didDismiss', (evt) => {
-      if(evt.detail.role == 'get-started')
-      this.startWizard();
+      if(evt.detail.role == 'get-started'){
+        this.startWizard();
+      }
     });
   }
 

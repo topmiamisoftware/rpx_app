@@ -112,6 +112,10 @@ export class MyFriendsComponent {
       message: `Do you want to invite ${contact.name.display} to use SpotBie?`,
       buttons: [
         {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
           text: 'Ok',
           role: 'confirm',
           handler: async (ev) => {
@@ -135,10 +139,6 @@ export class MyFriendsComponent {
             return;
           },
         },
-        {
-          text: 'Cancel',
-          role: 'cancel',
-        }
       ]
     });
 

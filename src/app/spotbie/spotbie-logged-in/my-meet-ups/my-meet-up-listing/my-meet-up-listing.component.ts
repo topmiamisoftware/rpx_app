@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output, signal} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, signal} from '@angular/core';
 import {MeetUp} from "../models";
 import {BehaviorSubject, Observable, of} from "rxjs";
 import {ModalController} from "@ionic/angular";
@@ -13,24 +13,15 @@ import {UserauthService} from "../../../../services/userauth.service";
   templateUrl: './my-meet-up-listing.component.html',
   styleUrls: ['./my-meet-up-listing.component.scss'],
 })
-export class MyMeetUpListingComponent  implements OnInit {
+export class MyMeetUpListingComponent implements OnInit, AfterViewInit {
 
   @Output() moreListingsEvt = new EventEmitter(null);
 
-  @Input() set meetUpListing(meetUpListing: { data: MeetUp[]}) {
-    if (meetUpListing.data) {
-      this.meetUpListing$ = of(meetUpListing);
-    }
-  }
-
-  @Input() set latestMeetUp(latestMeetUp: { data: MeetUp[] }) {
-    if (latestMeetUp?.data) {
-      this.latestMeetUp$ = of(latestMeetUp);
-    }
-  }
+  meetUpListing$: Observable<{ data: MeetUp[] }> = new Observable(null);
+  meetUpListing: {data: MeetUp[]} = null;
+  latestMeetUp = null;
 
   loading$= new BehaviorSubject(false);
-  meetUpListing$: Observable<{ data: MeetUp[] }> = new Observable();
   latestMeetUp$: Observable<{ data: MeetUp[] }> = new Observable();
   friendListing$: Observable<any> = new Observable(null);
   myUserId;
@@ -50,6 +41,11 @@ export class MyMeetUpListingComponent  implements OnInit {
         })
       )
       .subscribe();
+  }
+
+  ngAfterViewInit() {
+    this.meetUpListing$ = of(this.meetUpListing);
+    this.latestMeetUp$ = of(this.latestMeetUp);
   }
 
   ngOnInit() {

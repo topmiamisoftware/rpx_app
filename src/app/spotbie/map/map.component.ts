@@ -93,7 +93,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   loadedTotalResults$ = new BehaviorSubject<number>(0);
   allPages$ = new BehaviorSubject<number>(0);
   maxDistanceCap: number = 45;
-  maxDistance$ = new BehaviorSubject<number>(10);
+  maxDistance$ = new BehaviorSubject<number>(5);
   searchCategory$ = new BehaviorSubject<number>(null);
   previousSearchCategory: number;
   searchCategorySorter$ = new BehaviorSubject<number>(null);
@@ -226,6 +226,7 @@ export class MapComponent implements OnInit, AfterViewInit {
               map: this.spotbieMap,
               content: el,
             });
+
             newMarker.addListener('click', ({_domEvent, _latLng}) => {
               this.pullSearchMarker(sr);
             });
