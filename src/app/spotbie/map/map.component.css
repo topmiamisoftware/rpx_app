@@ -1004,7 +1004,7 @@ map-marker > img {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-    margin-top: 90px !important;
+    margin-top: 5vh !important;
   }
   .spotbie-search-result-wrapper {
     text-align: center;
@@ -1205,7 +1205,7 @@ map-marker > img {
 }
 @media (max-width: 375px) {
   .spotbie-map {
-    margin-top: 40px !important;
+    margin-top: 5vh !important;
   }
   .spotbie-search-result-image {
     height: 100px;

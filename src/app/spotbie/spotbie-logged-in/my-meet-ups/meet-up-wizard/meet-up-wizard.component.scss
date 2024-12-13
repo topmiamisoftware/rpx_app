@@ -26,6 +26,16 @@
   }
 }
 
+.importContactsWrapper {
+  display: flex;
+  justify-content: center;
+
+  ion-button {
+    --background: #53bf61;
+    --color: white;
+  }
+}
+
 ion-list {
   background-color: #222428 !important;
   background: #222428 !important;

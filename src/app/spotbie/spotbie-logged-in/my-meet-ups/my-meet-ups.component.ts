@@ -39,9 +39,9 @@ export class MyMeetUpsComponent  implements OnInit {
     await modal.present();
 
     modal.addEventListener('didDismiss', (evt) => {
-      if(evt.detail.role == 'get-started'){
+      if (evt.detail.role == 'get-started') {
         this.startWizard();
-      } else if (evt.detail.role == 'find-friends'){} {
+      } else if (evt.detail.role == 'find-friends') {
         this.findPeople();
       }
     });
