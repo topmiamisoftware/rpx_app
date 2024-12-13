@@ -1,15 +1,20 @@
-import {Component, OnInit, signal} from '@angular/core';
+import {Component, OnInit, signal, WritableSignal} from '@angular/core';
 import {ActionSheetController, AlertController, ModalController, ToastController} from "@ionic/angular";
 import {MyFriendsService} from "../../my-friends/my-friends.service";
 import {UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
-import {BehaviorSubject, Observable, of} from "rxjs";
-import {normalizeProfile, normalizeProfileFromSearch} from "../../my-friends/helpers";
+import {BehaviorSubject, EMPTY, Observable, of} from "rxjs";
+import {normalizeProfile, normalizeProfileFromFriendSearch, normalizeProfileFromSearch} from "../../my-friends/helpers";
 import {MeetupService} from "../services/meetup.service";
 import {filter, tap} from "rxjs/operators";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {UserauthService} from "../../../../services/userauth.service";
 import {UTCDate} from "@date-fns/utc";
 import {Business} from "../../../../models/business";
+import {Capacitor} from "@capacitor/core";
+import {AndroidSettings, NativeSettings} from "capacitor-native-settings";
+import {IOSSettings} from "capacitor-native-settings/dist/esm/definitions";
+import {ContactPayload, Contacts, PickContactResult} from "@capacitor-community/contacts";
+import {Position} from "@capacitor/geolocation";
 
 
 @Component({
@@ -23,6 +28,7 @@ export class MeetUpWizardComponent  implements OnInit {
   submitted$ = new BehaviorSubject<boolean>(false);
   loading$ = new BehaviorSubject<boolean>(undefined);
   myFriendListing$ = new Observable<any>(null);
+  searchFriendListing$ = new Observable<any>(undefined);
   meetUpFriendList$ = signal([]);
   contactImports$ = signal([]);
   showSearchResults$ = signal(null);
@@ -33,6 +39,8 @@ export class MeetUpWizardComponent  implements OnInit {
   );
   myUserId;
   business: Business;
+  importContactList$: WritableSignal<ContactPayload[]> = signal([]);
+  showEnablePermissions$ = signal(false);
 
   constructor(
     private modalCtrl: ModalController,
@@ -108,7 +116,77 @@ export class MeetUpWizardComponent  implements OnInit {
         let dataWithCorrectProfiles = normalizeProfile(resp.friendList.data, this.myUserId);
         this.loading$.next(false);
         this.myFriendListing$ = of(dataWithCorrectProfiles);
+        this.searchFriendListing$ = of(undefined);
       });
+  }
+
+  async enablePermissions() {
+    if (Capacitor.getPlatform() === 'ios') {
+      await NativeSettings.openIOS({
+        option: IOSSettings.App,
+      });
+    } else if (Capacitor.getPlatform() === 'android') {
+      await NativeSettings.openAndroid({
+        option: AndroidSettings.Application,
+      });
+    }
+  }
+
+  showEnablePermissions() {
+    this.showEnablePermissions$.set(true);
+  }
+
+  requestPermissions() {
+    Contacts.requestPermissions().then((p) => {
+      this.importContacts();
+    });
+  }
+
+
+  async importContacts(skipCheck = false) {
+    this.loading$.next(true);
+
+    if (Capacitor.isNativePlatform()) {
+      Contacts.checkPermissions().then((p) => {
+        switch (p.contacts) {
+          case "prompt-with-rationale":
+          case "prompt":
+            this.requestPermissions();
+            break;
+          case "denied":
+            this.showEnablePermissions();
+            break;
+          case "granted":
+            this.finishContactImport();
+            break;
+        }
+      });
+    }
+  }
+
+  async finishContactImport() {
+    const projection = {
+      // Specify which fields should be retrieved.
+      name: true,
+      phones: true,
+      postalAddresses: true,
+      image: true
+    };
+
+    const result: PickContactResult = await Contacts.pickContact({
+      projection,
+    });
+
+    this.hyrdrateContacts(result);
+    this.loading$.next(false);
+  }
+
+  hyrdrateContacts(contact: PickContactResult) {
+    console.log('Hellowworld', contact);
+    this.importContactList$.set([
+      ...this.importContactList$(),
+      contact.contact
+    ]);
   }
 
   get meetUpName() {
@@ -222,15 +300,26 @@ export class MeetUpWizardComponent  implements OnInit {
     }
 
     this.searchTimeout = setTimeout(() => {
-      this.myFriendsService.searchForUser(evt.target.value).pipe(
+      this.myFriendsService.searchForFriends(evt.target.value).pipe(
         tap((_) => this.loading$.next(true)),
       ).subscribe((resp) => {
         this.loading$.next(false);
-        this.myFriendListing$ = of(normalizeProfileFromSearch(resp.matchingUserList));
+        this.searchFriendListing$ = of(normalizeProfileFromFriendSearch(resp.matchingUserList, this.myUserId));
         clearTimeout(this.searchTimeout);
         this.searchTimeout = null;
       });
     }, 2500);
+  }
+
+  showMyFriendsOnly() {
+    this.myFriendsService.getMyFriends().pipe(
+      tap((_) => this.loading$.next(true)),
+    ).subscribe((resp) => {
+      this.loading$.next(false);
+      this.myFriendListing$ = of(normalizeProfile(resp.matchingUserList, this.myUserId));
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = null;
+    });
   }
 
   closeModal() {

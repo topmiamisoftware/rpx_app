@@ -74,6 +74,18 @@ export class MyFriendsService {
     );
   }
 
+
+  searchForFriends(search_string): Observable<any> {
+    const body = {
+      search_string
+    };
+
+    return this.httpClient.post(`${FRIENDS_API}/search-for-friends`, body).pipe(
+      debounceTime(2500),
+      catchError(handleError('randomNearby')),
+    );
+  }
+
   searchForUser(search_string): Observable<any> {
     const body = {
       search_string

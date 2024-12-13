@@ -31,3 +31,25 @@ export function normalizeProfileFromSearch(profileList: []) {
 
   return normalizedProfileList;
 }
+
+export function normalizeProfileFromFriendSearch(profileList: [], myUserId: string) {
+  const normalizedProfileList = [];
+
+  profileList.forEach((profile: any) => {
+    let user_profile;
+    if (myUserId === profile.user_id) {
+      user_profile = profile.friend_spotbie_profile;
+    } else {
+      user_profile = profile.spotbie_pofile;
+    }
+
+    normalizedProfileList.push({
+      ...profile,
+      user_profile,
+    });
+  });
+
+  console.log("NORMALIZED PROFILES", normalizedProfileList);
+
+  return normalizedProfileList;
+}

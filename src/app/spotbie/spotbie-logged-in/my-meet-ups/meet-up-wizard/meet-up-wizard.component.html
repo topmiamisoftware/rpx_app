@@ -94,9 +94,16 @@
           ></textarea>
         </ion-col>
       </ion-row>
-      <ion-row>
+      <ion-row class="ion-align-items-center">
         <ion-col>
           <input class="sb-input" (keyup)="searchFriends($event)" placeholder="Search..."  />
+        </ion-col>
+        <ion-col *ngIf="(searchFriendListing$ | async)" size="sm">
+          <ion-buttons>
+            <ion-button (click)="getMyFriends()" class="get-my-friends">
+              <ion-icon name="people-fill" />
+            </ion-button>
+          </ion-buttons>
         </ion-col>
       </ion-row>
 
@@ -110,8 +117,8 @@
         <ion-col>
           <div class="importContactsWrapper">
             <ion-buttons>
-              <ion-button>
-                <ion-icon name="people-fill" slot="end"></ion-icon>
+              <ion-button (click)="importContacts()">
+                <ion-icon color='light' name='people-fill' slot='end'></ion-icon>
                 import contacts
               </ion-button>
             </ion-buttons>
@@ -120,7 +127,7 @@
       </ion-row>
       <ion-row>
         <ion-col>
-          <ng-container *ngIf="(myFriendListing$ | async)?.length > 0">
+          <ng-container *ngIf="((myFriendListing$ | async)?.length > 0) && ((searchFriendListing$ | async) === null)">
             <ion-list>
               <ion-item class="pt-2 pb-2" *ngFor="let friend of (myFriendListing$ | async)" color="dark">
                 <ion-avatar aria-hidden="true" slot="start">
@@ -132,6 +139,24 @@
                 </ion-label>
 
                 <ion-button color="dark" slot="end" (click)="addToMeetUp(friend, friend.user_profile.spotbie_user.first_name)">
+                  <ion-icon name="add-circle-outline" size="medium"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
+          </ng-container>
+
+          <ng-container *ngIf="(searchFriendListing$ | async)?.length > 0">
+            <ion-list>
+              <ion-item class="pt-2 pb-2" *ngFor="let friend of (searchFriendListing$ | async)" color="dark">
+                <ion-avatar aria-hidden="true" slot="start">
+                  <img [src]="friend.user_profile.default_picture" />
+                </ion-avatar>
+
+                <ion-label>
+                  {{ friend.user_profile.first_name }} {{ friend.user_profile.last_name }}
+                </ion-label>
+
+                <ion-button color="dark" slot="end" (click)="addToMeetUp(friend, friend.user_profile.first_name)">
                   <ion-icon name="add-circle-outline" size="medium"></ion-icon>
                 </ion-button>
               </ion-item>
