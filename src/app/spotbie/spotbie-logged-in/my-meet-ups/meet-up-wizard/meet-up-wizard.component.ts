@@ -259,6 +259,7 @@ export class MeetUpWizardComponent  implements OnInit {
     const friend_list = this.meetUpFriendList$().map(f => f.id);
     const business_id = this.business.id;
     const sbcm = this.business.is_community_member;
+    const contactList = this.importContactList$();
 
     const time = this.meetUpDateTime$();
 
@@ -277,7 +278,8 @@ export class MeetUpWizardComponent  implements OnInit {
       friend_list,
       business_id,
       time,
-      sbcm
+      sbcm,
+      contactList
     };
 
     this.meetUpService.createMeetUp(req).subscribe(resp => {

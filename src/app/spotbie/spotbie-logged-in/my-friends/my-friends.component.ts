@@ -197,7 +197,6 @@ export class MyFriendsComponent {
   }
 
   hyrdrateContacts(contact: PickContactResult) {
-    console.log('Hellowworld', contact);
     this.importContactList$.set([
       ...this.importContactList$(),
       contact.contact

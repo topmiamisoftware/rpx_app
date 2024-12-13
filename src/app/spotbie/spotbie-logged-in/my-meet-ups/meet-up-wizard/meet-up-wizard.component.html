@@ -14,11 +14,17 @@
   <p>Meet up &#64; {{ business.name }}</p>
 
   <div class="whosGoingWrapper mt-3 mb-3">
+    <div *ngFor="let p of importContactList$()" (click)="actionSheet(p)">
+      <ion-avatar aria-hidden="true" slot="start">
+        <img [src]="p.image.base64String ?? './../../../assets/images/guest-spotbie-user-01.svg'" />
+      </ion-avatar>
+    </div>
     <div *ngFor="let p of meetUpFriendList$(); trackBy: identify" (click)="actionSheet(p)">
       <ion-avatar aria-hidden="true" slot="start">
         <img [src]="p.user_profile.spotbie_user.default_picture" />
       </ion-avatar>
     </div>
+
   </div>
 
   <ion-datetime-button class="mb-3" datetime="datetime"></ion-datetime-button>
@@ -117,7 +123,7 @@
         <ion-col>
           <div class="importContactsWrapper">
             <ion-buttons>
-              <ion-button (click)="importContacts()">
+              <ion-button (click)="importContacts()" class="p-2">
                 <ion-icon color='light' name='people-fill' slot='end'></ion-icon>
                 import contacts
               </ion-button>
@@ -127,7 +133,7 @@
       </ion-row>
       <ion-row>
         <ion-col>
-          <ng-container *ngIf="((myFriendListing$ | async)?.length > 0) && ((searchFriendListing$ | async) === null)">
+          <ng-container *ngIf="((myFriendListing$ | async)?.length > 0) && (!(searchFriendListing$ | async))">
             <ion-list>
               <ion-item class="pt-2 pb-2" *ngFor="let friend of (myFriendListing$ | async)" color="dark">
                 <ion-avatar aria-hidden="true" slot="start">
