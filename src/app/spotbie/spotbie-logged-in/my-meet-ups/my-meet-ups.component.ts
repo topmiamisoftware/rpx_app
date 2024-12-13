@@ -41,6 +41,8 @@ export class MyMeetUpsComponent  implements OnInit {
     modal.addEventListener('didDismiss', (evt) => {
       if(evt.detail.role == 'get-started'){
         this.startWizard();
+      } else if (evt.detail.role == 'find-friends'){} {
+        this.findPeople();
       }
     });
   }

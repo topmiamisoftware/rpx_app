@@ -7,11 +7,20 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="d-grid" color="dark">
-  <ng-container *ngIf="((meetUpListing$ | async) === true) else meetUpListing">
+  <ng-container *ngIf="(meetUpListing$ | async) else meetUpListing">
     <ng-container *ngIf="(friendListing$ | async)?.length === 0 else meetUpWizard">
-      <p class="mt-2 ion-padding">
+      <p class="mt-2 ion-padding text-center">
         Get started by backing out of this page and tapping on "Find People". This will help you find people to go eat or shop with.
       </p>
+
+      <div class="findFriendsWrapper">
+        <ion-buttons>
+          <ion-button class="p2" (click)="findFriends()" id="findFriend">
+            <ion-icon name="fast-food" slot="end"></ion-icon>
+            find friends
+          </ion-button>
+        </ion-buttons>
+      </div>
     </ng-container>
 
     <ng-template #meetUpWizard>
@@ -30,7 +39,8 @@
 
   <ng-template #meetUpListing>
     <ion-list>
-      <ion-item *ngFor="let meetUp of (meetUpListing$ | async)?.data" color="dark">
+      <ion-item *ngFor="let meetUp of (meetUpListing$ | async)" color="dark">
+        {{ meetUp | json }}
         <ion-label>{{ meetUp.friend_username }}</ion-label>
       </ion-item>
     </ion-list>

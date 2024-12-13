@@ -13,16 +13,25 @@ import {UserauthService} from "../../../../services/userauth.service";
   templateUrl: './my-meet-up-listing.component.html',
   styleUrls: ['./my-meet-up-listing.component.scss'],
 })
-export class MyMeetUpListingComponent implements OnInit, AfterViewInit {
+export class MyMeetUpListingComponent implements OnInit {
 
   @Output() moreListingsEvt = new EventEmitter(null);
 
-  meetUpListing$: Observable<{ data: MeetUp[] }> = new Observable(null);
-  meetUpListing: {data: MeetUp[]} = null;
-  latestMeetUp = null;
+  meetUpListing$: Observable<any> = new Observable(null);
+  @Input() set meetUpListing(meetUpListing: any) {
+    if (meetUpListing) {
+      this.meetUpListing$ = of(meetUpListing);
+    }
+  }
+
+  latestMeetUp$: Observable<any> = new Observable();
+  @Input() set latestMeetUp(latestMeetUp: any) {
+    if (latestMeetUp) {
+      this.latestMeetUp$ = of(latestMeetUp);
+    }
+  }
 
   loading$= new BehaviorSubject(false);
-  latestMeetUp$: Observable<{ data: MeetUp[] }> = new Observable();
   friendListing$: Observable<any> = new Observable(null);
   myUserId;
 
@@ -43,13 +52,12 @@ export class MyMeetUpListingComponent implements OnInit, AfterViewInit {
       .subscribe();
   }
 
-  ngAfterViewInit() {
-    this.meetUpListing$ = of(this.meetUpListing);
-    this.latestMeetUp$ = of(this.latestMeetUp);
-  }
-
   ngOnInit() {
 
+  }
+
+  findFriends() {
+    this.modalCtrl.dismiss(null, 'find-friends');
   }
 
   getStarted() {
