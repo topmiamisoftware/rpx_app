@@ -11,8 +11,8 @@
   <ng-container *ngIf="latestMeetUp$() as latestMeetUp">
     <div>
       <p class="p-4">
-        {{ latestMeetUp.business.name }}<br/>
-        <span style="white-space: pre-line">&#64; {{ latestMeetUp.time }}</span>
+        <span>{{ latestMeetUp.time }}</span><br/>
+        <span style="white-space: pre-line">&#64;<b>{{ latestMeetUp.business.name }}</b></span><br/>
       </p>
     </div>
   </ng-container>

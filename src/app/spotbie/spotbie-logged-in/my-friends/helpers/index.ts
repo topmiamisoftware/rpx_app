@@ -1,4 +1,6 @@
-export function normalizeProfile(profileList: [], myUserId) {
+import {SpotbieUser} from "../../../../models/spotbieuser";
+
+export function normalizeProfile(profileList: SpotbieUser[], myUserId) {
   const normalizedProfileList = [];
   let user_profile;
 

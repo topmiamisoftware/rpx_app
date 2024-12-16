@@ -2,7 +2,7 @@ import {Component, EventEmitter, OnInit, Output, signal, WritableSignal} from '@
 import {ModalController} from "@ionic/angular";
 import {MeetupService} from "./services/meetup.service";
 import {MyMeetUpListingComponent} from "./my-meet-up-listing/my-meet-up-listing.component";
-import {MeetUp} from "./models";
+import {MeetUp, MeetUpInvitation} from "./models";
 import {format, parseISO} from "date-fns";
 
 @Component({
@@ -64,13 +64,11 @@ export class MyMeetUpsComponent  implements OnInit {
   }
 }
 
-function normalizeMeetUpList(meetUpList: MeetUp[]): MeetUp[] {
+function normalizeMeetUpList(meetUpList: MeetUpInvitation[]): MeetUp[] {
   return meetUpList.map(a => {
-    console.log("The time ", a.time);
-    // const identifier =
-    const localTime = format(parseISO(a.time), "LLL. dd ''yy h:mm");
+    const localTime = format(parseISO(a.meet_up.time), "LLL. dd ''yy h:mm");
     return {
-      ...a,
+      ...a.meet_up,
       time: localTime
     };
   });

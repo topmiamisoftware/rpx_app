@@ -1,8 +1,8 @@
-import {Component, OnInit, signal, WritableSignal} from '@angular/core';
-import {ActionSheetController, AlertController, ModalController, ToastController} from "@ionic/angular";
+import {Component, ElementRef, Input, OnInit, signal, ViewChild, WritableSignal} from '@angular/core';
+import {ActionSheetController, AlertController, IonDatetime, ModalController, ToastController} from "@ionic/angular";
 import {MyFriendsService} from "../../my-friends/my-friends.service";
 import {UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
-import {BehaviorSubject, Observable, of} from "rxjs";
+import {BehaviorSubject, Observable, of, take} from "rxjs";
 import {normalizeProfile, normalizeProfileFromFriendSearch} from "../../my-friends/helpers";
 import {MeetupService} from "../services/meetup.service";
 import {filter, map, tap} from "rxjs/operators";
@@ -15,6 +15,8 @@ import {AndroidSettings, NativeSettings} from "capacitor-native-settings";
 import {IOSSettings} from "capacitor-native-settings/dist/esm/definitions";
 import {ContactPayload, Contacts, PickContactResult} from "@capacitor-community/contacts";
 import {User} from "../../../../models/user";
+import {MeetUp, MeetUpInvitation} from "../models";
+import {SpotbieUser} from "../../../../models/spotbieuser";
 
 
 @Component({
@@ -24,6 +26,16 @@ import {User} from "../../../../models/user";
 })
 export class MeetUpWizardComponent  implements OnInit {
 
+  @ViewChild('meetUpDateTime') meetUpDateTime: ElementRef<IonDatetime>;
+
+  @Input() set meetUp(meetUp: MeetUp) {
+    if (meetUp) {
+      this.meetUp$.next(meetUp);
+      this.business = meetUp.business;
+    }
+  }
+
+  meetUp$ = new BehaviorSubject<MeetUp>(undefined);
   meetUpForm: UntypedFormGroup;
   submitted$ = new BehaviorSubject<boolean>(false);
   loading$ = new BehaviorSubject<boolean>(undefined);
@@ -31,11 +43,13 @@ export class MeetUpWizardComponent  implements OnInit {
   myFriendListing$ = new BehaviorSubject<any>(undefined);
   // the listing that comes up when you <i>search</i> with the search bar.
   searchFriendListing$ = new BehaviorSubject<any>(undefined);
+  // the meetup owner
+  ownerProfile$ = new BehaviorSubject<User>(undefined);
   // Used to tell which users are going to the meet up. Friends that are invited.
   meetUpFriendList$ =  new BehaviorSubject<any>(undefined);
   private searchTimeout;
 
-  meetUpDateTime$ = signal(null);
+  meetUpDateTime$ = signal(new Date());
   // The minimum date value for the calendar
   minDateValue$ = signal(
     new Date()
@@ -69,6 +83,29 @@ export class MeetUpWizardComponent  implements OnInit {
 
   ngOnInit() {
     this.initMeetUpForm();
+  }
+
+  hydrateMeetUpForm(meetUp: MeetUp) {
+    this.meetUpForm.get('meetUpName').setValue(meetUp.name);
+    this.meetUpForm.get('meetUpDescription').setValue(meetUp.description);
+    this.meetUpDateTime$.set(new Date(meetUp.time));
+
+    this.hydrateFriends(meetUp.invitation_list);
+    this.hydrateOwner(meetUp.owner);
+  }
+
+  hydrateOwner(owner: MeetUp['owner']) {
+    this.ownerProfile$.next(owner);
+  }
+
+  hydrateFriends(invitationList: MeetUpInvitation[]) {
+    const friendList = invitationList.map(meetUpInvitation => ({
+      user_profile:{ spotbie_user: meetUpInvitation.friend_profile }
+    }));
+
+    console.log('THE FRIEND LIST', friendList);
+
+    this.meetUpFriendList$.next(friendList);
   }
 
   async addToMeetUp(friend, firstName: string) {
@@ -261,7 +298,7 @@ export class MeetUpWizardComponent  implements OnInit {
   }
 
   initMeetUpForm() {
-    const meetUpNameValidators = [Validators.required, Validators.max(25), Validators.min(1)];
+    const meetUpNameValidators = [Validators.required, Validators.max(35), Validators.min(1)];
     const meetUpDescriptionValidators = [Validators.required, Validators.max(350), Validators.min(1)];
 
     this.meetUpForm = this.formBuilder.group(
@@ -270,6 +307,15 @@ export class MeetUpWizardComponent  implements OnInit {
         meetUpDescription: ['', meetUpDescriptionValidators],
       },
     );
+
+    this.meetUp$.pipe(
+      take(1),
+      filter(f => !!f),
+      tap((meetUp: MeetUp) => {
+        console.log("SET MEET UP", meetUp);
+        this.hydrateMeetUpForm(meetUp);
+      })
+    ).subscribe();
   }
 
   async submitMeetUp() {
@@ -291,7 +337,7 @@ export class MeetUpWizardComponent  implements OnInit {
 
     const time = this.meetUpDateTime$();
 
-    if (!time)  {
+    if (!time) {
       const a = await this.toastService.create({
         message: 'You need to pick a time for your meet up.',
         duration: 5000,
@@ -307,14 +353,40 @@ export class MeetUpWizardComponent  implements OnInit {
       meet_up_description,
       friend_list,
       business_id,
-      time,
       sbcm,
+      time,
       contact_list
     };
 
-    this.meetUpService.createMeetUp(req).subscribe(async resp => {
+    if (!this.meetUp$.getValue()) {
+      this.meetUpService.createMeetUp(req).subscribe(async resp => {
+        const c = await this.toastService.create({
+          message: 'You have created a meet up.',
+          duration: 5000,
+          position: 'bottom'
+        });
+
+        await c.present();
+
+        setTimeout(() => {
+          this.addedMeetUp();
+        }, 1500);
+      });
+    } else {
+      const editReq = {
+        ...req,
+        business_id: null,
+        sbcm: null,
+        id: this.meetUp$.getValue().id
+      }
+      this.editMeetUp(editReq);
+    }
+  }
+
+  editMeetUp(req) {
+    this.meetUpService.editMeetUp(req).subscribe(async resp => {
       const c = await this.toastService.create({
-        message: 'You have created a meet up.',
+        message: 'You have edited your meet up.',
         duration: 5000,
         position: 'bottom'
       });

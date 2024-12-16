@@ -9,8 +9,17 @@
 <ion-content class="d-grid" color="dark">
   <ng-container *ngIf="(meetUpListing$ | async) else noMeetUps">
     <ion-list>
-      <ion-item *ngFor="let meetUp of (meetUpListing$ | async)" color="dark">
-        <ion-label>{{ meetUp.friend_username }}</ion-label>
+      <ion-item *ngFor="let meetUp of (meetUpListing$ | async)" color="dark" (click)="openMeetUp(meetUp)">
+        <ion-label>
+          <h2 class="sb-text-light-green-gradient"><b>{{ meetUp.name }}</b></h2>
+          <ion-text class="pt-3 pb-3">{{ meetUp.description }}</ion-text>
+          <ion-text>
+            <p>
+              <span style="white-space: pre-line"><b>{{ meetUp.business.name }}</b></span><br/>
+              <span style="white-space: pre-line"><b>{{ meetUp.time }}</b></span><br/>
+            </p>
+          </ion-text>
+        </ion-label>
       </ion-item>
     </ion-list>
   </ng-container>

@@ -29,6 +29,12 @@ export class MeetupService {
     );
   }
 
+  editMeetUp(req){
+    return this.httpClient.put(`${MEETUP_API}`, req).pipe(
+      catchError(handleError('createMeetUp')),
+    );
+  }
+
   deleteMeetUp(){
     const body = {};
     return this.httpClient.delete( `${MEETUP_API}`, body).pipe(

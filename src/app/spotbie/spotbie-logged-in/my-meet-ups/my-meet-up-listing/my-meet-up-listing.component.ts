@@ -1,5 +1,4 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, signal} from '@angular/core';
-import {MeetUp} from "../models";
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {BehaviorSubject, Observable, of} from "rxjs";
 import {ModalController} from "@ionic/angular";
 import {MyFriendsService} from "../../my-friends/my-friends.service";
@@ -7,6 +6,8 @@ import {normalizeProfile} from "../../my-friends/helpers";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {filter, tap} from "rxjs/operators";
 import {UserauthService} from "../../../../services/userauth.service";
+import {MeetUp} from "../models";
+import {MeetUpWizardComponent} from "../meet-up-wizard/meet-up-wizard.component";
 
 @Component({
   selector: 'app-my-meet-up-listing',
@@ -17,8 +18,8 @@ export class MyMeetUpListingComponent implements OnInit {
 
   @Output() moreListingsEvt = new EventEmitter(null);
 
-  meetUpListing$: Observable<any> = new Observable(null);
-  @Input() set meetUpListing(meetUpListing: any) {
+  meetUpListing$: Observable<MeetUp[]> = new Observable(null);
+  @Input() set meetUpListing(meetUpListing: MeetUp[]) {
     if (meetUpListing) {
       this.meetUpListing$ = of(meetUpListing);
     }
@@ -74,5 +75,16 @@ export class MyMeetUpListingComponent implements OnInit {
 
   closeModal() {
     this.modalCtrl.dismiss(null, 'cancel');
+  }
+
+  async openMeetUp(meetUp: MeetUp) {
+    const modal = await this.modalCtrl.create({
+      component: MeetUpWizardComponent,
+      componentProps: {
+        meetUp: meetUp
+      }
+    });
+
+    await modal.present();
   }
 }

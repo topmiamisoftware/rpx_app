@@ -21,11 +21,23 @@
     </div>
 
     <div *ngFor="let p of (meetUpFriendList$ | async); trackBy: identify" (click)="actionSheet(p)">
-      <ion-avatar aria-hidden="true" slot="start">
+      <ion-avatar slot="start">
         <img [src]="p.user_profile.spotbie_user.default_picture" />
       </ion-avatar>
     </div>
   </div>
+
+  <ng-container *ngIf="(ownerProfile$ | async) as owner">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-text>
+            <p>Meet Up Organizer: {{ owner.spotbie_user.first_name }} {{ owner.spotbie_user.last_name }}</p>
+          </ion-text>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ng-container>
 
   <ion-datetime-button class="mb-3" datetime="datetime"></ion-datetime-button>
 
@@ -33,6 +45,7 @@
     <ng-template>
       <ion-datetime
         [min]="minDateValue$()"
+        [value]="meetUpDateTime$()"
         id="datetime"
         color="dark"
         (ionChange)="setDate($event)"
