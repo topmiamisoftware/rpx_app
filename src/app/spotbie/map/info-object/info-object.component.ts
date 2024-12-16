@@ -11,7 +11,6 @@ import {Ad} from '../../../models/ad';
 import {InfoObjectType} from '../../../helpers/enum/info-object-type.enum';
 import {BehaviorSubject} from 'rxjs';
 import {AppLauncher} from '@capacitor/app-launcher';
-import {Preferences} from '@capacitor/preferences';
 import {Share} from '@capacitor/share';
 import {LoyaltyTier} from '../../../models/loyalty-point-tier.balance';
 import {Capacitor} from "@capacitor/core";

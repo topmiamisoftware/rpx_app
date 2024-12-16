@@ -18,29 +18,17 @@ export function normalizeProfile(profileList: [], myUserId) {
   return normalizedProfileList;
 }
 
-export function normalizeProfileFromSearch(profileList: []) {
-  const normalizedProfileList = [];
-
-  profileList.forEach((profile: any) => {
-    let user_profile = profile;
-    normalizedProfileList.push({
-      ...profile,
-      user_profile,
-    });
-  });
-
-  return normalizedProfileList;
-}
-
-export function normalizeProfileFromFriendSearch(profileList: [], myUserId: string) {
+export function normalizeProfileFromFriendSearch(profileList: [], myUserId: number) {
   const normalizedProfileList = [];
 
   profileList.forEach((profile: any) => {
     let user_profile;
     if (myUserId === profile.user_id) {
       user_profile = profile.friend_spotbie_profile;
+      user_profile.spotbie_user = profile.friend_spotbie_profile;
     } else {
       user_profile = profile.spotbie_pofile;
+      user_profile.spotbie_user = profile.spotbie_pofile;
     }
 
     normalizedProfileList.push({

@@ -20,7 +20,7 @@ export class UserauthService {
   userTimezone: string;
   route: string;
   userProfile: User = new User();
-  myId$ = new Observable();
+  myId$: Observable<number> = new Observable();
 
   constructor(private http: HttpClient) {}
 

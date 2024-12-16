@@ -2,10 +2,10 @@ import {Component, OnInit, signal, WritableSignal} from '@angular/core';
 import {ActionSheetController, AlertController, ModalController, ToastController} from "@ionic/angular";
 import {MyFriendsService} from "../../my-friends/my-friends.service";
 import {UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
-import {BehaviorSubject, EMPTY, Observable, of} from "rxjs";
-import {normalizeProfile, normalizeProfileFromFriendSearch, normalizeProfileFromSearch} from "../../my-friends/helpers";
+import {BehaviorSubject, Observable, of} from "rxjs";
+import {normalizeProfile, normalizeProfileFromFriendSearch} from "../../my-friends/helpers";
 import {MeetupService} from "../services/meetup.service";
-import {filter, tap} from "rxjs/operators";
+import {filter, map, tap} from "rxjs/operators";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {UserauthService} from "../../../../services/userauth.service";
 import {UTCDate} from "@date-fns/utc";
@@ -14,7 +14,7 @@ import {Capacitor} from "@capacitor/core";
 import {AndroidSettings, NativeSettings} from "capacitor-native-settings";
 import {IOSSettings} from "capacitor-native-settings/dist/esm/definitions";
 import {ContactPayload, Contacts, PickContactResult} from "@capacitor-community/contacts";
-import {Position} from "@capacitor/geolocation";
+import {User} from "../../../../models/user";
 
 
 @Component({
@@ -27,17 +27,20 @@ export class MeetUpWizardComponent  implements OnInit {
   meetUpForm: UntypedFormGroup;
   submitted$ = new BehaviorSubject<boolean>(false);
   loading$ = new BehaviorSubject<boolean>(undefined);
-  myFriendListing$ = new Observable<any>(null);
-  searchFriendListing$ = new Observable<any>(undefined);
-  meetUpFriendList$ = signal([]);
-  contactImports$ = signal([]);
-  showSearchResults$ = signal(null);
-  searchTimeout;
+  // The visible list of ALL your SpotBie friends.
+  myFriendListing$ = new BehaviorSubject<any>(undefined);
+  // the listing that comes up when you <i>search</i> with the search bar.
+  searchFriendListing$ = new BehaviorSubject<any>(undefined);
+  // Used to tell which users are going to the meet up. Friends that are invited.
+  meetUpFriendList$ =  new BehaviorSubject<any>(undefined);
+  private searchTimeout;
+
   meetUpDateTime$ = signal(null);
+  // The minimum date value for the calendar
   minDateValue$ = signal(
     new Date()
   );
-  myUserId;
+  myUserId: User['id'];
   business: Business;
   importContactList$: WritableSignal<ContactPayload[]> = signal([]);
   showEnablePermissions$ = signal(false);
@@ -56,7 +59,7 @@ export class MeetUpWizardComponent  implements OnInit {
       .pipe(
         takeUntilDestroyed(),
         filter(f => !!f),
-        tap((id) => {
+        tap((id: number) => {
           this.myUserId = id;
           this.getMyFriends();
         })
@@ -68,8 +71,18 @@ export class MeetUpWizardComponent  implements OnInit {
     this.initMeetUpForm();
   }
 
-  async addToMeetUp(friendId, firstName) {
-    if (this.meetUpFriendList$().find(id => id === friendId)) {
+  async addToMeetUp(friend, firstName: string) {
+    debugger;
+
+    const alreadyAdded = this.meetUpFriendList$.getValue()
+      ?.filter(f => f.id === friend.id);
+
+    let friendProfile = this.myFriendListing$.getValue()?.filter((a) => a.id === friend.id);
+    if (!friendProfile) {
+      friendProfile = this.searchFriendListing$.getValue()?.filter((a) => a.id === friend.id);
+    }
+    
+    if (alreadyAdded?.length > 0) {
       const a = await this.alertController.create({
         header: 'Already Added',
         message: `You have already added ${firstName}.`,
@@ -80,30 +93,39 @@ export class MeetUpWizardComponent  implements OnInit {
       });
 
       await a.present();
+    } else {
+      const alert = await this.alertController.create({
+        header: `Invite ${firstName}`,
+        message: `Do you really want to add ${firstName} to this meet up?`,
+        buttons: [
+          {
+            text: 'No',
+            role: 'cancel',
+          },
+          {
+            text: 'Yes',
+            role: 'confirm',
+            handler: async (ev) => {
+              if (this.meetUpFriendList$.getValue()?.length) {
+                this.meetUpFriendList$.next([
+                    ...this.meetUpFriendList$.getValue(),
+                  ...friendProfile
+                ]);
+              } else {
+                this.meetUpFriendList$.next([...friendProfile]);
+              }
 
-      return;
+              console.log("The meetupfriendlist", this.meetUpFriendList$.getValue());
+              return;
+            },
+          },
+        ],
+      });
+
+      await alert.present();
     }
 
-    let alert = await this.alertController.create({
-      header: '',
-      message: `Do you really want to add ${firstName} to this meet up?`,
-      buttons: [
-        {
-          text: 'Yes',
-          role: 'confirm',
-          handler: async (ev) => {
-            this.meetUpFriendList$.set([...this.meetUpFriendList$(), friendId]);
-            return;
-          },
-        },
-        {
-          text: 'No',
-          role: 'cancel',
-        }
-      ],
-    });
-
-    await alert.present();
+    return;
   }
 
   identify(index, item: any) {
@@ -113,10 +135,13 @@ export class MeetUpWizardComponent  implements OnInit {
   getMyFriends() {
     this.myFriendsService.getMyFriends()
       .subscribe(resp => {
-        let dataWithCorrectProfiles = normalizeProfile(resp.friendList.data, this.myUserId);
         this.loading$.next(false);
-        this.myFriendListing$ = of(dataWithCorrectProfiles);
-        this.searchFriendListing$ = of(undefined);
+        this.myFriendListing$.pipe(
+          map( a =>
+            normalizeProfile(resp.friendList.data, this.myUserId)
+          ),
+        )
+        this.searchFriendListing$.next(null);
       });
   }
 
@@ -146,7 +171,9 @@ export class MeetUpWizardComponent  implements OnInit {
   async importContacts(skipCheck = false) {
     this.loading$.next(true);
 
-    if (Capacitor.isNativePlatform()) {
+    if (
+      Capacitor.isNativePlatform()
+    ) {
       Contacts.checkPermissions().then((p) => {
         switch (p.contacts) {
           case "prompt-with-rationale":
@@ -182,7 +209,6 @@ export class MeetUpWizardComponent  implements OnInit {
   }
 
   hyrdrateContacts(contact: PickContactResult) {
-    console.log('Hellowworld', contact);
     this.importContactList$.set([
       ...this.importContactList$(),
       contact.contact
@@ -225,8 +251,8 @@ export class MeetUpWizardComponent  implements OnInit {
 
     await actionSheet.onDidDismiss().then((evt) => {
       if (evt.data?.action === 'delete') {
-        this.meetUpFriendList$.set(
-          this.meetUpFriendList$().filter((f) => f.id !== friendProfile.id)
+        this.meetUpFriendList$.next(
+          this.meetUpFriendList$.getValue().filter((f) => f.id !== friendProfile.id)
         );
       }
 
@@ -246,7 +272,7 @@ export class MeetUpWizardComponent  implements OnInit {
     );
   }
 
-  submitMeetUp() {
+  async submitMeetUp() {
     this.loading$.next(true);
     this.submitted$.next(true);
 
@@ -256,19 +282,23 @@ export class MeetUpWizardComponent  implements OnInit {
 
     const meet_up_name = this.meetUpName;
     const meet_up_description = this.meetUpDescription;
-    const friend_list = this.meetUpFriendList$().map(f => f.id);
+    const friend_list = this.meetUpFriendList$.getValue().map(f => f.id);
     const business_id = this.business.id;
     const sbcm = this.business.is_community_member;
-    const contactList = this.importContactList$();
+    const contact_list = this.importContactList$().map(c => (
+      JSON.stringify({name: c.name.display, number: c.phones[0].number})
+    ));
 
     const time = this.meetUpDateTime$();
 
     if (!time)  {
-      this.toastService.create({
-        message: 'You need to pick a time for the.',
+      const a = await this.toastService.create({
+        message: 'You need to pick a time for your meet up.',
         duration: 5000,
         position: 'bottom'
       });
+
+      await a.present();
       return;
     }
 
@@ -279,15 +309,21 @@ export class MeetUpWizardComponent  implements OnInit {
       business_id,
       time,
       sbcm,
-      contactList
+      contact_list
     };
 
-    this.meetUpService.createMeetUp(req).subscribe(resp => {
-      this.toastService.create({
+    this.meetUpService.createMeetUp(req).subscribe(async resp => {
+      const c = await this.toastService.create({
         message: 'You have created a meet up.',
         duration: 5000,
         position: 'bottom'
       });
+
+      await c.present();
+
+      setTimeout(() => {
+        this.addedMeetUp();
+      }, 1500);
     });
   }
 
@@ -306,25 +342,18 @@ export class MeetUpWizardComponent  implements OnInit {
         tap((_) => this.loading$.next(true)),
       ).subscribe((resp) => {
         this.loading$.next(false);
-        this.searchFriendListing$ = of(normalizeProfileFromFriendSearch(resp.matchingUserList, this.myUserId));
+        this.searchFriendListing$.next(normalizeProfileFromFriendSearch(resp.matchingUserList, this.myUserId));
         clearTimeout(this.searchTimeout);
         this.searchTimeout = null;
       });
     }, 2500);
   }
 
-  showMyFriendsOnly() {
-    this.myFriendsService.getMyFriends().pipe(
-      tap((_) => this.loading$.next(true)),
-    ).subscribe((resp) => {
-      this.loading$.next(false);
-      this.myFriendListing$ = of(normalizeProfile(resp.matchingUserList, this.myUserId));
-      clearTimeout(this.searchTimeout);
-      this.searchTimeout = null;
-    });
-  }
-
   closeModal() {
     this.modalCtrl.dismiss(null, 'cancel');
+  }
+
+  addedMeetUp() {
+    this.modalCtrl.dismiss(null, 'added-meetup');
   }
 }

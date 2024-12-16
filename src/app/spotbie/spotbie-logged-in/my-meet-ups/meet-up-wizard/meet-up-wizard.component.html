@@ -19,12 +19,12 @@
         <img [src]="p.image.base64String ?? './../../../assets/images/guest-spotbie-user-01.svg'" />
       </ion-avatar>
     </div>
-    <div *ngFor="let p of meetUpFriendList$(); trackBy: identify" (click)="actionSheet(p)">
+
+    <div *ngFor="let p of (meetUpFriendList$ | async); trackBy: identify" (click)="actionSheet(p)">
       <ion-avatar aria-hidden="true" slot="start">
         <img [src]="p.user_profile.spotbie_user.default_picture" />
       </ion-avatar>
     </div>
-
   </div>
 
   <ion-datetime-button class="mb-3" datetime="datetime"></ion-datetime-button>
