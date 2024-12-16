@@ -7,20 +7,27 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="d-grid" color="dark">
-  <ng-container *ngIf="(meetUpListing$ | async) else noMeetUps">
+  <ng-container *ngIf="(meetUpListing$ | async)?.length > 0 else noMeetUps">
     <ion-list>
-      <ion-item *ngFor="let meetUp of (meetUpListing$ | async)" color="dark" (click)="openMeetUp(meetUp)">
-        <ion-label>
-          <h2 class="sb-text-light-green-gradient"><b>{{ meetUp.name }}</b></h2>
-          <ion-text class="pt-3 pb-3">{{ meetUp.description }}</ion-text>
-          <ion-text>
-            <p>
-              <span style="white-space: pre-line"><b>{{ meetUp.business.name }}</b></span><br/>
-              <span style="white-space: pre-line"><b>{{ meetUp.time }}</b></span><br/>
-            </p>
-          </ion-text>
-        </ion-label>
-      </ion-item>
+      <ion-item-sliding *ngFor="let meetUp of (meetUpListing$ | async)">
+        <ion-item color="dark" (click)="openMeetUp(meetUp)">
+          <ion-item-options side="end" (ionSwipe)="deleteMeetUp(meetUp)">
+            <ion-item-option color="danger">
+              delete
+            </ion-item-option>
+          </ion-item-options>
+          <ion-label>
+            <h2 class="sb-text-light-green-gradient"><b>{{ meetUp.name }}</b></h2>
+            <ion-text>
+              <p class="pt-3 pb-3" style="font-size: 15px;">{{ meetUp.description }}</p>
+              <p>
+                <span style="white-space: pre-line"><b>{{ meetUp.business.name }}</b></span><br/>
+                <span style="white-space: pre-line"><b>{{ meetUp.time }}</b></span><br/>
+              </p>
+            </ion-text>
+          </ion-label>
+        </ion-item>
+      </ion-item-sliding>
     </ion-list>
   </ng-container>
 

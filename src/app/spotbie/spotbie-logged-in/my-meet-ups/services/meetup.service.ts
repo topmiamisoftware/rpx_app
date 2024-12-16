@@ -36,9 +36,13 @@ export class MeetupService {
     );
   }
 
-  deleteMeetUp(){
-    const body = {};
-    return this.httpClient.delete( `${MEETUP_API}`, body).pipe(
+  deleteMeetUp(meetUp: MeetUp){
+    const body = {
+      meet_up_id: meetUp.id
+    };
+    return this.httpClient.delete( `${MEETUP_API}`, {
+      body
+    }).pipe(
       catchError(handleError('myMeetUps')),
     );
   }

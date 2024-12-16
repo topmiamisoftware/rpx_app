@@ -95,10 +95,7 @@ export class MeetUpWizardComponent  implements OnInit {
   }
 
   convertToIso(time: string) {
-    let c = new Date(time);
-    const formattedDate = formatInTimeZone(c, 'America/New_York', "yyyy-MM-dd'T'HH:mm:ssXXX");
-    console.log('formatteddate', formattedDate);
-    return formattedDate;
+    return formatInTimeZone(new Date(time), 'America/New_York', "yyyy-MM-dd'T'HH:mm:ssXXX");
   }
 
   hydrateMeetUpForm(meetUp: MeetUp) {
@@ -124,8 +121,6 @@ export class MeetUpWizardComponent  implements OnInit {
   }
 
   async addToMeetUp(friend, firstName: string) {
-    debugger;
-
     const alreadyAdded = this.meetUpFriendList$.getValue()
       ?.filter(f => f.id === friend.id);
 
@@ -303,6 +298,11 @@ export class MeetUpWizardComponent  implements OnInit {
 
     await actionSheet.onDidDismiss().then((evt) => {
       if (evt.data?.action === 'delete') {
+        if (this.meetUpFriendList$.getValue().length === 1) {
+          this.cannotRemoveFriend();
+          return;
+        }
+
         this.meetUpFriendList$.next(
           this.meetUpFriendList$.getValue().filter((f) => f.id !== friendProfile.id)
         );
@@ -310,6 +310,17 @@ export class MeetUpWizardComponent  implements OnInit {
 
       return;
     });
+  }
+
+  async cannotRemoveFriend() {
+    const a = await this.toastService.create({
+      message: 'You need at least one invite.',
+      duration: 5000,
+      position: 'bottom'
+    });
+
+    await a.present();
+    return;
   }
 
   initMeetUpForm() {
@@ -441,6 +452,6 @@ export class MeetUpWizardComponent  implements OnInit {
   }
 
   addedMeetUp() {
-    this.modalCtrl.dismiss(null, 'added-meetup');
+    this.modalCtrl.dismiss({action: 'added-meetup'});
   }
 }

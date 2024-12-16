@@ -1,13 +1,15 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, NgZone, OnInit, Output} from '@angular/core';
 import {BehaviorSubject, Observable, of} from "rxjs";
-import {ModalController} from "@ionic/angular";
+import {AlertController, ModalController, ToastController} from "@ionic/angular";
 import {MyFriendsService} from "../../my-friends/my-friends.service";
 import {normalizeProfile} from "../../my-friends/helpers";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {filter, tap} from "rxjs/operators";
 import {UserauthService} from "../../../../services/userauth.service";
-import {MeetUp} from "../models";
+import {MeetUp, MeetUpInvitation} from "../models";
 import {MeetUpWizardComponent} from "../meet-up-wizard/meet-up-wizard.component";
+import {MeetupService} from "../services/meetup.service";
+import {format, parseISO} from "date-fns";
 
 @Component({
   selector: 'app-my-meet-up-listing',
@@ -40,6 +42,10 @@ export class MyMeetUpListingComponent implements OnInit {
     private modalCtrl: ModalController,
     private myFriendsService: MyFriendsService,
     private userAuthService: UserauthService,
+    private meetUpService: MeetupService,
+    private toastService: ToastController,
+    private alertController: AlertController,
+    private ngZone: NgZone
   ) {
     this.userAuthService.myId$
       .pipe(
@@ -86,5 +92,69 @@ export class MyMeetUpListingComponent implements OnInit {
     });
 
     await modal.present();
+
+    await modal.onDidDismiss().then((evt) => {
+      if (evt.data?.action === 'added-meetup') {
+        this.ngZone.run(() => {
+          this.rehydrateMeetUps();
+        });
+      }
+
+      return;
+    });
+  }
+
+  rehydrateMeetUps() {
+    this.meetUpService.myMeetUps().subscribe((resp: {meetUpListing: any}) => {
+      this.ngZone.run(() => {
+        const theMeetUps: MeetUp[] = normalizeMeetUpList(resp.meetUpListing.data);
+        this.meetUpListing$ = of(theMeetUps);
+      });
+    });
+  }
+
+  async deleteMeetUp(deleteMeetUp: MeetUp) {
+
+    const a = await this.alertController.create({
+      header: `Delete Meet Up`,
+      message: `Are you sure you want to delete ${deleteMeetUp.name}?`,
+      buttons: [
+        {
+          text: 'No',
+          role: 'cancel',
+        },
+        {
+          text: 'Yes',
+          role: 'confirm',
+          handler: async (ev) => {
+            this.meetUpService.deleteMeetUp(deleteMeetUp).subscribe(async (p) => {
+                const a = await this.toastService.create({
+                  message: `You have deleted ${deleteMeetUp.name} meet up.`,
+                  duration: 5000,
+                  position: 'bottom'
+                });
+
+                await a.present();
+
+                this.rehydrateMeetUps();
+              });
+
+            return;
+          },
+        },
+      ],
+    });
+
+    await a.present();
   }
 }
+function normalizeMeetUpList(meetUpList: MeetUpInvitation[]): MeetUp[] {
+  return meetUpList.map(a => {
+    const localTime = format(parseISO(a.meet_up.time), "LLL. dd ''yy h:mm");
+    return {
+      ...a.meet_up,
+      time: localTime
+    };
+  });
+}
+

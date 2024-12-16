@@ -43,6 +43,8 @@ export class MyMeetUpsComponent  implements OnInit {
         this.startWizard();
       } else if (evt.detail.role == 'find-friends') {
         this.findPeople();
+      } else if (evt.detail.role == 'cancel') {
+        this.myMeetUps();
       }
     });
   }

@@ -288,7 +288,6 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
   }
 
   async startWizard() {
-    console.log("this.infoObject$.getValue()", this.infoObject$.getValue());
     const wizardModal = await this.modalCtrl.create({
       component: MeetUpWizardComponent,
       componentProps: {
@@ -296,7 +295,7 @@ export class InfoObjectComponent implements OnInit, AfterViewInit {
       }
     });
 
-    wizardModal.present();
+    await wizardModal.present();
   }
 
   getOverlayWindowStyling(): string {
