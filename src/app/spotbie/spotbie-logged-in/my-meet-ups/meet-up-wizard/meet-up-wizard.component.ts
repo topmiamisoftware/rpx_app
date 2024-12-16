@@ -1,8 +1,17 @@
-import {Component, ElementRef, Input, OnInit, signal, ViewChild, WritableSignal} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  signal,
+  ViewChild,
+  WritableSignal
+} from '@angular/core';
 import {ActionSheetController, AlertController, IonDatetime, ModalController, ToastController} from "@ionic/angular";
 import {MyFriendsService} from "../../my-friends/my-friends.service";
 import {UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
-import {BehaviorSubject, Observable, of, take} from "rxjs";
+import {BehaviorSubject, take} from "rxjs";
 import {normalizeProfile, normalizeProfileFromFriendSearch} from "../../my-friends/helpers";
 import {MeetupService} from "../services/meetup.service";
 import {filter, map, tap} from "rxjs/operators";
@@ -16,13 +25,13 @@ import {IOSSettings} from "capacitor-native-settings/dist/esm/definitions";
 import {ContactPayload, Contacts, PickContactResult} from "@capacitor-community/contacts";
 import {User} from "../../../../models/user";
 import {MeetUp, MeetUpInvitation} from "../models";
-import {SpotbieUser} from "../../../../models/spotbieuser";
-
+import {formatInTimeZone} from 'date-fns-tz'
 
 @Component({
   selector: 'app-meet-up-wizard',
   templateUrl: './meet-up-wizard.component.html',
   styleUrls: ['./meet-up-wizard.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MeetUpWizardComponent  implements OnInit {
 
@@ -52,7 +61,7 @@ export class MeetUpWizardComponent  implements OnInit {
   meetUpDateTime$ = signal(new Date());
   // The minimum date value for the calendar
   minDateValue$ = signal(
-    new Date()
+    formatInTimeZone(new Date(), 'America/New_York', "yyyy-MM-dd'T'HH:mm:ssXXX")
   );
   myUserId: User['id'];
   business: Business;
@@ -85,6 +94,13 @@ export class MeetUpWizardComponent  implements OnInit {
     this.initMeetUpForm();
   }
 
+  convertToIso(time: string) {
+    let c = new Date(time);
+    const formattedDate = formatInTimeZone(c, 'America/New_York', "yyyy-MM-dd'T'HH:mm:ssXXX");
+    console.log('formatteddate', formattedDate);
+    return formattedDate;
+  }
+
   hydrateMeetUpForm(meetUp: MeetUp) {
     this.meetUpForm.get('meetUpName').setValue(meetUp.name);
     this.meetUpForm.get('meetUpDescription').setValue(meetUp.description);
@@ -100,10 +116,9 @@ export class MeetUpWizardComponent  implements OnInit {
 
   hydrateFriends(invitationList: MeetUpInvitation[]) {
     const friendList = invitationList.map(meetUpInvitation => ({
-      user_profile:{ spotbie_user: meetUpInvitation.friend_profile }
+      user_profile:{ spotbie_user: meetUpInvitation.friend_profile },
+      id: meetUpInvitation.friend_id
     }));
-
-    console.log('THE FRIEND LIST', friendList);
 
     this.meetUpFriendList$.next(friendList);
   }
@@ -379,12 +394,12 @@ export class MeetUpWizardComponent  implements OnInit {
         sbcm: null,
         id: this.meetUp$.getValue().id
       }
-      this.editMeetUp(editReq);
+      this.editMeetUp(editReq, editReq.id);
     }
   }
 
-  editMeetUp(req) {
-    this.meetUpService.editMeetUp(req).subscribe(async resp => {
+  editMeetUp(req, id: MeetUp['id']) {
+    this.meetUpService.editMeetUp(req, id ).subscribe(async resp => {
       const c = await this.toastService.create({
         message: 'You have edited your meet up.',
         duration: 5000,

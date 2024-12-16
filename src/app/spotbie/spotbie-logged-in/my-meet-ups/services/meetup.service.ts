@@ -5,6 +5,7 @@ import {catchError} from "rxjs/operators";
 import {handleError} from "../../../../helpers/error-helper";
 import {BehaviorSubject} from "rxjs";
 import {Business} from "../../../../models/business";
+import {MeetUp} from "../models";
 
 const MEETUP_API = `${environment.apiEndpoint}meet-ups`;
 
@@ -29,8 +30,8 @@ export class MeetupService {
     );
   }
 
-  editMeetUp(req){
-    return this.httpClient.put(`${MEETUP_API}`, req).pipe(
+  editMeetUp(req, meetUpId: MeetUp['id']){
+    return this.httpClient.put(`${MEETUP_API}/${meetUpId}`, req).pipe(
       catchError(handleError('createMeetUp')),
     );
   }

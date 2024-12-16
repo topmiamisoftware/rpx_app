@@ -45,7 +45,7 @@
     <ng-template>
       <ion-datetime
         [min]="minDateValue$()"
-        [value]="meetUpDateTime$()"
+        [value]="convertToIso((meetUp$ | async)?.time) || minDateValue$()"
         id="datetime"
         color="dark"
         (ionChange)="setDate($event)"
