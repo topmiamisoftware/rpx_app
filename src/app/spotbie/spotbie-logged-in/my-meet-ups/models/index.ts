@@ -1,30 +1,17 @@
+import {Business} from "../../../../models/business";
+
 export interface MeetUp {
   id: number
   user_id: number
-  friend_id: number
   business_id: any
   time: string
   deleted_at: any
   created_at: string
   updated_at: string
+  friend_list: string
   business_id_sb: number
-  name: string
-  slug: string
-  description: string
-  address: string
-  city: string
-  country: string
-  line1: string
-  line2: any
-  postal_code: string
-  state: string
-  categories: string
-  loc_x: number
-  loc_y: number
-  photo: string
-  is_verified: number
-  qr_code_link: string
-  is_food_truck: number
-  owner_username: string
-  friend_username: string
+  friend_id: number
+  meet_up_id: number
+  going: number
+  business: Business
 }
