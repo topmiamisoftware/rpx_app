@@ -9,7 +9,7 @@
   </h3>
 
   <ng-container *ngIf="latestMeetUp$() as latestMeetUp">
-    <div>
+    <div (click)="myMeetUpsModal()">
       <p class="p-4">
         <span>{{ latestMeetUp.time_friendly }}</span><br/>
         <span style="white-space: pre-line">&#64;<b>{{ latestMeetUp.business.name }}</b></span><br/>
