@@ -6,7 +6,7 @@ import {normalizeProfile} from "../../my-friends/helpers";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {filter, tap} from "rxjs/operators";
 import {UserauthService} from "../../../../services/userauth.service";
-import {MeetUp, MeetUpInvitation} from "../models";
+import {MeetUp, MeetUpInvitation, normalizeMeetUpList} from "../models";
 import {MeetUpWizardComponent} from "../meet-up-wizard/meet-up-wizard.component";
 import {MeetupService} from "../services/meetup.service";
 import {format, parseISO} from "date-fns";
@@ -148,13 +148,3 @@ export class MyMeetUpListingComponent implements OnInit {
     await a.present();
   }
 }
-function normalizeMeetUpList(meetUpList: MeetUpInvitation[]): MeetUp[] {
-  return meetUpList.map(a => {
-    const localTime = format(parseISO(a.meet_up.time), "LLL. dd ''yy h:mm");
-    return {
-      ...a.meet_up,
-      time: localTime
-    };
-  });
-}
-

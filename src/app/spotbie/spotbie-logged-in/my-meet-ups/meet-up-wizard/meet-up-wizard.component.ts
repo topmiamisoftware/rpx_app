@@ -58,11 +58,12 @@ export class MeetUpWizardComponent  implements OnInit {
   meetUpFriendList$ =  new BehaviorSubject<any>(undefined);
   private searchTimeout;
 
-  meetUpDateTime$ = signal(new Date());
+  meetUpDateTime$: WritableSignal<any> = signal(new UTCDate(new Date()));
   // The minimum date value for the calendar
   minDateValue$ = signal(
-    formatInTimeZone(new Date(), 'America/New_York', "yyyy-MM-dd'T'HH:mm:ssXXX")
+    formatInTimeZone(new Date(), Intl.DateTimeFormat().resolvedOptions().timeZone, "yyyy-MM-dd'T'HH:mm:ssXXX")
   );
+
   myUserId: User['id'];
   business: Business;
   importContactList$: WritableSignal<ContactPayload[]> = signal([]);
@@ -94,14 +95,11 @@ export class MeetUpWizardComponent  implements OnInit {
     this.initMeetUpForm();
   }
 
-  convertToIso(time: string) {
-    return formatInTimeZone(new Date(time), 'America/New_York', "yyyy-MM-dd'T'HH:mm:ssXXX");
-  }
 
   hydrateMeetUpForm(meetUp: MeetUp) {
     this.meetUpForm.get('meetUpName').setValue(meetUp.name);
     this.meetUpForm.get('meetUpDescription').setValue(meetUp.description);
-    this.meetUpDateTime$.set(new Date(meetUp.time));
+    this.meetUpDateTime$.set(meetUp.time);
 
     this.hydrateFriends(meetUp.invitation_list);
     this.hydrateOwner(meetUp.owner);
@@ -338,7 +336,6 @@ export class MeetUpWizardComponent  implements OnInit {
       take(1),
       filter(f => !!f),
       tap((meetUp: MeetUp) => {
-        console.log("SET MEET UP", meetUp);
         this.hydrateMeetUpForm(meetUp);
       })
     ).subscribe();
@@ -361,7 +358,7 @@ export class MeetUpWizardComponent  implements OnInit {
       JSON.stringify({name: c.name.display, number: c.phones[0].number})
     ));
 
-    const time = this.meetUpDateTime$();
+    let time = this.meetUpDateTime$();
 
     if (!time) {
       const a = await this.toastService.create({
@@ -374,13 +371,18 @@ export class MeetUpWizardComponent  implements OnInit {
       return;
     }
 
+    debugger;
+
+    time = new Date(time);
+    const utcTime = new UTCDate(time);
+
     const req = {
       meet_up_name,
       meet_up_description,
       friend_list,
       business_id,
       sbcm,
-      time,
+      time: utcTime,
       contact_list
     };
 
