@@ -115,12 +115,12 @@
       </ion-row>
       <ion-row class="ion-align-items-center">
         <ion-col>
-          <input class="sb-input" (keyup)="searchFriends($event)" placeholder="Search..."  />
+          <input class="sb-input" (keyup)="searchFriends($event)" placeholder="Search friends..."  />
         </ion-col>
         <ion-col *ngIf="(searchFriendListing$ | async)" size="sm">
           <ion-buttons>
-            <ion-button (click)="getMyFriends()" class="get-my-friends">
-              <ion-icon name="people-fill" />
+            <ion-button (click)="getMyFriends()" id="get-my-friends">
+              <ion-icon name="people-outline" slot="end"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-col>
@@ -135,12 +135,10 @@
       <ion-row>
         <ion-col>
           <div class="importContactsWrapper">
-            <ion-buttons>
-              <ion-button (click)="importContacts()" class="p-2">
-                <ion-icon color='light' name='people-fill' slot='end'></ion-icon>
-                import contacts
-              </ion-button>
-            </ion-buttons>
+            <ion-button (click)="importContacts()" class="p-2">
+              <ion-icon name="people-circle-outline" slot="end"></ion-icon>
+              import contacts
+            </ion-button>
           </div>
         </ion-col>
       </ion-row>

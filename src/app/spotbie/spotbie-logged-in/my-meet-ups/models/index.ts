@@ -1,8 +1,9 @@
 import {Business} from "../../../../models/business";
 import {SpotbieUser} from "../../../../models/spotbieuser";
 import {User} from "../../../../models/user";
-import {format} from "date-fns";
-import {toZonedTime} from "date-fns-tz";
+import {format, formatISO} from "date-fns";
+import {formatInTimeZone, toZonedTime} from "date-fns-tz";
+import {spotbie_UTC} from "../../../../helpers/time";
 
 export interface MeetUpInvitation {
   id: number
@@ -29,8 +30,8 @@ export interface MeetUp {
   id: number
   user_id: number
   business_id: any
-  time: string | Date;
-  time_friendly: string | Date; // ISO rep, for ion-datetime
+  time: string;
+  time_friendly: string;
   deleted_at: any
   created_at: string
   updated_at: string
@@ -48,18 +49,18 @@ export interface MeetUp {
 
 export function normalizeMeetUpList(meetUpList: MeetUpInvitation[]): MeetUp[] {
   return meetUpList.map(a => {
-    const inUTCFormat = format(a.meet_up.time, "yyyy-MM-dd'T'HH:mm:ssXXX");
+    const localTime = format(
+      new Date(`${spotbie_UTC(a.meet_up.time)}`),
+      "LLL. dd ''yy h:mm a"
+    );
 
     // You need ISO standard for Ion-datetime
-    const timeIso = toZonedTime(inUTCFormat, Intl.DateTimeFormat().resolvedOptions().timeZone);
-    const localTime = toZonedTime(inUTCFormat, Intl.DateTimeFormat().resolvedOptions().timeZone);
-
-    console.log("in LOCAL TIMZESONE", localTime, timeIso);
+    const toISO = formatISO(new Date(`${spotbie_UTC(a.meet_up.time)}`));
 
     return {
       ...a.meet_up,
       time_friendly: localTime,
-      time: timeIso,
+      time: toISO,
     };
   });
 }

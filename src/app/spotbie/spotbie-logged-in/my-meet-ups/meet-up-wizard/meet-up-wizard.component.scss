@@ -26,27 +26,23 @@
   }
 }
 
-.get-my-friends {
+#get-my-friends {
   --background: #53bf61;
   --color: white;
-
-  ion-icon {
-    color: white !important;
-    --color: white !important;
-  }
 }
+
 .importContactsWrapper {
   display: flex;
   justify-content: center;
 
   ion-icon {
-    --color: white;
-    color: white;
+    --color: white !important;
+    color: white !important;
   }
 
   ion-button {
     --background: #53bf61;
-    --color: white;
+    --color: white !important;
   }
 }
 

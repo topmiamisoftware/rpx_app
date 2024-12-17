@@ -17,7 +17,6 @@ import {MeetupService} from "../services/meetup.service";
 import {filter, map, tap} from "rxjs/operators";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {UserauthService} from "../../../../services/userauth.service";
-import {UTCDate} from "@date-fns/utc";
 import {Business} from "../../../../models/business";
 import {Capacitor} from "@capacitor/core";
 import {AndroidSettings, NativeSettings} from "capacitor-native-settings";
@@ -26,6 +25,7 @@ import {ContactPayload, Contacts, PickContactResult} from "@capacitor-community/
 import {User} from "../../../../models/user";
 import {MeetUp, MeetUpInvitation} from "../models";
 import {formatInTimeZone} from 'date-fns-tz'
+import {UTCDate} from "@date-fns/utc";
 
 @Component({
   selector: 'app-meet-up-wizard',
@@ -58,7 +58,7 @@ export class MeetUpWizardComponent  implements OnInit {
   meetUpFriendList$ =  new BehaviorSubject<any>(undefined);
   private searchTimeout;
 
-  meetUpDateTime$: WritableSignal<any> = signal(new UTCDate(new Date()));
+  meetUpDateTime$: WritableSignal<any> = signal(new Date());
   // The minimum date value for the calendar
   minDateValue$ = signal(
     formatInTimeZone(new Date(), Intl.DateTimeFormat().resolvedOptions().timeZone, "yyyy-MM-dd'T'HH:mm:ssXXX")
@@ -212,7 +212,6 @@ export class MeetUpWizardComponent  implements OnInit {
     });
   }
 
-
   async importContacts(skipCheck = false) {
     this.loading$.next(true);
 
@@ -272,7 +271,7 @@ export class MeetUpWizardComponent  implements OnInit {
   }
 
   setDate(evt) {
-    this.meetUpDateTime$.set(new UTCDate(evt.detail.value));
+    this.meetUpDateTime$.set(evt.detail.value);
   }
 
   async actionSheet(friendProfile) {
@@ -349,9 +348,21 @@ export class MeetUpWizardComponent  implements OnInit {
       return false;
     }
 
+    const friend_list = this.meetUpFriendList$.getValue()?.map(f => f.id);
+
+    if (!friend_list) {
+      const a = await this.toastService.create({
+        message: 'You need to pick some friends for your meet up.',
+        duration: 3000,
+        position: 'bottom'
+      });
+
+      await a.present();
+      return;
+    }
+
     const meet_up_name = this.meetUpName;
     const meet_up_description = this.meetUpDescription;
-    const friend_list = this.meetUpFriendList$.getValue().map(f => f.id);
     const business_id = this.business.id;
     const sbcm = this.business.is_community_member;
     const contact_list = this.importContactList$().map(c => (
@@ -370,8 +381,6 @@ export class MeetUpWizardComponent  implements OnInit {
       await a.present();
       return;
     }
-
-    debugger;
 
     time = new Date(time);
     const utcTime = new UTCDate(time);

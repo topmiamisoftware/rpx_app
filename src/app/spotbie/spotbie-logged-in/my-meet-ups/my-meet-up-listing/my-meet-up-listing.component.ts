@@ -6,10 +6,9 @@ import {normalizeProfile} from "../../my-friends/helpers";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {filter, tap} from "rxjs/operators";
 import {UserauthService} from "../../../../services/userauth.service";
-import {MeetUp, MeetUpInvitation, normalizeMeetUpList} from "../models";
+import {MeetUp, normalizeMeetUpList} from "../models";
 import {MeetUpWizardComponent} from "../meet-up-wizard/meet-up-wizard.component";
 import {MeetupService} from "../services/meetup.service";
-import {format, parseISO} from "date-fns";
 
 @Component({
   selector: 'app-my-meet-up-listing',
