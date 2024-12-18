@@ -26,6 +26,7 @@ import {User} from "../../../../models/user";
 import {MeetUp, MeetUpInvitation} from "../models";
 import {formatInTimeZone} from 'date-fns-tz'
 import {UTCDate} from "@date-fns/utc";
+import {InfoObject} from "../../../../models/info-object";
 
 @Component({
   selector: 'app-meet-up-wizard',
@@ -65,7 +66,7 @@ export class MeetUpWizardComponent  implements OnInit {
   );
 
   myUserId: User['id'];
-  business: Business;
+  business: Business | InfoObject;
   importContactList$ = new BehaviorSubject<FriendContact[]>([]);
   showEnablePermissions$ = signal(false);
 
@@ -101,11 +102,12 @@ export class MeetUpWizardComponent  implements OnInit {
     this.meetUpForm.get('meetUpDescription').setValue(meetUp.description);
     this.meetUpDateTime$.set(meetUp.time);
 
-
-    const cList = JSON.parse(meetUp.contact_list);
-    cList.forEach(async c => {
-      await this.hydrateContacts(JSON.parse(c));
-    });
+    if (meetUp?.contact_list) {
+      const cList = JSON.parse((meetUp.contact_list as any));
+      cList.forEach(async c => {
+        await this.hydrateContacts(JSON.parse(c));
+      });
+    }
 
     this.hydrateFriends(meetUp.invitation_list);
     this.hydrateOwner(meetUp.owner);
@@ -121,7 +123,10 @@ export class MeetUpWizardComponent  implements OnInit {
       id: meetUpInvitation.friend_id
     }));
 
-    this.meetUpFriendList$.next(friendList);
+    this.meetUpFriendList$.next(friendList.filter(a => {
+      let c = a.id.toString();
+      return c.indexOf('+') === -1;
+    }));
   }
 
   async addToMeetUp(friend, firstName: string) {
@@ -258,11 +263,36 @@ export class MeetUpWizardComponent  implements OnInit {
       return;
     }
 
-    this.hydrateContacts({ name: result.contact.name.display, number: result.contact.phones[0].number, image: null});
+    let ph;
+    if (result.contact.phones[0].number.indexOf('+') < 0) {
+      ph = '+1' + result.contact.phones[0].number;
+    } else {
+      ph = result.contact.phones[0].number;
+    }
+
+    this.hydrateContacts({ name: result.contact.name.display, number: ph, image: null});
     this.loading$.next(false);
   }
 
+  alreadyInImport(displayName: string) {
+    this.toastService.create({
+      message: `${displayName} was already imported.`,
+      duration: 2500,
+      position: 'bottom'
+    }).then(c => c.present());
+  }
+
   hydrateContacts(contact: FriendContact) {
+    const alreadyInList = this.importContactList$.getValue()?.find(a => (
+      // We'll want to put this into a comparator function that can compare against every locale instead of hardcoding the +1
+      (a.number === contact.number || a.number === '+1'+contact.number))
+    );
+
+    if (alreadyInList) {
+      this.alreadyInImport(contact.name);
+      return;
+    }
+
     this.importContactList$.next([
       ...this.importContactList$.getValue(),
       contact
@@ -286,6 +316,7 @@ export class MeetUpWizardComponent  implements OnInit {
 
   async actionSheet(friendProfile, friendContact: FriendContact = null) {
     const actionSheet = await this.actionSheetCtrl.create({
+      cssClass: 'spotbie-ac',
       buttons: [
         {
           text: 'Remove',
@@ -306,8 +337,8 @@ export class MeetUpWizardComponent  implements OnInit {
     await actionSheet.onDidDismiss().then((evt) => {
       if (evt.data?.action === 'delete') {
         if ((
-          this.meetUpFriendList$.getValue().length +
-          this.importContactList$.getValue().length
+          this.meetUpFriendList$.getValue()?.length +
+          this.importContactList$.getValue()?.length
         ) === 1) {
           this.cannotRemoveFriend();
           return;
@@ -378,9 +409,18 @@ export class MeetUpWizardComponent  implements OnInit {
       return false;
     }
 
-    const friend_list = this.meetUpFriendList$.getValue()?.map(f => f.id);
+    let contact_list;
+    if (this.importContactList$.getValue()?.length) {
+      contact_list = this.importContactList$.getValue().map(c => (
+        JSON.stringify(c)
+      ));
+    } else {
+      contact_list = null;
+    }
 
-    if (!friend_list) {
+    const friend_list = this.meetUpFriendList$.getValue()?.map(f => parseInt(f.id));
+
+    if ((!friend_list && !contact_list) || (friend_list?.length + contact_list?.length === 0))  {
       const a = await this.toastService.create({
         message: 'You need to pick some friends for your meet up.',
         duration: 3000,
@@ -393,17 +433,8 @@ export class MeetUpWizardComponent  implements OnInit {
 
     const meet_up_name = this.meetUpName;
     const meet_up_description = this.meetUpDescription;
-    const business_id = this.business.id;
-    const sbcm = this.business.is_community_member;
-
-    let contact_list;
-    if (this.importContactList$.getValue()?.length) {
-      contact_list = this.importContactList$.getValue().map(c => (
-        JSON.stringify(c)
-      ));
-    } else {
-      contact_list = null;
-    }
+    const business_id = this.business.id.toString();
+    const sbcm = this.business.is_community_member ?? false;
 
     let time = this.meetUpDateTime$();
 

@@ -11,12 +11,12 @@
     Pick a spot, a time, some friends, and go create a shared experience.
   </p>
 
-  <p>Meet up &#64; {{ business.name }}</p>
+  <p>Meet up &#64; {{ business?.name }}</p>
 
   <div class="whosGoingWrapper mt-3 mb-3">
     <ng-container *ngIf="(importContactList$ | async)?.length > 0">
       <div *ngFor="let p of (importContactList$ | async)" (click)="actionSheet(null, p)">
-        <ion-label>{{ p?.name }}</ion-label>
+        <ion-label>{{ p?.name | shortenDisplayName }}</ion-label>
         <ion-avatar aria-hidden="true" slot="start">
           <img [src]="p?.image ?? './../../../assets/images/guest-spotbie-user-01.svg'" />
         </ion-avatar>
@@ -24,7 +24,7 @@
     </ng-container>
 
     <div *ngFor="let p of (meetUpFriendList$ | async); trackBy: identify" (click)="actionSheet(p)">
-      <ion-label>{{ p?.user_profile.spotbie_user.first_name }}</ion-label>
+      <ion-label>{{ p?.user_profile.spotbie_user.first_name | shortenDisplayName  }}</ion-label>
       <ion-avatar slot="start">
         <img [src]="p.user_profile.spotbie_user.default_picture" />
       </ion-avatar>

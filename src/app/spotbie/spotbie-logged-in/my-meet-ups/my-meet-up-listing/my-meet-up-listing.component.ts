@@ -9,6 +9,9 @@ import {UserauthService} from "../../../../services/userauth.service";
 import {MeetUp, normalizeMeetUpList} from "../models";
 import {MeetUpWizardComponent} from "../meet-up-wizard/meet-up-wizard.component";
 import {MeetupService} from "../services/meetup.service";
+import {InfoObjectServiceService} from "../../../map/info-object/info-object-service.service";
+
+const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
 @Component({
   selector: 'app-my-meet-up-listing',
@@ -19,10 +22,10 @@ export class MyMeetUpListingComponent implements OnInit {
 
   @Output() moreListingsEvt = new EventEmitter(null);
 
-  meetUpListing$: Observable<MeetUp[]> = new Observable(null);
+  meetUpListing$: BehaviorSubject<MeetUp[]> = new BehaviorSubject(null);
   @Input() set meetUpListing(meetUpListing: MeetUp[]) {
     if (meetUpListing) {
-      this.meetUpListing$ = of(meetUpListing);
+      this.meetUpListing$.next(meetUpListing);
     }
   }
 
@@ -44,7 +47,8 @@ export class MyMeetUpListingComponent implements OnInit {
     private meetUpService: MeetupService,
     private toastService: ToastController,
     private alertController: AlertController,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private infoObjectService: InfoObjectServiceService,
   ) {
     this.userAuthService.myId$
       .pipe(
@@ -107,8 +111,28 @@ export class MyMeetUpListingComponent implements OnInit {
     this.meetUpService.myMeetUps().subscribe((resp: {meetUpListing: any}) => {
       this.ngZone.run(() => {
         const theMeetUps: MeetUp[] = normalizeMeetUpList(resp.meetUpListing.data);
-        this.meetUpListing$ = of(theMeetUps);
+        this.meetUpListing$.next(theMeetUps);
+        this.upsertInfoObjects();
       });
+    });
+  }
+
+  upsertInfoObjects() {
+    this.meetUpListing$.getValue().map((meetUp: MeetUp) => {
+      let isNotSbcm = meetUp.business_id;
+      if (isNotSbcm) {
+        const infoObjToPull = {config_url: YELP_BUSINESS_DETAILS_API + meetUp.business_id};
+
+        this.infoObjectService.pullInfoObject(infoObjToPull).subscribe(resp => {
+          meetUp.business = resp.data;
+
+          let toReplace = this.meetUpListing$.getValue().findIndex(a => meetUp.meet_up_id === a.meet_up_id);
+          let o = this.meetUpListing$.getValue();
+          o[toReplace - 1] = meetUp;
+
+          this.meetUpListing$.next(o);
+        });
+      }
     });
   }
 

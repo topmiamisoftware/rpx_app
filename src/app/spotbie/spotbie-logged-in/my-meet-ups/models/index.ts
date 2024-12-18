@@ -4,6 +4,7 @@ import {User} from "../../../../models/user";
 import {format, formatISO} from "date-fns";
 import {spotbie_UTC} from "../../../../helpers/time";
 import {Capacitor} from "@capacitor/core";
+import {InfoObject} from "../../../../models/info-object";
 
 export interface MeetUpInvitation {
   id: number
@@ -16,7 +17,7 @@ export interface MeetUpInvitation {
   updated_at: string
   friend_list: string
   business_id_sb: number
-  friend_id: number
+  friend_id: number | string;
   meet_up_id: number
   going: number
   business: Business
@@ -40,12 +41,12 @@ export interface MeetUp {
   friend_id: number
   meet_up_id: number
   going: number
-  business: Business
+  business: Business | InfoObject
   name: string
   description: string
   invitation_list: MeetUpInvitation[];
   owner: User;
-  contact_list: any;
+  contact_list: {name: string, number: string, image: string}[];
 }
 
 export function normalizeMeetUpList(meetUpList: MeetUpInvitation[]): MeetUp[] {

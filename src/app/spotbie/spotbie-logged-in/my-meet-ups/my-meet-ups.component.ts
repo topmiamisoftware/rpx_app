@@ -1,13 +1,26 @@
-import {Component, EventEmitter, OnInit, Output, signal, WritableSignal} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  OnInit,
+  Output,
+  signal,
+  WritableSignal
+} from '@angular/core';
 import {ModalController} from "@ionic/angular";
 import {MeetupService} from "./services/meetup.service";
 import {MyMeetUpListingComponent} from "./my-meet-up-listing/my-meet-up-listing.component";
 import {MeetUp, normalizeMeetUpList} from "./models";
+import {InfoObjectServiceService} from "../../map/info-object/info-object-service.service";
+
+const YELP_BUSINESS_DETAILS_API = 'https://api.yelp.com/v3/businesses/';
 
 @Component({
   selector: 'app-my-meet-ups',
   templateUrl: './my-meet-ups.component.html',
   styleUrls: ['./my-meet-ups.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyMeetUpsComponent  implements OnInit {
 
@@ -19,7 +32,9 @@ export class MyMeetUpsComponent  implements OnInit {
 
   constructor(
     private modalCtrl: ModalController,
-    private meetUpService: MeetupService
+    private meetUpService: MeetupService,
+    private infoObjectService: InfoObjectServiceService,
+    private changeDetectorRef: ChangeDetectorRef
   ) { }
 
   async findPeople() {
@@ -57,6 +72,28 @@ export class MyMeetUpsComponent  implements OnInit {
       const theMeetUps: MeetUp[] = normalizeMeetUpList(resp.meetUpListing.data);
       this.latestMeetUp$.set(theMeetUps[0]);
       this.meetUpList$.set(theMeetUps);
+
+      this.upsertInfoObjects();
+    });
+  }
+
+  upsertInfoObjects() {
+    this.meetUpList$().map((meetUp: MeetUp) => {
+      let isNotSbcm = meetUp.business_id;
+      if (isNotSbcm) {
+        const infoObjToPull = {config_url: YELP_BUSINESS_DETAILS_API + meetUp.business_id};
+
+        this.infoObjectService.pullInfoObject(infoObjToPull).subscribe(resp => {
+          meetUp.business = resp.data;
+
+          let toReplace = this.meetUpList$().findIndex(a => meetUp.meet_up_id === a.meet_up_id);
+          let o = this.meetUpList$();
+          o[toReplace - 1] = meetUp;
+
+          this.meetUpList$.set(o);
+          this.changeDetectorRef.detectChanges();
+        });
+      }
     });
   }
 

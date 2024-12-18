@@ -196,10 +196,10 @@ export class MyFriendsComponent {
     this.loading$.next(false);
   }
 
-  hyrdrateContacts(contact: PickContactResult) {
+  hyrdrateContacts(result: PickContactResult) {
     this.importContactList$.set([
       ...this.importContactList$(),
-      contact.contact
+      result.contact
     ]);
   }
 

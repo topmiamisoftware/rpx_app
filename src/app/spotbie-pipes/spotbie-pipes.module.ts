@@ -7,6 +7,7 @@ import {DateFormatPipe, TimeFormatPipe} from '../pipes/date-format.pipe';
 import {NumberFormatPipe} from '../pipes/number-format.pipe';
 import {SortOrderPipe} from '../pipes/sort-order.pipe';
 import {TruncateTextPipe} from '../pipes/truncate-text.pipe';
+import {ShortenDisplayNamePipe} from "../pipes/shorten-display-name.pipe";
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import {TruncateTextPipe} from '../pipes/truncate-text.pipe';
     TimeFormatPipe,
     NumberFormatPipe,
     SortOrderPipe,
+    ShortenDisplayNamePipe,
     TruncateTextPipe,
   ],
   imports: [CommonModule],
@@ -28,6 +30,7 @@ import {TruncateTextPipe} from '../pipes/truncate-text.pipe';
     TimeFormatPipe,
     NumberFormatPipe,
     SortOrderPipe,
+    ShortenDisplayNamePipe,
     TruncateTextPipe,
   ],
 })
