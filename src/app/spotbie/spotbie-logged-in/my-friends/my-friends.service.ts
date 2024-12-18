@@ -39,7 +39,7 @@ export class MyFriendsService {
       }
     };
 
-    return this.httpClient.delete( `${FRIENDS_API}/delete-friendship/`, options).pipe(
+    return this.httpClient.delete( `${FRIENDS_API}`, options).pipe(
       catchError(handleError('myMeetUps')),
     );
   }

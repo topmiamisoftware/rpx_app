@@ -66,7 +66,7 @@ export class MeetUpWizardComponent  implements OnInit {
 
   myUserId: User['id'];
   business: Business;
-  importContactList$: WritableSignal<ContactPayload[]> = signal([]);
+  importContactList$ = new BehaviorSubject<FriendContact[]>([]);
   showEnablePermissions$ = signal(false);
 
   constructor(
@@ -100,6 +100,12 @@ export class MeetUpWizardComponent  implements OnInit {
     this.meetUpForm.get('meetUpName').setValue(meetUp.name);
     this.meetUpForm.get('meetUpDescription').setValue(meetUp.description);
     this.meetUpDateTime$.set(meetUp.time);
+
+
+    const cList = JSON.parse(meetUp.contact_list);
+    cList.forEach(async c => {
+      await this.hydrateContacts(JSON.parse(c));
+    });
 
     this.hydrateFriends(meetUp.invitation_list);
     this.hydrateOwner(meetUp.owner);
@@ -160,7 +166,6 @@ export class MeetUpWizardComponent  implements OnInit {
                 this.meetUpFriendList$.next([...friendProfile]);
               }
 
-              console.log("The meetupfriendlist", this.meetUpFriendList$.getValue());
               return;
             },
           },
@@ -248,14 +253,19 @@ export class MeetUpWizardComponent  implements OnInit {
       projection,
     });
 
-    this.hyrdrateContacts(result);
+    if (!result.contact.phones?.length) {
+      this.mustHavePh();
+      return;
+    }
+
+    this.hydrateContacts({ name: result.contact.name.display, number: result.contact.phones[0].number, image: null});
     this.loading$.next(false);
   }
 
-  hyrdrateContacts(contact: PickContactResult) {
-    this.importContactList$.set([
-      ...this.importContactList$(),
-      contact.contact
+  hydrateContacts(contact: FriendContact) {
+    this.importContactList$.next([
+      ...this.importContactList$.getValue(),
+      contact
     ]);
   }
 
@@ -274,7 +284,7 @@ export class MeetUpWizardComponent  implements OnInit {
     this.meetUpDateTime$.set(evt.detail.value);
   }
 
-  async actionSheet(friendProfile) {
+  async actionSheet(friendProfile, friendContact: FriendContact = null) {
     const actionSheet = await this.actionSheetCtrl.create({
       buttons: [
         {
@@ -295,18 +305,38 @@ export class MeetUpWizardComponent  implements OnInit {
 
     await actionSheet.onDidDismiss().then((evt) => {
       if (evt.data?.action === 'delete') {
-        if (this.meetUpFriendList$.getValue().length === 1) {
+        if ((
+          this.meetUpFriendList$.getValue().length +
+          this.importContactList$.getValue().length
+        ) === 1) {
           this.cannotRemoveFriend();
           return;
         }
 
-        this.meetUpFriendList$.next(
-          this.meetUpFriendList$.getValue().filter((f) => f.id !== friendProfile.id)
-        );
+        if (friendContact && this.importContactList$.getValue()?.length) {
+          this.importContactList$.next(
+            this.importContactList$.getValue().filter((f) => (f.name !== friendContact.name) && (f.number !== friendContact.number))
+          );
+        } else if (friendProfile) {
+          this.meetUpFriendList$.next(
+            this.meetUpFriendList$.getValue().filter((f) => f.id !== friendProfile.id)
+          );
+        }
       }
 
       return;
     });
+  }
+
+  async mustHavePh() {
+    const a = await this.toastService.create({
+      message: 'This contact does not have a phone number.',
+      duration: 5000,
+      position: 'bottom'
+    });
+
+    await a.present();
+    return;
   }
 
   async cannotRemoveFriend() {
@@ -365,9 +395,15 @@ export class MeetUpWizardComponent  implements OnInit {
     const meet_up_description = this.meetUpDescription;
     const business_id = this.business.id;
     const sbcm = this.business.is_community_member;
-    const contact_list = this.importContactList$().map(c => (
-      JSON.stringify({name: c.name.display, number: c.phones[0].number})
-    ));
+
+    let contact_list;
+    if (this.importContactList$.getValue()?.length) {
+      contact_list = this.importContactList$.getValue().map(c => (
+        JSON.stringify(c)
+      ));
+    } else {
+      contact_list = null;
+    }
 
     let time = this.meetUpDateTime$();
 
@@ -465,4 +501,10 @@ export class MeetUpWizardComponent  implements OnInit {
   addedMeetUp() {
     this.modalCtrl.dismiss({action: 'added-meetup'});
   }
+}
+
+interface FriendContact {
+  name: string,
+  number: string,
+  image: string
 }

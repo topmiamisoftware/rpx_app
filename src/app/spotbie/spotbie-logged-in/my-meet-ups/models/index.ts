@@ -2,8 +2,8 @@ import {Business} from "../../../../models/business";
 import {SpotbieUser} from "../../../../models/spotbieuser";
 import {User} from "../../../../models/user";
 import {format, formatISO} from "date-fns";
-import {formatInTimeZone, toZonedTime} from "date-fns-tz";
 import {spotbie_UTC} from "../../../../helpers/time";
+import {Capacitor} from "@capacitor/core";
 
 export interface MeetUpInvitation {
   id: number
@@ -45,17 +45,23 @@ export interface MeetUp {
   description: string
   invitation_list: MeetUpInvitation[];
   owner: User;
+  contact_list: any;
 }
 
 export function normalizeMeetUpList(meetUpList: MeetUpInvitation[]): MeetUp[] {
   return meetUpList.map(a => {
-    const localTime = format(
-      new Date(`${spotbie_UTC(a.meet_up.time)}`),
+    const localTime =  format(
+      `${spotbie_UTC(a.meet_up.time)}`,
       "LLL. dd ''yy h:mm a"
     );
 
     // You need ISO standard for Ion-datetime
-    const toISO = formatISO(new Date(`${spotbie_UTC(a.meet_up.time)}`));
+    let toISO;
+    if (Capacitor.getPlatform() === 'ios') {
+      toISO = formatISO(spotbie_UTC(a.meet_up.time));
+    } else {
+      toISO = formatISO(`${spotbie_UTC(a.meet_up.time)}`);
+    }
 
     return {
       ...a.meet_up,
