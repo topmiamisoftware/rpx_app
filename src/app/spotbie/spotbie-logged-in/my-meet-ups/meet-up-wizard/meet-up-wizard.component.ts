@@ -102,7 +102,7 @@ export class MeetUpWizardComponent  implements OnInit {
     this.meetUpForm.get('meetUpDescription').setValue(meetUp.description);
     this.meetUpDateTime$.set(meetUp.time);
 
-    if (meetUp?.contact_list) {
+    if (meetUp?.contact_list && meetUp?.contact_list?.length > 0) {
       const cList = JSON.parse((meetUp.contact_list as any));
       cList.forEach(async c => {
         await this.hydrateContacts(JSON.parse(c));
@@ -409,16 +409,14 @@ export class MeetUpWizardComponent  implements OnInit {
       return false;
     }
 
-    let contact_list;
-    if (this.importContactList$.getValue()?.length) {
+    let contact_list = [];
+    if (this.importContactList$.getValue()?.length > 0) {
       contact_list = this.importContactList$.getValue().map(c => (
         JSON.stringify(c)
       ));
-    } else {
-      contact_list = null;
     }
 
-    const friend_list = this.meetUpFriendList$.getValue()?.map(f => parseInt(f.id));
+    const friend_list = this.meetUpFriendList$.getValue()?.map(f => parseInt(f.user_profile?.spotbie_user?.id ?? f.friend_id));
 
     if ((!friend_list && !contact_list) || (friend_list?.length + contact_list?.length === 0))  {
       const a = await this.toastService.create({
