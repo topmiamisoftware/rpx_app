@@ -1,16 +1,9 @@
-import {
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-  ChangeDetectionStrategy,
-} from '@angular/core';
-import {UntypedFormGroup, UntypedFormBuilder, Validators} from '@angular/forms';
+import {ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild,} from '@angular/core';
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
 import {UserauthService} from '../../../services/userauth.service';
 import {Router} from '@angular/router';
 import {MenuLoggedOutComponent} from '../menu-logged-out.component';
 import {faEye, faEyeSlash} from '@fortawesome/free-solid-svg-icons';
-import {logOutCallback} from '../../../helpers/logout-callback';
 import {BehaviorSubject} from 'rxjs';
 import {LoadingController} from '@ionic/angular';
 import {filter} from 'rxjs/operators';

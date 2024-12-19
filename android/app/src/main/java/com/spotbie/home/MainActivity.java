@@ -1,4 +1,4 @@
-package com.exentriks.spotmee.spotmee;
+package com.spotbie.home;
 
 import com.getcapacitor.BridgeActivity;
 

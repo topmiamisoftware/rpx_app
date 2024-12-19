@@ -1,4 +1,11 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild,} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import {MapComponent} from '../map/map.component';
 import {BehaviorSubject} from 'rxjs';
 
@@ -15,8 +22,12 @@ export class MenuLoggedInComponent implements AfterViewInit {
   mapApp$ = new BehaviorSubject<boolean>(false);
   business = false;
 
+  constructor(private changeDetectorRef: ChangeDetectorRef) {
+  }
+
   ngAfterViewInit() {
     this.mapApp$.next(true);
+    this.changeDetectorRef.detectChanges();
   }
 
   toggleLoyaltyPoints() {

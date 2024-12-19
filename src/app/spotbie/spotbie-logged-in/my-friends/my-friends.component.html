@@ -28,9 +28,18 @@
                 <ion-avatar aria-hidden="true" slot="start">
                   <img [src]="friendship.user_profile.spotbie_user.default_picture" />
                 </ion-avatar>
-                <ion-label>
-                  {{ friendship.user_profile.spotbie_user.first_name }} {{ friendship.user_profile.spotbie_user.last_name }}
-                </ion-label>
+
+                <ng-container *ngIf="friendship.user_profile?.spotbie_user?.first_name else usernameTem">
+                  <ion-label>
+                    {{ friendship.user_profile.spotbie_user.first_name }} {{ friendship.user_profile.spotbie_user?.last_name }}
+                  </ion-label>
+                </ng-container>
+
+                <ng-template #usernameTem>
+                  <ion-label>
+                    {{ friendship.user_profile.username }}
+                  </ion-label>
+                </ng-template>
 
                 <ng-container [ngSwitch]="friendship.relationship">
                   <ng-container *ngSwitchCase="FRIENDSHIP_STATUS_E.PENDING">
@@ -161,9 +170,17 @@
                   <img [src]="friend.spotbie_user.default_picture" />
                 </ion-avatar>
 
-                <ion-label>
-                  {{ friend.spotbie_user.first_name }} {{ friend.spotbie_user.last_name }}
-                </ion-label>
+                <ng-container *ngIf="friend.spotbie_user?.first_name else usernameTem">
+                  <ion-label>
+                    {{ friend.spotbie_user.first_name }} {{ friend.spotbie_user?.last_name }}
+                  </ion-label>
+                </ng-container>
+
+                <ng-template #usernameTem>
+                  <ion-label>
+                    {{ friend.username }}
+                  </ion-label>
+                </ng-template>
 
                 <ion-button slot="end" (click)="addFriend(friend.id, friend.spotbie_user.first_name)">
                   <ion-icon name="add-circle-outline" size="medium"></ion-icon>

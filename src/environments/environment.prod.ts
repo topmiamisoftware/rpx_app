@@ -1,5 +1,5 @@
-const baseUrl = 'https://home.spotbie.com/';
-const apiEndpoint = 'https://api.spotbie.com/api/';
+const baseUrl = null;
+const apiEndpoint = "https://api.spotbie.com/api/";
 
 export const environment = {
   production: true,
@@ -29,7 +29,7 @@ function setEnvironmentVariables(isProduction: boolean) {
     environment.production = false;
     environment.staging = true;
     environment.fakeLocation = true;
-    environment.apiEndpoint = 'https://api-demo.spotbie.com/api/';
+    environment.apiEndpoint = apiEndpoint;
     environment.businessClientApp = 'https://business-demo.spotbie.com/';
     environment.personalClientApp = 'https://personal-demo.spotbie.com/';
     environment.baseUrl = 'https://personal-demo.spotbie.com/';

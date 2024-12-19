@@ -19,7 +19,7 @@
           <ion-label>
             <h2 class="sb-text-light-green-gradient"><b>{{ meetUp.name }}</b></h2>
             <ion-text>
-              <p class="pt-3 pb-3" style="font-size: 15px;">{{ meetUp.description }}</p>
+              <p class="pt-3 pb-3" style="font-size: 15px;">{{ meetUp.description | truncateText:[20, '...'] }}</p>
               <p>
                 <!-- Business might be null while waiting for API -->
                 <span style="white-space: pre-line"><b>{{ meetUp.business?.name }}</b></span><br/>

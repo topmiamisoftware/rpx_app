@@ -51,7 +51,7 @@ export interface MeetUp {
 
 export function normalizeMeetUpList(meetUpList: MeetUpInvitation[]): MeetUp[] {
   return meetUpList.map(a => {
-    const localTime =  format(
+    const localTime = format(
       `${spotbie_UTC(a.meet_up.time)}`,
       "LLL. dd ''yy h:mm a"
     );
