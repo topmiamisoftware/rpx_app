@@ -431,7 +431,14 @@ export class MeetUpWizardComponent  implements OnInit {
 
     const meet_up_name = this.meetUpName;
     const meet_up_description = this.meetUpDescription;
-    const business_id = this.business.id.toString();
+
+    let business_id;
+    if (!this.business?.id) {
+      business_id = (this.business as InfoObject).business.id.toString();
+    } else {
+      business_id = this.business.id.toString();
+    }
+
     const sbcm = this.business.is_community_member ?? false;
 
     let time = this.meetUpDateTime$();

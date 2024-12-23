@@ -69,6 +69,10 @@ export class MyMeetUpsComponent  implements OnInit {
 
   myMeetUps() {
     this.meetUpService.myMeetUps().subscribe(async (resp: any) => {
+      if (resp.data?.length === 0) {
+        return;
+      }
+
       const theMeetUps: MeetUp[] = normalizeMeetUpList(resp.meetUpListing.data);
       this.latestMeetUp$.set(theMeetUps[0]);
       this.meetUpList$.set(theMeetUps);

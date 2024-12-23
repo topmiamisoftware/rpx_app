@@ -1,12 +1,5 @@
-import {
-  Component,
-  OnInit,
-  ViewChild,
-  ElementRef,
-  Output,
-  EventEmitter,
-} from '@angular/core';
-import {FormBuilder, Validators, FormGroup, FormControl} from '@angular/forms';
+import {Component, ElementRef, OnInit, ViewChild,} from '@angular/core';
+import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {User} from '../../../models/user';
 import {ValidatePassword} from '../../../helpers/password.validator';
 import {MustMatch} from '../../../helpers/must-match.validator';
@@ -30,7 +23,6 @@ export class SettingsComponent implements OnInit {
   @ViewChild('spotbiePasswordInfoText') spotbiePasswordInfoText: ElementRef;
   @ViewChild('currentPasswordInfo') spotbieCurrentPasswordInfoText: ElementRef;
   @ViewChild('spotbieDeactivationInfo') spotbieAccountDeactivationInfo;
-  @ViewChild('spotbieSettingsWindow') spotbieSettingsWindow;
 
   settingsForm: FormGroup;
   passwordForm: FormGroup;
@@ -209,7 +201,6 @@ export class SettingsComponent implements OnInit {
 
     if (this.settingsForm.errors) {
       this.loading$.next(false);
-      this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
       return;
     }
@@ -255,8 +246,6 @@ export class SettingsComponent implements OnInit {
         }
 
         this.spotbieSettingsInfoText$.next(`${message}`);
-
-        this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
         this.loading$.next(false);
       },
@@ -379,8 +368,6 @@ export class SettingsComponent implements OnInit {
 
           break;
       }
-
-      this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
     } else {
       switch (resp.message) {
         case 'SB-E-000':
@@ -468,8 +455,6 @@ export class SettingsComponent implements OnInit {
 
     if (resp.success) {
       this.spotbieSettingsInfoText$.next('Your settings were saved.');
-
-      this.spotbieSettingsWindow.nativeElement.scrollTo(0, 0);
 
       Preferences.set({key: 'spotbie_userLogin', value: resp.user.username});
       Preferences.set({

@@ -121,17 +121,17 @@ export class MyMeetUpListingComponent implements OnInit {
     this.meetUpListing$.getValue().map((meetUp: MeetUp) => {
       let isNotSbcm = meetUp.business_id;
       if (isNotSbcm) {
-        const infoObjToPull = {config_url: YELP_BUSINESS_DETAILS_API + meetUp.business_id};
+        const infoObjToPull = { config_url: YELP_BUSINESS_DETAILS_API + meetUp.business_id };
 
         this.infoObjectService.pullInfoObject(infoObjToPull).subscribe(resp => {
-          meetUp.business = resp.data;
+            meetUp.business = resp.data;
 
-          let toReplace = this.meetUpListing$.getValue().findIndex(a => meetUp.meet_up_id === a.meet_up_id);
-          let o = this.meetUpListing$.getValue();
-          o[toReplace - 1] = meetUp;
+            let toReplace = this.meetUpListing$.getValue().findIndex(a => meetUp.meet_up_id === a.meet_up_id);
+            let o = this.meetUpListing$.getValue();
+            o[toReplace - 1] = meetUp;
 
-          this.meetUpListing$.next(o);
-        });
+            this.meetUpListing$.next(o);
+          });
       }
     });
   }
