@@ -10,12 +10,13 @@
   <ng-container *ngIf="(meetUpListing$ | async)?.length > 0 else noMeetUps">
     <ion-list>
       <ion-item-sliding *ngFor="let meetUp of (meetUpListing$ | async)">
+        <ion-item-options side="end" (ionSwipe)="deleteMeetUp(meetUp)">
+          <ion-item-option color="danger">
+            delete
+          </ion-item-option>
+        </ion-item-options>
+
         <ion-item color="dark" (click)="openMeetUp(meetUp)">
-          <ion-item-options side="end" (ionSwipe)="deleteMeetUp(meetUp)">
-            <ion-item-option color="danger">
-              delete
-            </ion-item-option>
-          </ion-item-options>
           <ion-label>
             <h2 class="sb-text-light-green-gradient"><b>{{ meetUp.name }}</b></h2>
             <ion-text>

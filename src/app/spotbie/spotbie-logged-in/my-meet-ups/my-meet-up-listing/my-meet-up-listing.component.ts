@@ -137,7 +137,6 @@ export class MyMeetUpListingComponent implements OnInit {
   }
 
   async deleteMeetUp(deleteMeetUp: MeetUp) {
-
     const a = await this.alertController.create({
       header: `Delete Meet Up`,
       message: `Are you sure you want to delete ${deleteMeetUp.name}?`,
