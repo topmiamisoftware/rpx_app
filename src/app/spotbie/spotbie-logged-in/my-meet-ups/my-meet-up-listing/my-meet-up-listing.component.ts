@@ -99,6 +99,8 @@ export class MyMeetUpListingComponent implements OnInit {
     await modal.onDidDismiss().then((evt) => {
       if (evt.data?.action === 'added-meetup') {
         this.ngZone.run(() => {
+          // There's no need to do this, you can just upsert the meet up you just made,
+          // save yourself the API calls
           this.rehydrateMeetUps();
         });
       }
@@ -112,12 +114,12 @@ export class MyMeetUpListingComponent implements OnInit {
       this.ngZone.run(() => {
         const theMeetUps: MeetUp[] = normalizeMeetUpList(resp.meetUpListing.data);
         this.meetUpListing$.next(theMeetUps);
-        this.upsertInfoObjects();
+        this.updateInfoObjects();
       });
     });
   }
 
-  upsertInfoObjects() {
+  updateInfoObjects() {
     this.meetUpListing$.getValue().map((meetUp: MeetUp) => {
       let isNotSbcm = meetUp.business_id;
       if (isNotSbcm) {
@@ -158,7 +160,12 @@ export class MyMeetUpListingComponent implements OnInit {
 
                 await a.present();
 
-                this.rehydrateMeetUps();
+                this.ngZone.run(() => {
+                  // Instead of rehydrating the whole list just remove the one you deleted.
+                  this.meetUpListing$.next(
+                    this.meetUpListing$.getValue().filter(a => a.id !== deleteMeetUp.id)
+                  );
+                });
               });
 
             return;
