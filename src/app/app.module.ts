@@ -17,6 +17,7 @@ import {loyaltyPointsReducer} from './spotbie/spotbie-logged-in/loyalty-points/l
 import {RouteReuseStrategy} from '@angular/router';
 import {MyList} from "./spotbie/spotbie-logged-in/my-list/my-list.component";
 import {MenuLoggedInModule} from "./spotbie/spotbie-logged-in/menu-logged-in.module";
+import {AcceptMuiInvitesModule} from "./pages/accept-mui-invites/accept-mui-invites.module";
 
 @NgModule({
   declarations: [AppComponent, UrlSanitizerPipe, MyList],
@@ -28,6 +29,7 @@ import {MenuLoggedInModule} from "./spotbie/spotbie-logged-in/menu-logged-in.mod
     HomeModule,
     MenuLoggedInModule,
     HelperModule,
+    AcceptMuiInvitesModule,
     BrowserAnimationsModule,
     StoreModule.forRoot({
       loyaltyPoints: loyaltyPointsReducer,

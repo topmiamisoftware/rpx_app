@@ -539,7 +539,7 @@ export class MeetUpWizardComponent  implements OnInit {
   }
 }
 
-interface FriendContact {
+export interface FriendContact {
   name: string,
   number: string,
   image: string

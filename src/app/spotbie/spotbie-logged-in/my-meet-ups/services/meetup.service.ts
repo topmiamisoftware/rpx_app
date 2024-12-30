@@ -1,11 +1,10 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../../../../environments/environment";
-import {catchError} from "rxjs/operators";
+import {catchError, map, tap} from "rxjs/operators";
 import {handleError} from "../../../../helpers/error-helper";
-import {BehaviorSubject} from "rxjs";
-import {Business} from "../../../../models/business";
-import {MeetUp} from "../models";
+import {MeetUp, MeetUpInvitation} from "../models";
+import {normalizeProfile} from "../../my-friends/helpers";
 
 const MEETUP_API = `${environment.apiEndpoint}meet-ups`;
 
@@ -36,6 +35,16 @@ export class MeetupService {
     );
   }
 
+  acceptInvitation(meetUpId: MeetUp['uuid']){
+    const req = {
+      meetUpId,
+    }
+
+    return this.httpClient.put(`${MEETUP_API}/accept-invite`, req).pipe(
+      catchError(handleError('createMeetUp')),
+    );
+  }
+
   deleteMeetUp(meetUp: MeetUp){
     const body = {
       meet_up_id: meetUp.id
@@ -47,8 +56,20 @@ export class MeetupService {
     );
   }
 
-  showMeetUp(meetUpId: string) {
-    return this.httpClient.get(`${MEETUP_API}/${meetUpId}`).pipe(
+  showMeetUpInvitation(meetUpId: MeetUpInvitation['uuid'], myId) {
+    return this.httpClient.get(`${MEETUP_API}/invites/show/${meetUpId}`).pipe(
+      catchError(handleError('myMeetUps')),
+      tap(c => console.log("the invitation list ", c)),
+    );
+  }
+
+  showMeetUp(meetUpId: MeetUp['uuid']) {
+    const params = {
+      meetUpUuid: meetUpId
+    }
+    return this.httpClient.get(`${MEETUP_API}/show}`, {
+      params,
+    }).pipe(
       catchError(handleError('myMeetUps')),
     );
   }

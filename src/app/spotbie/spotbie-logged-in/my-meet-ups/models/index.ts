@@ -8,6 +8,7 @@ import {InfoObject} from "../../../../models/info-object";
 
 export interface MeetUpInvitation {
   id: number
+  uuid: string
   user_id: number
   business_id: any
   time: string | Date
@@ -29,6 +30,7 @@ export interface MeetUpInvitation {
 
 export interface MeetUp {
   id: number
+  uuid: string
   user_id: number
   business_id: any
   time: string;
@@ -51,23 +53,29 @@ export interface MeetUp {
 
 export function normalizeMeetUpList(meetUpList: MeetUpInvitation[]): MeetUp[] {
   return meetUpList.map(a => {
-    const localTime = format(
-      `${spotbie_UTC(a.meet_up.time)}`,
-      "LLL. dd ''yy h:mm a"
-    );
-
-    // You need ISO standard for Ion-datetime
-    let toISO;
-    if (Capacitor.getPlatform() === 'ios') {
-      toISO = formatISO(spotbie_UTC(a.meet_up.time));
-    } else {
-      toISO = formatISO(`${spotbie_UTC(a.meet_up.time)}`);
-    }
+    const s = spotBieToLocalTime(a.meet_up.time);
 
     return {
       ...a.meet_up,
-      time_friendly: localTime,
-      time: toISO,
+      time_friendly: s.localTime,
+      time: s.toISO,
     };
   });
+}
+
+export function spotBieToLocalTime(a) {
+  const localTime = format(
+    `${spotbie_UTC(a)}`,
+    "LLL. dd ''yy h:mm a"
+  );
+
+  // You need ISO standard for Ion-datetime
+  let toISO;
+  if (Capacitor.getPlatform() === 'ios') {
+    toISO = formatISO(spotbie_UTC(a));
+  } else {
+    toISO = formatISO(`${spotbie_UTC(a)}`);
+  }
+
+  return {toISO, localTime};
 }

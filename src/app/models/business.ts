@@ -26,4 +26,5 @@ export class Business {
   spotbie_user: SpotbieUser;
   loyalty_point_balance: LoyaltyPointBalance;
   loyalty_tiers: LoyaltyTier[];
+  slug: string;
 }

@@ -5,6 +5,7 @@ import {InfoObjectComponent} from './spotbie/map/info-object/info-object.compone
 import {LoyaltyPointsComponent} from './spotbie/spotbie-logged-in/loyalty-points/loyalty-points.component';
 import {RewardMenuComponent} from './spotbie/spotbie-logged-in/reward-menu/reward-menu.component';
 import {MyList} from './spotbie/spotbie-logged-in/my-list/my-list.component';
+import {AcceptMuiInvitesComponent} from "./pages/accept-mui-invites/accept-mui-invites.component";
 
 const routes: Routes = [
   {
@@ -20,6 +21,7 @@ const routes: Routes = [
   },
   {path: 'business-menu/:qrCode/:rewardUuid', component: RewardMenuComponent},
   {path: 'business-menu/:qrCode', component: RewardMenuComponent},
+  {path: 'accept-invitation/:uuid', component: AcceptMuiInvitesComponent},
   {
     path: 'settings',
     loadChildren: () =>
