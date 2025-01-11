@@ -24,7 +24,7 @@
     </ng-container>
 
     <div *ngFor="let p of (meetUpFriendList$ | async); trackBy: identify" (click)="actionSheet(p)">
-      <ion-label>{{ p?.user_profile.spotbie_user.first_name | shortenDisplayName  }}</ion-label>
+      <ion-label>{{ (p?.user_profile?.spotbie_user?.first_name || p?.username || p?.user_profile?.username) | shortenDisplayName }}</ion-label>
       <ion-avatar slot="start">
         <img [src]="p.user_profile.spotbie_user.default_picture" />
       </ion-avatar>
@@ -155,11 +155,19 @@
                   <img [src]="friend.user_profile.spotbie_user.default_picture" />
                 </ion-avatar>
 
-                <ion-label>
-                  {{ friend.user_profile.spotbie_user.first_name }} {{ friend.user_profile.spotbie_user.last_name }}
-                </ion-label>
+                <ng-container *ngIf="friend?.user_profile?.spotbie_user?.first_name else showUsername">
+                  <ion-label>
+                    {{ friend.user_profile.spotbie_user.first_name }} {{ friend.user_profile.spotbie_user.last_name }}
+                  </ion-label>
+                </ng-container>
 
-                <ion-button color="dark" slot="end" (click)="addToMeetUp(friend, friend.user_profile.spotbie_user.first_name)">
+                <ng-template #showUsername>
+                  <ion-label>
+                    {{ friend.username }}
+                  </ion-label>
+                </ng-template>
+
+                <ion-button color="dark" slot="end" (click)="addToMeetUp(friend, (friend.user_profile?.spotbie_user?.first_name || friend.user_profile.username))">
                   <ion-icon name="add-circle-outline" size="medium"></ion-icon>
                 </ion-button>
               </ion-item>
@@ -173,11 +181,19 @@
                   <img [src]="friend.user_profile.default_picture" />
                 </ion-avatar>
 
-                <ion-label>
-                  {{ friend.user_profile.first_name }} {{ friend.user_profile.last_name }}
-                </ion-label>
+                <ng-container *ngIf="friend?.user_profile?.first_name else friendUsername;">
+                  <ion-label>
+                    {{ friend.user_profile.first_name }} {{ friend.user_profile.last_name }}
+                  </ion-label>
+                </ng-container>
 
-                <ion-button color="dark" slot="end" (click)="addToMeetUp(friend, friend.user_profile.first_name)">
+                <ng-template #friendUsername>
+                  <ion-label>
+                    {{ friend.username }}
+                  </ion-label>
+                </ng-template>
+
+                <ion-button color="dark" slot="end" (click)="addToMeetUp(friend, (friend?.user_profile?.first_name || friend?.username))">
                   <ion-icon name="add-circle-outline" size="medium"></ion-icon>
                 </ion-button>
               </ion-item>

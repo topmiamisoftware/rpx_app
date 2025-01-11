@@ -56,7 +56,7 @@ export class MeetUpWizardComponent  implements OnInit {
   // the meetup owner
   ownerProfile$ = new BehaviorSubject<User>(undefined);
   // Used to tell which users are going to the meet up. Friends that are invited.
-  meetUpFriendList$ =  new BehaviorSubject<any>(undefined);
+  meetUpFriendList$ = new BehaviorSubject<any>(undefined);
   private searchTimeout;
 
   meetUpDateTime$: WritableSignal<any> = signal(new Date());
@@ -86,7 +86,7 @@ export class MeetUpWizardComponent  implements OnInit {
         filter(f => !!f),
         tap((id: number) => {
           this.myUserId = id;
-          this.getMyFriends();
+          // this.getMyFriends();
         })
       )
       .subscribe();
@@ -119,7 +119,8 @@ export class MeetUpWizardComponent  implements OnInit {
 
   hydrateFriends(invitationList: MeetUpInvitation[]) {
     const friendList = invitationList.map(meetUpInvitation => ({
-      user_profile:{ spotbie_user: meetUpInvitation.friend_profile },
+      ...meetUpInvitation,
+      user_profile: { ...meetUpInvitation.user_profile, spotbie_user: meetUpInvitation.friend_profile },
       id: meetUpInvitation.friend_id
     }));
 
@@ -129,14 +130,11 @@ export class MeetUpWizardComponent  implements OnInit {
     }));
   }
 
-  async addToMeetUp(friend, firstName: string) {
-    const alreadyAdded = this.meetUpFriendList$.getValue()
-      ?.filter(f => f.id === friend.id);
+  async addToMeetUp(f, firstName: string) {
+    const friendProfile = {...f, user_profile: {...f.user_profile, spotbie_user: f.spotbie_profile}};
 
-    let friendProfile = this.myFriendListing$.getValue()?.filter((a) => a.id === friend.id);
-    if (!friendProfile) {
-      friendProfile = this.searchFriendListing$.getValue()?.filter((a) => a.id === friend.id);
-    }
+    const alreadyAdded = this.meetUpFriendList$.getValue()
+      ?.filter(f => f.id === friendProfile.id);
     
     if (alreadyAdded?.length > 0) {
       const a = await this.alertController.create({
@@ -165,10 +163,10 @@ export class MeetUpWizardComponent  implements OnInit {
               if (this.meetUpFriendList$.getValue()?.length) {
                 this.meetUpFriendList$.next([
                     ...this.meetUpFriendList$.getValue(),
-                  ...friendProfile
+                    friendProfile
                 ]);
               } else {
-                this.meetUpFriendList$.next([...friendProfile]);
+                this.meetUpFriendList$.next([friendProfile]);
               }
 
               return;
@@ -191,11 +189,6 @@ export class MeetUpWizardComponent  implements OnInit {
     this.myFriendsService.getMyFriends()
       .subscribe(resp => {
         this.loading$.next(false);
-        this.myFriendListing$.pipe(
-          map( a =>
-            normalizeProfile(resp.friendList.data, this.myUserId)
-          ),
-        )
         this.searchFriendListing$.next(null);
       });
   }
@@ -315,6 +308,7 @@ export class MeetUpWizardComponent  implements OnInit {
   }
 
   async actionSheet(friendProfile, friendContact: FriendContact = null) {
+    console.log("FRIEND PROFILE", friendProfile);
     const actionSheet = await this.actionSheetCtrl.create({
       cssClass: 'spotbie-ac',
       buttons: [
@@ -542,5 +536,6 @@ export class MeetUpWizardComponent  implements OnInit {
 export interface FriendContact {
   name: string,
   number: string,
-  image: string
+  image: string,
+  going?: boolean
 }

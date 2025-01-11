@@ -19,6 +19,18 @@
   }
 }
 
+.sbAura-green {
+  ion-avatar {
+    border: 3px solid rgba(83, 191, 97, 0.7);
+  }
+}
+
+.sbAura-pending {
+  ion-avatar {
+    border: 3px solid rgb(41, 142, 184);
+  }
+}
+
 .whosGoingWrapper {
   position: relative;
   width: 100%;

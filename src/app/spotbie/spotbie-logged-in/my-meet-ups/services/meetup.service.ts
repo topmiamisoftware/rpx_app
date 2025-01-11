@@ -1,10 +1,9 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../../../../environments/environment";
-import {catchError, map, tap} from "rxjs/operators";
+import {catchError, tap} from "rxjs/operators";
 import {handleError} from "../../../../helpers/error-helper";
 import {MeetUp, MeetUpInvitation} from "../models";
-import {normalizeProfile} from "../../my-friends/helpers";
 
 const MEETUP_API = `${environment.apiEndpoint}meet-ups`;
 
@@ -31,17 +30,13 @@ export class MeetupService {
 
   editMeetUp(req, meetUpId: MeetUp['id']){
     return this.httpClient.put(`${MEETUP_API}/${meetUpId}`, req).pipe(
-      catchError(handleError('createMeetUp')),
+      catchError(handleError('editMeetUp')),
     );
   }
 
   acceptInvitation(meetUpId: MeetUp['uuid']){
-    const req = {
-      meetUpId,
-    }
-
-    return this.httpClient.put(`${MEETUP_API}/accept-invite`, req).pipe(
-      catchError(handleError('createMeetUp')),
+    return this.httpClient.put(`${MEETUP_API}/accept-invitation/${meetUpId}`, null).pipe(
+      catchError(handleError('acceptInvitation')),
     );
   }
 

@@ -29,7 +29,7 @@ export function normalizeProfileFromFriendSearch(profileList: [], myUserId: numb
       user_profile = profile.friend_spotbie_profile;
       user_profile.spotbie_user = profile.friend_spotbie_profile;
     } else {
-      user_profile = profile.spotbie_pofile;
+      user_profile = profile.spotbie_profile;
       user_profile.spotbie_user = profile.spotbie_pofile;
     }
 
@@ -38,8 +38,6 @@ export function normalizeProfileFromFriendSearch(profileList: [], myUserId: numb
       user_profile,
     });
   });
-
-  console.log("NORMALIZED PROFILES", normalizedProfileList);
 
   return normalizedProfileList;
 }

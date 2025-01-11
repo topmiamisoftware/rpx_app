@@ -12,26 +12,53 @@
     <ion-row>
       <ion-col>
         <div class="spotbie-inviteList">
-          <h3>Meet Up at {{ businessName$ | async }}</h3>
+          <h3>Meet Up</h3>
 
           <p>Who's going?</p>
 
           <div class="whosGoingWrapper mt-3 mb-3">
-            <ng-container *ngIf="(importContactList$ | async)?.length > 0">
-              <div *ngFor="let p of (importContactList$ | async)">
-                <ion-label>{{ p?.name | shortenDisplayName }}</ion-label>
-                <ion-avatar aria-hidden="true" slot="start">
-                  <img [src]="p?.image ?? './../../../assets/images/guest-spotbie-user-01.svg'" />
+            <ng-container *ngIf="(ownerProfile$ | async) as p">
+              <div class="sbAura-green">
+                <ion-label>{{ (p?.spotbie_user.first_name || p?.username) | shortenDisplayName }}</ion-label>
+                <ion-avatar aria-hidden="true" slot="start" id="click-avatar-owner">
+                  <img [src]="p?.spotbie_user?.default_picture ?? './../../assets/images/guest-spotbie-user-01.svg'" />
                 </ion-avatar>
+
+                <ion-popover trigger="click-avatar-owner" triggerAction="click">
+                  <ng-template>
+                    <ion-content class="ion-padding"><span style="color: white;">{{ (p?.spotbie_user.first_name || p?.username)}}</span></ion-content>
+                  </ng-template>
+                </ion-popover>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="(importContactList$ | async)?.length > 0">
+              <div *ngFor="let p of (importContactList$ | async)" [className]="auraColorContact(p)">
+                <ion-label>{{ p?.name | shortenDisplayName }}</ion-label>
+                <ion-avatar aria-hidden="true" slot="start" id="click-avatar">
+                  <img [src]="p?.image ?? './../../assets/images/guest-spotbie-user-01.svg'" />
+                </ion-avatar>
+
+                <ion-popover trigger="click-avatar" triggerAction="click">
+                  <ng-template>
+                    <ion-content class="ion-padding"><span style="color: white;">{{ p.name }}</span></ion-content>
+                  </ng-template>
+                </ion-popover>
               </div>
             </ng-container>
 
             <ng-container *ngIf="(userProfileList$ | async)?.length > 0">
-              <div *ngFor="let p of (userProfileList$ | async); trackBy: identify">
-                <ion-label>{{ p?.first_name | shortenDisplayName  }}</ion-label>
-                <ion-avatar slot="start">
-                  <img [src]="p.default_picture" />
+              <div *ngFor="let p of (userProfileList$ | async); trackBy: identify" [className]="auraColorSb(p.spotbie_user)">
+                <ion-label>{{ (p?.spotbie_user.first_name || p?.username)| shortenDisplayName  }}</ion-label>
+                <ion-avatar slot="start" id="click-avatar-profile">
+                  <img [src]="p?.spotbie_user.default_picture" />
                 </ion-avatar>
+
+                <ion-popover trigger="click-avatar-profile" triggerAction="click">
+                  <ng-template>
+                    <ion-content class="ion-padding"><span style="color: white;">{{ (p?.spotbie_user.first_name || p?.username) }}</span></ion-content>
+                  </ng-template>
+                </ion-popover>
               </div>
             </ng-container>
           </div>
@@ -55,7 +82,7 @@
           </p>
 
           <p>
-            <img src="{{ (meetUpLocation$ | async)?.photo }}" />
+            <img src="{{ (meetUpPhotoLink$ | async) }}" />
           </p>
 
           <p>
